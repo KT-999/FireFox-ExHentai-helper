@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "ExHentai 小幫手",
+  "version": "11.1",
+  "description": "一個用於 exhentai.org 的輔助工具，可設定預載入圖片數量、主題模式並支援鍵盤操作。",
+  "icons": {
+    "48": "icons/icon-48.png"
+  },
+  "permissions": [
+    "storage",
+    "cookies"
+  ],
+  "host_permissions": [
+    "*://exhentai.org/*",
+    "*://e-hentai.org/*",
+    "*://forums.e-hentai.org/*"
+  ],
+  "action": {
+    "default_icon": "icons/icon-48.png",
+    "default_title": "ExHentai 小幫手",
+    "default_popup": "popup/popup.html"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://exhentai.org/*", "*://e-hentai.org/*"],
+      "js": ["content_script.js"]
+    }
+  ]
+}
