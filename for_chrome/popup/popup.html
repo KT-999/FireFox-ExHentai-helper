@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 新增的帳號狀態區塊 -->
+        <div id="auth-section" class="section">
+            <!-- 此處內容由 popup.js 動態生成 -->
+        </div>
+        <hr id="auth-hr" style="display: none;">
+
+        <h3>ExHentai 小幫手設定</h3>
+        
+        <div class="section">
+            <h4>一般設定</h4>
+            <div class="setting">
+                <label for="preload-count">預先載入數量 (單邊)：</label>
+                <input type="number" id="preload-count" min="1" max="10" value="3">
+            </div>
+            <div class="setting">
+                <label for="cache-size">最高記憶頁數：</label>
+                <input type="number" id="cache-size" min="10" max="200" value="50">
+            </div>
+            <div class="setting">
+                <label for="fit-to-window">圖片適應視窗大小：</label>
+                <input type="checkbox" id="fit-to-window">
+            </div>
+            <div class="setting">
+                <label for="hide-preview-bar">隱藏底部預覽列：</label>
+                <input type="checkbox" id="hide-preview-bar">
+            </div>
+            <div class="setting">
+                <label for="theme-mode">外觀主題：</label>
+                <select id="theme-mode">
+                    <option value="system">跟隨系統</option>
+                    <option value="light">亮色模式</option>
+                    <option value="dark">深色模式</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button id="open-options-button" class="btn-secondary">設定快捷鍵</button>
+            <button id="save-button">儲存設定</button>
+        </div>
+        <p id="status-message" class="status"></p>
+
+        <hr>
+
+        <div class="section">
+            <h4>進階操作</h4>
+            <div class="setting-description">
+                <p>如果遇到圖片載入問題或顯示錯誤，可以嘗試手動清除所有暫存資料。這將會清空所有已預載的圖片和頁面索引。</p>
+            </div>
+            <button id="clear-cache-button" class="btn-danger">清除所有快取</button>
+        </div>
+    </div>
+    <script src="../browser-polyfill.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>
