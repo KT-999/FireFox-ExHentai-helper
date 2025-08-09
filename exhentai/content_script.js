@@ -1,12 +1,14 @@
 /**
  * ExHentai 小幫手 - 內容腳本
  *
- * v10.1 功能：
- * - 新增清除快取快捷鍵：可在閱讀時按下指定按鍵（預設 W）來手動清除所有快取。
- * - 新增 API 級別圖片重載，從根本上解決 403 Forbidden 錯誤。
+ * v12.16 功能：
+ * - 最終版網格視圖 UI (v3)：
+ * - 根據使用者提供的結構，將評分星星移至類別標籤下方，單獨成行。
+ * - 底部資訊列顯示完整的發布時間 (YYYY-MM-DD HH:mm)。
+ * - 完整保留 v10.1 的所有閱讀器功能。
  */
 
-console.log("ExHentai 小幫手 v10.1 已成功載入！");
+console.log("ExHentai 小幫手 v12.16 已成功載入！");
 
 // --- 全域變數 ---
 const navigationContext = {
@@ -22,6 +24,8 @@ const navigationContext = {
     isIndexingPage: null,
 };
 const scriptSettings = {
+    enableGridView: false,
+    gridColumns: 5,
     fitToWindow: true,
     hidePreviewBar: false,
     preloadCount: 3,
@@ -30,13 +34,232 @@ const scriptSettings = {
     keyFit: 's',
     keyHide: 'q',
     keyExit: 'e',
-    keyClear: 'w', // 新增快捷鍵
+    keyClear: 'w',
 };
 const FIT_STYLE_ID = 'exh-helper-fit-style';
 const THEME_STYLE_ID = 'exh-helper-theme-style';
 const VIEWER_STYLE_ID = 'exh-helper-viewer-style';
 
-// --- UI 函式 ---
+
+// --- 網格視圖核心邏輯 ---
+
+function injectGridViewCSS() {
+    const styleId = 'exh-grid-view-style';
+    if (document.getElementById(styleId)) return;
+
+    const css = `
+        .exh-grid-view {
+            display: grid;
+            grid-template-columns: repeat(${scriptSettings.gridColumns}, 1fr);
+            gap: 24px 18px;
+        }
+        .exh-grid-item {
+            position: relative;
+            background-color: #3c3c3c;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            overflow: hidden;
+            text-decoration: none !important;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+        }
+        .exh-grid-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        .exh-grid-thumbnail-link {
+            display: block;
+            aspect-ratio: 3 / 4;
+            overflow: hidden;
+            background-color: #222;
+        }
+        .exh-grid-thumbnail-link img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .exh-grid-item:hover .exh-grid-thumbnail-link img {
+            transform: scale(1.05);
+        }
+        .exh-grid-info {
+            padding: 10px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .exh-grid-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #eee;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.4;
+            margin-bottom: 8px;
+            height: 36px;
+        }
+        .exh-grid-category-row {
+            margin-bottom: 8px;
+        }
+        .exh-grid-category-row .cn {
+            display: block;
+            width: 100%;
+            padding: 3px 0;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #fff;
+            font-weight: bold;
+            border: 1px solid;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .exh-grid-info .ir {
+            margin: 0 auto 8px; /* 將星星置中並與下方元素間隔 */
+        }
+        .exh-grid-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #aaa;
+            margin-top: auto;
+        }
+        .exh-grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+        .exh-grid-item:hover .exh-grid-overlay {
+            opacity: 1;
+            visibility: visible;
+        }
+        .exh-overlay-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #555;
+            padding-bottom: 8px;
+        }
+        .exh-overlay-tags {
+            font-size: 12px;
+            line-height: 1.6;
+            opacity: 0.9;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .exh-overlay-tags .gt {
+            display: inline-block;
+            background-color: #555;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin: 2px;
+        }
+        .ir { /* 確保星星的共用樣式存在 */
+            display: inline-block;
+            width: 80px;
+            height: 16px;
+            vertical-align: middle;
+            background: url(https://s.exhentai.org/img/ir.png) no-repeat;
+        }
+    `;
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = css;
+    document.head.appendChild(style);
+}
+
+function transformToGridView() {
+    const originalTable = document.querySelector('table.itg.gltc');
+    if (!originalTable || document.querySelector('.exh-grid-view')) return;
+
+    console.log('[ExH] 啟用網格視圖...');
+    injectGridViewCSS();
+
+    const gridContainer = document.createElement('div');
+    gridContainer.className = 'exh-grid-view';
+
+    const rows = originalTable.querySelectorAll('tbody > tr');
+
+    rows.forEach(row => {
+        try {
+            const categoryDiv = row.querySelector('.gl1c div');
+            const thumbImg = row.querySelector('.glthumb img');
+            const linkA = row.querySelector('.gl3c a');
+            const titleDiv = row.querySelector('.glink');
+            const ratingDiv = row.querySelector('.ir');
+            const pagesDiv = row.querySelector('.gl4c div:last-child');
+            const tagsContainer = row.querySelector('.gl3c > a > div:last-child');
+            const dateDiv = row.querySelector('div[id^="posted_"]');
+
+            if (!linkA || !titleDiv || !thumbImg) return;
+
+            const gridItem = document.createElement('a');
+            gridItem.className = 'exh-grid-item';
+            gridItem.href = linkA.href;
+
+            const imgSrc = thumbImg.getAttribute('data-src') || thumbImg.src;
+            const ratingStyleAttr = ratingDiv ? ratingDiv.getAttribute('style') : '';
+            const pagesText = pagesDiv ? pagesDiv.textContent : '';
+            const dateText = dateDiv ? dateDiv.textContent : ''; // 獲取完整日期時間
+
+            let categoryHTML = '';
+            if (categoryDiv) {
+                categoryHTML = categoryDiv.outerHTML;
+            }
+            
+            let overlayTitleHTML = titleDiv ? `<div class="exh-overlay-title">${titleDiv.textContent}</div>` : '';
+            let overlayTagsHTML = tagsContainer ? `<div class="exh-overlay-tags">${tagsContainer.innerHTML}</div>` : '';
+
+            gridItem.innerHTML = `
+                <div class="exh-grid-thumbnail-link">
+                    <img src="${imgSrc}" alt="${titleDiv.textContent}" loading="lazy">
+                </div>
+                <div class="exh-grid-info">
+                    <div>
+                        <div class="exh-grid-title">${titleDiv.textContent}</div>
+                        <div class="exh-grid-category-row">${categoryHTML}</div>
+                    </div>
+                    <div class="ir" style="${ratingStyleAttr}"></div>
+                    <div class="exh-grid-footer">
+                        <span class="exh-grid-date">${dateText}</span>
+                        <span>${pagesText.replace(' pages', '')}p</span>
+                    </div>
+                </div>
+                <div class="exh-grid-overlay">
+                    ${overlayTitleHTML}
+                    ${overlayTagsHTML}
+                </div>
+            `;
+            gridContainer.appendChild(gridItem);
+        } catch (e) {
+            console.error('[ExH] 轉換單個項目到網格視圖時出錯:', e, row);
+        }
+    });
+
+    originalTable.style.display = 'none';
+    originalTable.parentElement.insertBefore(gridContainer, originalTable);
+}
+
+// --- 以下為閱讀器頁面的所有函式 (保持不變) ---
+
 function createStatusDisplay() {
     if (document.getElementById('exh-status-bar')) return;
     const statusBar = document.createElement('div');
@@ -179,42 +402,32 @@ function rebuildSlider(list) {
     }
 }
 
-// --- 鍵盤導覽邏輯 ---
 function handleKeyDown(event) {
     if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
     const key = event.key.toLowerCase();
-
     if (key === scriptSettings.keyFit) { toggleFitToWindow(); return; }
     if (key === scriptSettings.keyHide) { togglePreviewBar(); return; }
     if (key === scriptSettings.keyExit) {
         if (navigationContext.backToGalleryUrl) window.location.href = navigationContext.backToGalleryUrl;
         return;
     }
-    
-    // **新增點**: 清除快取快捷鍵
     if (key === scriptSettings.keyClear) {
         browser.runtime.sendMessage({ type: 'clear_all_cache' }).then(response => {
             if (response && response.success) {
                 const statusText = document.getElementById('exh-status-text');
                 if (statusText) {
-                    const originalText = statusText.textContent;
                     statusText.textContent = `✅ 已清除 ${response.clearedCount} 個圖庫的快取！`;
-                    setTimeout(() => {
-                        // 2秒後恢復原狀或更新狀態
-                        updateStatusText(); 
-                    }, 2000);
+                    setTimeout(() => { updateStatusText(); }, 2000);
                 }
             }
         });
         return;
     }
-
     if (navigationContext.isNavigating) return;
     if (key === 'arrowleft' || key === scriptSettings.keyPrev) navigateTo(navigationContext.currentIndex - 1);
     else if (key === 'arrowright' || key === scriptSettings.keyNext) navigateTo(navigationContext.currentIndex + 1);
 }
 
-// --- 核心邏輯 ---
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
 async function fetchAndParsePage(pageUrl, maxRetries = 3) {
@@ -249,9 +462,7 @@ async function ensurePagesAreIndexed(galleryId, pagesToCheck, cleanBaseGalleryUr
                 if (links.length > 0) {
                     await browser.runtime.sendMessage({ type: 'set_page_links', galleryId, pageIndex, links });
                 } else {
-                    console.error(`[ExH] 診斷資訊：在圖庫分頁 ${pageIndex + 1} (${galleryPageUrl.href}) 上找不到任何圖片連結。頁面內容可能已變更、載入失敗或需要驗證。`);
-                    const errorElement = doc.querySelector('.d p');
-                    if (errorElement) console.error(`[ExH] 偵測到頁面上的可能錯誤訊息: "${errorElement.textContent.trim()}"`);
+                    console.error(`[ExH] 診斷資訊：在圖庫分頁 ${pageIndex + 1} (${galleryPageUrl.href}) 上找不到任何圖片連結。`);
                 }
             }
         }
@@ -430,8 +641,7 @@ async function navigateTo(targetIndex) {
     setTimeout(() => { navigationContext.isNavigating = false; }, 300);
 }
 
-// --- 主執行入口 ---
-async function main() {
+async function runReaderScript() {
     document.body.addEventListener('click', (e) => {
         const link = e.target.closest('#exh-prev-previews a, #exh-next-previews a');
         if (link) {
@@ -442,15 +652,9 @@ async function main() {
         }
     }, true);
 
-    if (!window.location.pathname.startsWith('/s/')) return;
-    const settings = await browser.storage.local.get({ 
-        preloadCount: 3, fitToWindow: true, hidePreviewBar: false, themeMode: 'system',
-        keyPrev: 'a', keyNext: 'd', keyFit: 's', keyHide: 'q', keyExit: 'e', keyClear: 'w',
-    });
-    Object.assign(scriptSettings, settings);
     createStatusDisplay();
     setPreviewBarVisibility(scriptSettings.hidePreviewBar);
-    applyTheme(settings.themeMode);
+    applyTheme(scriptSettings.themeMode);
     if (!document.getElementById('img')) return;
     const viewer = document.createElement('div');
     viewer.id = 'exh-viewer';
@@ -539,16 +743,38 @@ async function main() {
     });
 }
 
-main().catch(err => console.error("[ExH] 主程式執行時發生未處理的錯誤:", err));
+// --- 路由器與初始化 ---
+async function main() {
+    const settings = await browser.storage.local.get(scriptSettings);
+    Object.assign(scriptSettings, settings);
+
+    const isGalleryListPage = !!document.querySelector('table.itg.gltc');
+    const isReaderPage = window.location.pathname.startsWith('/s/');
+
+    if (isGalleryListPage && scriptSettings.enableGridView) {
+        transformToGridView();
+    } else if (isReaderPage) {
+        runReaderScript();
+    }
+}
 
 browser.storage.onChanged.addListener((changes, area) => {
     if (area === 'local') {
+        const isGalleryListPage = !!document.querySelector('table.itg.gltc');
+        if ((changes.enableGridView || changes.gridColumns) && isGalleryListPage) {
+            window.location.reload();
+        }
         Object.keys(changes).forEach(key => {
             const change = changes[key];
             if (change && scriptSettings.hasOwnProperty(key)) scriptSettings[key] = change.newValue;
         });
-        if (changes.fitToWindow) applyFitStyle();
-        if (changes.hidePreviewBar) setPreviewBarVisibility(scriptSettings.hidePreviewBar);
-        if (changes.themeMode) applyTheme(scriptSettings.themeMode);
+        // 以下只在閱讀器頁面需要
+        if (window.location.pathname.startsWith('/s/')) {
+            if (changes.fitToWindow) applyFitStyle();
+            if (changes.hidePreviewBar) setPreviewBarVisibility(scriptSettings.hidePreviewBar);
+            if (changes.themeMode) applyTheme(scriptSettings.themeMode);
+        }
     }
 });
+
+main().catch(err => console.error("[ExH] 主程式執行時發生未處理的錯誤:", err));

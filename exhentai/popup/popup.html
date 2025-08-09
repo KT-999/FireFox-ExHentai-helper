@@ -6,7 +6,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- 新增的帳號狀態區塊 -->
+        <!-- 帳號狀態區塊 -->
         <div id="auth-section" class="section">
             <!-- 此處內容由 popup.js 動態生成 -->
         </div>
@@ -16,6 +16,15 @@
         
         <div class="section">
             <h4>一般設定</h4>
+            <div class="setting">
+                <label for="enable-grid-view">以圖片方式預覽書籍：</label>
+                <input type="checkbox" id="enable-grid-view">
+            </div>
+            <!-- 新增的選項 -->
+            <div class="setting" id="grid-columns-setting" style="display: none;">
+                <label for="grid-columns">每行顯示數量：</label>
+                <input type="number" id="grid-columns" min="3" max="8" value="5">
+            </div>
             <div class="setting">
                 <label for="preload-count">預先載入數量 (單邊)：</label>
                 <input type="number" id="preload-count" min="1" max="10" value="3">
