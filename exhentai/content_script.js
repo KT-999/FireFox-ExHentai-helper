@@ -1,13 +1,14 @@
 /**
  * ExHentai 小幫手 - 內容腳本
  *
- * v2.0 功能：
+ * v2.1 功能：
+ * - 網格視圖增強：在卡片底部資訊列加入「語言標籤」。
  * - 網格視圖 UI (v2)：
  * - 根據使用者提供的結構，將評分星星移至類別標籤下方，單獨成行。
  * - 底部資訊列顯示完整的發布時間 (YYYY-MM-DD HH:mm)。
  */
 
-console.log("ExHentai 小幫手 v12.16 已成功載入！");
+console.log("ExHentai 小幫手 v2.1 已成功載入！");
 
 // --- 全域變數 ---
 const navigationContext = {
@@ -128,6 +129,11 @@ function injectGridViewCSS() {
             color: #aaa;
             margin-top: auto;
         }
+        .exh-grid-language {
+            font-style: italic;
+            opacity: 0.8;
+            text-transform: capitalize;
+        }
         .exh-grid-overlay {
             position: absolute;
             top: 0;
@@ -207,6 +213,8 @@ function transformToGridView() {
             const pagesDiv = row.querySelector('.gl4c div:last-child');
             const tagsContainer = row.querySelector('.gl3c > a > div:last-child');
             const dateDiv = row.querySelector('div[id^="posted_"]');
+            // **新增點**: 抓取語言標籤
+            const langTagDiv = row.querySelector('.gt[title^="language:"]');
 
             if (!linkA || !titleDiv || !thumbImg) return;
 
@@ -217,7 +225,9 @@ function transformToGridView() {
             const imgSrc = thumbImg.getAttribute('data-src') || thumbImg.src;
             const ratingStyleAttr = ratingDiv ? ratingDiv.getAttribute('style') : '';
             const pagesText = pagesDiv ? pagesDiv.textContent : '';
-            const dateText = dateDiv ? dateDiv.textContent : ''; // 獲取完整日期時間
+            const dateText = dateDiv ? dateDiv.textContent : '';
+            // **新增點**: 提取語言文字
+            const langText = langTagDiv ? langTagDiv.textContent : '';
 
             let categoryHTML = '';
             if (categoryDiv) {
@@ -239,6 +249,7 @@ function transformToGridView() {
                     <div class="ir" style="${ratingStyleAttr}"></div>
                     <div class="exh-grid-footer">
                         <span class="exh-grid-date">${dateText}</span>
+                        ${langText ? `<span class="exh-grid-language">${langText}</span>` : ''}
                         <span>${pagesText.replace(' pages', '')}p</span>
                     </div>
                 </div>
