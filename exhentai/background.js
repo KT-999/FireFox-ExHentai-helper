@@ -1,12 +1,13 @@
 /**
- * ExHentai 小幫手 - 背景腳本 (v2.0)
+ * ExHentai 小幫手 - 背景腳本 (v1.0)
  *
  * 功能：
- * - 新增 'clear_all_cache' 指令：提供手動清除所有圖庫快取的功能。
- * - 重構訊息監聽器：使用 async/await 全面非同步化，提高穩定性與可讀性。
+ * - 支援內容腳本的圖片與頁面索引快取。
+ * - 提供手動清除所有圖庫快取的功能。
+ * - 使用 async/await 全面非同步化，提高穩定性與可讀性。
  */
 
-console.log("ExHentai 小幫手背景腳本 v7.8 已啟動。");
+console.log("ExHentai 小幫手背景腳本 v1.0 已啟動。");
 
 const galleryCache = new Map();
 
@@ -72,6 +73,13 @@ browser.runtime.onMessage.addListener(async (message) => {
             };
         }
 
+        case 'get_specific_page_links': {
+            if (galleryData && galleryData.pages.has(message.pageIndex)) {
+                return { links: galleryData.pages.get(message.pageIndex) };
+            }
+            return { links: null };
+        }
+
         case 'cache_image':
             await handleCacheImage(message);
             return { success: true };
@@ -83,7 +91,6 @@ browser.runtime.onMessage.addListener(async (message) => {
             }
             return { success: true };
         
-        // **新增點**: 手動清除所有快取
         case 'clear_all_cache':
             const count = galleryCache.size;
             galleryCache.clear();

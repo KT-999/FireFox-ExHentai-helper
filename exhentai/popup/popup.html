@@ -20,13 +20,20 @@
                 <label for="enable-grid-view">以圖片方式預覽書籍：</label>
                 <input type="checkbox" id="enable-grid-view">
             </div>
-            <!-- 新增的選項 -->
             <div class="setting" id="grid-columns-setting" style="display: none;">
                 <label for="grid-columns">每行顯示數量：</label>
                 <input type="number" id="grid-columns" min="3" max="8" value="5">
             </div>
+             <div class="setting">
+                <label for="reader-mode">閱讀器模式：</label>
+                <select id="reader-mode">
+                    <option value="default">網頁預設模式</option>
+                    <option value="horizontal">翻頁模式 (預先載入)</option>
+                    <option value="vertical">垂直捲動模式</option>
+                </select>
+            </div>
             <div class="setting">
-                <label for="preload-count">預先載入數量 (單邊)：</label>
+                <label for="preload-count">預先載入數量 (翻頁模式)：</label>
                 <input type="number" id="preload-count" min="1" max="10" value="3">
             </div>
             <div class="setting">
@@ -34,11 +41,11 @@
                 <input type="number" id="cache-size" min="10" max="200" value="50">
             </div>
             <div class="setting">
-                <label for="fit-to-window">圖片適應視窗大小：</label>
+                <label for="fit-to-window">圖片適應視窗 (翻頁模式)：</label>
                 <input type="checkbox" id="fit-to-window">
             </div>
             <div class="setting">
-                <label for="hide-preview-bar">隱藏底部預覽列：</label>
+                <label for="hide-preview-bar">隱藏預覽列 (翻頁模式)：</label>
                 <input type="checkbox" id="hide-preview-bar">
             </div>
             <div class="setting">

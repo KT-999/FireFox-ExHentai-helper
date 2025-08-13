@@ -1,8 +1,6 @@
 /**
- * 處理彈出視窗的邏輯 (v2.0)：
- * - 新增網格視圖每行顯示數量的設定。
- * - 檢查與處理登入/登出。
- * - 提供開啟選項頁面與手動清除快取的功能。
+ * 處理彈出視窗的邏輯 (v1.0)：
+ * - 將閱讀模式設定改為下拉選單三選一。
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -17,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const statusMessage = document.getElementById('status-message');
         const enableGridViewCheckbox = document.getElementById('enable-grid-view');
         const gridColumnsSetting = document.getElementById('grid-columns-setting');
+        const readerModeSelect = document.getElementById('reader-mode');
 
         // --- 核心功能函式 ---
 
@@ -87,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const settings = {
                 enableGridView: document.getElementById('enable-grid-view').checked,
                 gridColumns: parseInt(document.getElementById('grid-columns').value, 10) || 5,
+                readerMode: readerModeSelect.value,
                 preloadCount: parseInt(document.getElementById('preload-count').value, 10) || 3,
                 cacheSize: parseInt(document.getElementById('cache-size').value, 10) || 50,
                 fitToWindow: document.getElementById('fit-to-window').checked,
@@ -109,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             browser.storage.local.get({ 
                 enableGridView: false,
                 gridColumns: 5,
+                readerMode: 'horizontal', // 預設為翻頁模式
                 preloadCount: 3, 
                 cacheSize: 50,
                 fitToWindow: true,
@@ -117,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }).then(result => {
                 enableGridViewCheckbox.checked = result.enableGridView;
                 document.getElementById('grid-columns').value = result.gridColumns;
+                readerModeSelect.value = result.readerMode;
                 document.getElementById('preload-count').value = result.preloadCount;
                 document.getElementById('cache-size').value = result.cacheSize;
                 document.getElementById('fit-to-window').checked = result.fitToWindow;
@@ -124,9 +126,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('theme-mode').value = result.themeMode;
                 
                 gridColumnsSetting.style.display = result.enableGridView ? 'flex' : 'none';
+                toggleReaderModeSettings(result.readerMode);
             }).catch(error => {
                 console.error('讀取設定時發生錯誤:', error);
             });
+        };
+        
+        const toggleReaderModeSettings = (mode) => {
+            const horizontalSettings = [
+                document.getElementById('preload-count').parentElement,
+                document.getElementById('fit-to-window').parentElement,
+                document.getElementById('hide-preview-bar').parentElement,
+            ];
+            if (mode === 'horizontal') {
+                horizontalSettings.forEach(el => el.style.display = 'flex');
+            } else {
+                horizontalSettings.forEach(el => el.style.display = 'none');
+            }
         };
 
         // --- 初始化執行 ---
@@ -136,6 +152,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- 事件監聽器綁定 ---
         enableGridViewCheckbox.addEventListener('change', (event) => {
             gridColumnsSetting.style.display = event.target.checked ? 'flex' : 'none';
+        });
+        
+        readerModeSelect.addEventListener('change', (event) => {
+            toggleReaderModeSettings(event.target.value);
         });
 
         document.getElementById('save-button').addEventListener('click', saveSettings);

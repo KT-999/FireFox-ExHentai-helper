@@ -1,8 +1,12 @@
 {
   "manifest_version": 3,
   "name": "ExHentai 小幫手",
-  "version": "2.0",
-  "description": "一個用於 exhentai.org 的輔助工具，可設定預載入圖片數量、主題模式並支援鍵盤操作。",
+  "version": "1.0",
+  "description": "一個用於 exhentai.org 的輔助工具，提供多種閱讀模式、網格預覽並支援鍵盤操作。",
+  "developer": {
+    "name": "KT-999",
+    "url": "https://github.com/KT-999/FireFox-ExHentai-helper"
+  },
   "icons": {
     "48": "icons/icon-48.png"
   },
@@ -32,5 +36,10 @@
       "matches": ["*://exhentai.org/*", "*://e-hentai.org/*"],
       "js": ["content_script.js"]
     }
-  ]
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ExHentai-helper@kenny"
+    }
+  }
 }

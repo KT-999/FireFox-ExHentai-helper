@@ -32,21 +32,38 @@ h4 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px; /* 在標籤和輸入框間增加間距 */
 }
 
 label {
     color: #555;
     margin-right: 10px;
     text-align: left;
+    flex-shrink: 0; /* 防止標籤文字被壓縮 */
 }
 
 input[type="number"], select {
-    width: 80px;
     padding: 5px;
     border: 1px solid #ccc;
     border-radius: 4px;
     text-align: center;
+    flex-shrink: 0; /* 防止輸入框被壓縮 */
 }
+
+/* 為數字輸入框設定固定寬度 */
+input[type="number"] {
+    width: 80px;
+}
+
+/* 讓 select 元素寬度自適應，但有一個最大寬度 */
+select {
+    width: auto;
+    flex-grow: 1; /* 允許元素佔用多餘空間 */
+    max-width: 190px; /* 設定最大寬度以保持排版美觀 */
+    text-align: left; /* 文字靠左對齊 */
+    padding-left: 8px;
+}
+
 
 input[type="checkbox"] {
     width: 18px;
