@@ -229,35 +229,86 @@ function transformToGridView() {
             const dateText = dateDiv ? dateDiv.textContent : '';
             const langText = langTagDiv ? langTagDiv.textContent : '';
 
-            let categoryHTML = '';
-            if (categoryDiv) {
-                categoryHTML = categoryDiv.outerHTML;
-            }
+            // --- 安全地建構 gridItem 內容 ---
             
-            let overlayTitleHTML = titleDiv ? `<div class="exh-overlay-title">${titleDiv.textContent}</div>` : '';
-            let overlayTagsHTML = tagsContainer ? `<div class="exh-overlay-tags">${tagsContainer.innerHTML}</div>` : '';
+            // 1. 縮圖連結
+            const thumbnailLink = document.createElement('div');
+            thumbnailLink.className = 'exh-grid-thumbnail-link';
+            const img = document.createElement('img');
+            img.src = imgSrc;
+            img.alt = titleDiv.textContent;
+            img.loading = 'lazy';
+            thumbnailLink.appendChild(img);
+            gridItem.appendChild(thumbnailLink);
 
-            gridItem.innerHTML = `
-                <div class="exh-grid-thumbnail-link">
-                    <img src="${imgSrc}" alt="${titleDiv.textContent}" loading="lazy">
-                </div>
-                <div class="exh-grid-info">
-                    <div>
-                        <div class="exh-grid-title">${titleDiv.textContent}</div>
-                        <div class="exh-grid-category-row">${categoryHTML}</div>
-                    </div>
-                    <div class="ir" style="${ratingStyleAttr}"></div>
-                    <div class="exh-grid-footer">
-                        <span class="exh-grid-date">${dateText}</span>
-                        ${langText ? `<span class="exh-grid-language">${langText}</span>` : ''}
-                        <span>${pagesText.replace(' pages', '')}p</span>
-                    </div>
-                </div>
-                <div class="exh-grid-overlay">
-                    ${overlayTitleHTML}
-                    ${overlayTagsHTML}
-                </div>
-            `;
+            // 2. 資訊區塊
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'exh-grid-info';
+
+            const infoTopDiv = document.createElement('div');
+            const titleEl = document.createElement('div');
+            titleEl.className = 'exh-grid-title';
+            titleEl.textContent = titleDiv.textContent;
+            infoTopDiv.appendChild(titleEl);
+
+            const categoryRow = document.createElement('div');
+            categoryRow.className = 'exh-grid-category-row';
+            if (categoryDiv) {
+                categoryRow.appendChild(categoryDiv.cloneNode(true));
+            }
+            infoTopDiv.appendChild(categoryRow);
+            infoDiv.appendChild(infoTopDiv);
+
+            if (ratingDiv) {
+                const ratingEl = document.createElement('div');
+                ratingEl.className = 'ir';
+                ratingEl.style.cssText = ratingStyleAttr;
+                infoDiv.appendChild(ratingEl);
+            }
+
+            const footerDiv = document.createElement('div');
+            footerDiv.className = 'exh-grid-footer';
+            
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'exh-grid-date';
+            dateSpan.textContent = dateText;
+            footerDiv.appendChild(dateSpan);
+
+            if (langText) {
+                const langSpan = document.createElement('span');
+                langSpan.className = 'exh-grid-language';
+                langSpan.textContent = langText;
+                footerDiv.appendChild(langSpan);
+            }
+
+            const pagesSpan = document.createElement('span');
+            pagesSpan.textContent = `${pagesText.replace(' pages', '')}p`;
+            footerDiv.appendChild(pagesSpan);
+
+            infoDiv.appendChild(footerDiv);
+            gridItem.appendChild(infoDiv);
+
+            // 3. 懸浮層
+            const overlayDiv = document.createElement('div');
+            overlayDiv.className = 'exh-grid-overlay';
+            
+            if (titleDiv) {
+                const overlayTitle = document.createElement('div');
+                overlayTitle.className = 'exh-overlay-title';
+                overlayTitle.textContent = titleDiv.textContent;
+                overlayDiv.appendChild(overlayTitle);
+            }
+
+            if (tagsContainer) {
+                const overlayTags = document.createElement('div');
+                overlayTags.className = 'exh-overlay-tags';
+                Array.from(tagsContainer.children).forEach(child => {
+                    overlayTags.appendChild(child.cloneNode(true));
+                });
+                overlayDiv.appendChild(overlayTags);
+            }
+            gridItem.appendChild(overlayDiv);
+
             gridContainer.appendChild(gridItem);
         } catch (e) {
             console.error('[ExH] 轉換單個項目到網格視圖時出錯:', e, row);
@@ -532,6 +583,35 @@ async function processLink(pageUrl, direction, preloadedPagesMap, galleryId, upd
     }
 }
 
+/**
+ * 安全地為圖片插槽設定錯誤訊息
+ * @param {HTMLElement} slot - 要設定錯誤訊息的元素
+ * @param {string} message - 主要錯誤訊息
+ * @param {string|null} pageIdentifier - (可選) 頁面標識符
+ */
+function setSlotError(slot, message, pageIdentifier) {
+    // 清除任何現有內容
+    while (slot.firstChild) {
+        slot.removeChild(slot.firstChild);
+    }
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.style.color = '#ff8a8a';
+    errorDiv.style.textAlign = 'center';
+
+    const text1 = document.createTextNode(message);
+    errorDiv.appendChild(text1);
+
+    if (pageIdentifier) {
+        const br = document.createElement('br');
+        const text2 = document.createTextNode(pageIdentifier);
+        errorDiv.appendChild(br);
+        errorDiv.appendChild(text2);
+    }
+    
+    slot.appendChild(errorDiv);
+}
+
 async function loadSlot(index) {
     if (index < 0 || index >= navigationContext.masterList.length) return;
     const slider = document.getElementById('exh-image-slider');
@@ -545,7 +625,7 @@ async function loadSlot(index) {
         if (!doc) throw new Error("無法解析頁面文檔。");
         let imgUrl = doc.getElementById('img')?.src;
         if (!imgUrl) {
-            slot.innerHTML = `<div style="color: #ff8a8a; text-align: center;">找不到圖片連結<br>${pageUrl.split('/').pop()}</div>`;
+            setSlotError(slot, '找不到圖片連結', pageUrl.split('/').pop());
             return;
         }
         while (slot.firstChild) slot.removeChild(slot.firstChild);
@@ -555,14 +635,14 @@ async function loadSlot(index) {
             img.onerror = null;
             const success = await reloadImageFromAPI(pageUrl, img);
             if (!success) {
-                slot.innerHTML = `<div style="color: #ff8a8a; text-align: center;">圖片重載失敗<br>${pageUrl.split('/').pop()}</div>`;
+                setSlotError(slot, '圖片重載失敗', pageUrl.split('/').pop());
             }
         };
         img.src = imgUrl;
         slot.appendChild(img);
     } catch (error) {
         console.error(`[ExH] 載入 slot ${index} (${pageUrl}) 時發生嚴重錯誤:`, error);
-        slot.innerHTML = `<div style="color: #ff8a8a; text-align: center;">載入時發生錯誤</div>`;
+        setSlotError(slot, '載入時發生錯誤', null);
     } finally {
         delete slot.dataset.loading;
     }
