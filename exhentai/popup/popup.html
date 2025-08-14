@@ -6,72 +6,99 @@
 </head>
 <body>
     <div class="container">
-        <!-- 帳號狀態區塊 -->
-        <div id="auth-section" class="section">
-            <!-- 此處內容由 popup.js 動態生成 -->
+        <!-- 頁籤導覽列 -->
+        <div class="tab-nav">
+            <button class="tab-btn active" data-tab="settings">設定</button>
+            <button class="tab-btn" data-tab="history">歷史紀錄</button>
         </div>
-        <hr id="auth-hr" style="display: none;">
 
-        <h3>ExHentai 小幫手設定</h3>
+        <!-- 頁籤內容 -->
+        <div class="tab-content">
+            <!-- 設定頁籤 -->
+            <div id="settings" class="tab-pane active">
+                <div id="auth-section" class="section">
+                    <!-- 此處內容由 popup.js 動態生成 -->
+                </div>
+                <hr id="auth-hr" style="display: none;">
+
+                <h3>ExHentai 小幫手設定</h3>
+                
+                <div class="section">
+                    <h4>一般設定</h4>
+                    <div class="setting">
+                        <label for="enable-grid-view">以圖片方式預覽書籍：</label>
+                        <input type="checkbox" id="enable-grid-view">
+                    </div>
+                    <div class="setting" id="grid-columns-setting" style="display: none;">
+                        <label for="grid-columns">每行顯示數量：</label>
+                        <input type="number" id="grid-columns" min="3" max="8" value="5">
+                    </div>
+                     <div class="setting">
+                        <label for="reader-mode">閱讀器模式：</label>
+                        <select id="reader-mode">
+                            <option value="default">網頁預設模式</option>
+                            <option value="horizontal">翻頁模式 (預先載入)</option>
+                            <option value="vertical">垂直捲動模式</option>
+                        </select>
+                    </div>
+                    <div class="setting">
+                        <label for="preload-count">預先載入數量 (翻頁模式)：</label>
+                        <input type="number" id="preload-count" min="1" max="10" value="3">
+                    </div>
+                    <div class="setting">
+                        <label for="cache-size">最高記憶頁數：</label>
+                        <input type="number" id="cache-size" min="10" max="200" value="50">
+                    </div>
+                    <!-- 新增：歷史紀錄數量設定 -->
+                    <div class="setting">
+                        <label for="max-history-count">歷史紀錄最高筆數：</label>
+                        <input type="number" id="max-history-count" min="10" max="1000" value="200">
+                    </div>
+                    <div class="setting">
+                        <label for="fit-to-window">圖片適應視窗 (翻頁模式)：</label>
+                        <input type="checkbox" id="fit-to-window">
+                    </div>
+                    <div class="setting">
+                        <label for="hide-preview-bar">隱藏預覽列 (翻頁模式)：</label>
+                        <input type="checkbox" id="hide-preview-bar">
+                    </div>
+                    <div class="setting">
+                        <label for="theme-mode">外觀主題：</label>
+                        <select id="theme-mode">
+                            <option value="system">跟隨系統</option>
+                            <option value="light">亮色模式</option>
+                            <option value="dark">深色模式</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="open-options-button" class="btn-secondary">設定快捷鍵</button>
+                    <button id="save-button">儲存設定</button>
+                </div>
+                <p id="status-message" class="status"></p>
         
-        <div class="section">
-            <h4>一般設定</h4>
-            <div class="setting">
-                <label for="enable-grid-view">以圖片方式預覽書籍：</label>
-                <input type="checkbox" id="enable-grid-view">
-            </div>
-            <div class="setting" id="grid-columns-setting" style="display: none;">
-                <label for="grid-columns">每行顯示數量：</label>
-                <input type="number" id="grid-columns" min="3" max="8" value="5">
-            </div>
-             <div class="setting">
-                <label for="reader-mode">閱讀器模式：</label>
-                <select id="reader-mode">
-                    <option value="default">網頁預設模式</option>
-                    <option value="horizontal">翻頁模式 (預先載入)</option>
-                    <option value="vertical">垂直捲動模式</option>
-                </select>
-            </div>
-            <div class="setting">
-                <label for="preload-count">預先載入數量 (翻頁模式)：</label>
-                <input type="number" id="preload-count" min="1" max="10" value="3">
-            </div>
-            <div class="setting">
-                <label for="cache-size">最高記憶頁數：</label>
-                <input type="number" id="cache-size" min="10" max="200" value="50">
-            </div>
-            <div class="setting">
-                <label for="fit-to-window">圖片適應視窗 (翻頁模式)：</label>
-                <input type="checkbox" id="fit-to-window">
-            </div>
-            <div class="setting">
-                <label for="hide-preview-bar">隱藏預覽列 (翻頁模式)：</label>
-                <input type="checkbox" id="hide-preview-bar">
-            </div>
-            <div class="setting">
-                <label for="theme-mode">外觀主題：</label>
-                <select id="theme-mode">
-                    <option value="system">跟隨系統</option>
-                    <option value="light">亮色模式</option>
-                    <option value="dark">深色模式</option>
-                </select>
-            </div>
-        </div>
+                <hr>
         
-        <div class="button-group">
-            <button id="open-options-button" class="btn-secondary">設定快捷鍵</button>
-            <button id="save-button">儲存設定</button>
-        </div>
-        <p id="status-message" class="status"></p>
-
-        <hr>
-
-        <div class="section">
-            <h4>進階操作</h4>
-            <div class="setting-description">
-                <p>如果遇到圖片載入問題或顯示錯誤，可以嘗試手動清除所有暫存資料。這將會清空所有已預載的圖片和頁面索引。</p>
+                <div class="section">
+                    <h4>進階操作</h4>
+                    <div class="setting-description">
+                        <p>如果遇到圖片載入問題或顯示錯誤，可以嘗試手動清除所有暫存資料。這將會清空所有已預載的圖片和頁面索引。</p>
+                    </div>
+                    <button id="clear-cache-button" class="btn-danger">清除所有快取</button>
+                </div>
             </div>
-            <button id="clear-cache-button" class="btn-danger">清除所有快取</button>
+
+            <!-- 歷史紀錄頁籤 -->
+            <div id="history" class="tab-pane">
+                <div class="history-header">
+                    <h3>瀏覽紀錄</h3>
+                    <button id="clear-history-button" class="btn-danger btn-small">清除紀錄</button>
+                </div>
+                <div id="history-list">
+                    <!-- 歷史紀錄將會動態插入此處 -->
+                </div>
+            </div>
         </div>
     </div>
     <script src="popup.js"></script>

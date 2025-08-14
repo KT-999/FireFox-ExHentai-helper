@@ -1,6 +1,10 @@
 /**
- * 處理彈出視窗的邏輯 (v1.0)：
- * - 將閱讀模式設定改為下拉選單三選一。
+ * 處理彈出視窗的邏輯 (v1.1)
+ * - 新增頁籤功能，分離設定與歷史紀錄。
+ * - 實作讀取、顯示、清除歷史紀錄的功能。
+ * - 新增歷史紀錄數量上限設定。
+ * - 新增單筆歷史紀錄刪除功能，並優化版面。
+ * - 更新語言標籤顯示位置。
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -16,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const enableGridViewCheckbox = document.getElementById('enable-grid-view');
         const gridColumnsSetting = document.getElementById('grid-columns-setting');
         const readerModeSelect = document.getElementById('reader-mode');
+        const historyListContainer = document.getElementById('history-list');
 
         // --- 核心功能函式 ---
 
@@ -89,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 readerMode: readerModeSelect.value,
                 preloadCount: parseInt(document.getElementById('preload-count').value, 10) || 3,
                 cacheSize: parseInt(document.getElementById('cache-size').value, 10) || 50,
+                maxHistoryCount: parseInt(document.getElementById('max-history-count').value, 10) || 200,
                 fitToWindow: document.getElementById('fit-to-window').checked,
                 hidePreviewBar: document.getElementById('hide-preview-bar').checked,
                 themeMode: document.getElementById('theme-mode').value,
@@ -109,9 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
             browser.storage.local.get({ 
                 enableGridView: false,
                 gridColumns: 5,
-                readerMode: 'horizontal', // 預設為翻頁模式
+                readerMode: 'horizontal',
                 preloadCount: 3, 
                 cacheSize: 50,
+                maxHistoryCount: 200,
                 fitToWindow: true,
                 hidePreviewBar: false,
                 themeMode: 'system',
@@ -121,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 readerModeSelect.value = result.readerMode;
                 document.getElementById('preload-count').value = result.preloadCount;
                 document.getElementById('cache-size').value = result.cacheSize;
+                document.getElementById('max-history-count').value = result.maxHistoryCount;
                 document.getElementById('fit-to-window').checked = result.fitToWindow;
                 document.getElementById('hide-preview-bar').checked = result.hidePreviewBar;
                 document.getElementById('theme-mode').value = result.themeMode;
@@ -145,9 +153,119 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        // --- 歷史紀錄功能 ---
+        const renderHistory = async () => {
+            const { history } = await browser.runtime.sendMessage({ type: 'get_history' });
+            historyListContainer.innerHTML = '';
+
+            if (!history || history.length === 0) {
+                historyListContainer.innerHTML = '<p class="empty-message">還沒有任何瀏覽紀錄。</p>';
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+            for (const item of history) {
+                const itemWrapper = document.createElement('div');
+                itemWrapper.className = 'history-item';
+                
+                const a = document.createElement('a');
+                a.className = 'history-item-link';
+                a.href = item.url;
+                a.target = '_blank';
+                a.title = item.title;
+
+                const img = document.createElement('img');
+                img.className = 'history-item-thumbnail';
+                img.src = item.thumbnailSrc;
+                img.alt = 'thumbnail';
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'history-item-info';
+
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'history-item-title';
+                titleDiv.textContent = item.title;
+                
+                const bottomRow = document.createElement('div');
+                bottomRow.className = 'history-item-bottom-row';
+
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'history-item-time';
+                timeDiv.textContent = new Date(item.timestamp).toLocaleString();
+                bottomRow.appendChild(timeDiv);
+                
+                if (item.language) {
+                    const langDiv = document.createElement('div');
+                    langDiv.className = 'history-item-language';
+                    langDiv.textContent = item.language;
+                    bottomRow.appendChild(langDiv);
+                }
+                
+                infoDiv.appendChild(titleDiv);
+                infoDiv.appendChild(bottomRow);
+                
+                a.appendChild(img);
+                a.appendChild(infoDiv);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'history-item-delete-btn';
+                deleteBtn.innerHTML = '&times;';
+                deleteBtn.title = '刪除此筆紀錄';
+                deleteBtn.dataset.url = item.url;
+
+                itemWrapper.appendChild(a);
+                itemWrapper.appendChild(deleteBtn);
+                fragment.appendChild(itemWrapper);
+            }
+            historyListContainer.appendChild(fragment);
+        };
+
+        const clearHistory = async () => {
+            await browser.runtime.sendMessage({ type: 'clear_history' });
+            await renderHistory();
+            statusMessage.textContent = '✅ 歷史紀錄已清除！';
+            statusMessage.style.color = '#28a745';
+            setTimeout(() => { statusMessage.textContent = ''; }, 2000);
+        };
+
+        const handleDeleteHistoryItem = async (e) => {
+            if (e.target.classList.contains('history-item-delete-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const urlToDelete = e.target.dataset.url;
+                if (urlToDelete) {
+                    await browser.runtime.sendMessage({ type: 'delete_history_item', url: urlToDelete });
+                    e.target.closest('.history-item').remove();
+                }
+            }
+        };
+
+        // --- 頁籤切換邏輯 ---
+        const setupTabs = () => {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    tabPanes.forEach(pane => pane.classList.remove('active'));
+                    const targetPane = document.getElementById(button.dataset.tab);
+                    targetPane.classList.add('active');
+
+                    if (button.dataset.tab === 'history') {
+                        renderHistory();
+                    }
+                });
+            });
+        };
+
         // --- 初始化執行 ---
         checkLoginStatus();
         loadSettings();
+        setupTabs();
 
         // --- 事件監聽器綁定 ---
         enableGridViewCheckbox.addEventListener('change', (event) => {
@@ -174,6 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 statusMessage.style.color = '#dc3545';
             });
         });
+        document.getElementById('clear-history-button').addEventListener('click', clearHistory);
+        historyListContainer.addEventListener('click', handleDeleteHistoryItem);
 
     } catch (e) {
         console.error("Popup 腳本發生嚴重錯誤:", e);

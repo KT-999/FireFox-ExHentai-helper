@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ExHentai 小幫手",
-  "version": "1.0",
+  "version": "1.1",
   "description": "一個用於 exhentai.org 的輔助工具，提供多種閱讀模式、網格預覽並支援鍵盤操作。",
   "developer": {
     "name": "KT-999",
@@ -35,6 +35,19 @@
     {
       "matches": ["*://exhentai.org/*", "*://e-hentai.org/*"],
       "js": ["content_script.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "modules/grid_view.js",
+        "modules/history.js",
+        "modules/reader.js",
+        "modules/reader_horizontal.js",
+        "modules/reader_vertical.js",
+        "modules/utils.js"
+      ],
+      "matches": ["*://exhentai.org/*", "*://e-hentai.org/*"]
     }
   ],
   "browser_specific_settings": {

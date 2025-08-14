@@ -1,11 +1,11 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    width: 360px;
+    width: 380px;
     padding: 15px;
     background-color: #f5f5f5;
     color: #333;
-    box-sizing: border-box; /* 新增此行以包含 padding 在寬度計算內 */
-    overflow-x: hidden; /* 強制隱藏橫向拉桿 */
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .container {
@@ -32,14 +32,14 @@ h4 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px; /* 在標籤和輸入框間增加間距 */
+    gap: 10px;
 }
 
 label {
     color: #555;
     margin-right: 10px;
     text-align: left;
-    flex-shrink: 0; /* 防止標籤文字被壓縮 */
+    flex-shrink: 0;
 }
 
 input[type="number"], select {
@@ -47,23 +47,20 @@ input[type="number"], select {
     border: 1px solid #ccc;
     border-radius: 4px;
     text-align: center;
-    flex-shrink: 0; /* 防止輸入框被壓縮 */
+    flex-shrink: 0;
 }
 
-/* 為數字輸入框設定固定寬度 */
 input[type="number"] {
     width: 80px;
 }
 
-/* 讓 select 元素寬度自適應，但有一個最大寬度 */
 select {
     width: auto;
-    flex-grow: 1; /* 允許元素佔用多餘空間 */
-    max-width: 190px; /* 設定最大寬度以保持排版美觀 */
-    text-align: left; /* 文字靠左對齊 */
+    flex-grow: 1;
+    max-width: 190px;
+    text-align: left;
     padding-left: 8px;
 }
-
 
 input[type="checkbox"] {
     width: 18px;
@@ -112,6 +109,13 @@ button.btn-danger:hover {
     background-color: #c82333;
 }
 
+button.btn-small {
+    padding: 5px 10px;
+    font-size: 12px;
+    width: auto;
+    margin-top: 0;
+}
+
 .status {
     margin-top: 15px;
     font-size: 12px;
@@ -134,7 +138,6 @@ hr {
     line-height: 1.4;
 }
 
-/* 帳號區塊樣式 */
 #auth-section {
     padding-bottom: 5px;
     margin-bottom: 0;
@@ -155,4 +158,163 @@ hr {
     width: 100%;
     margin-top: 5px;
     padding: 8px 15px;
+}
+
+/* --- 頁籤樣式 --- */
+.tab-nav {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    width: 50%;
+    border-radius: 0;
+    margin-top: 0;
+}
+
+.tab-btn:hover {
+    background-color: #eee;
+    color: #111;
+}
+
+.tab-btn.active {
+    color: #4a90e2;
+    border-bottom-color: #4a90e2;
+    font-weight: bold;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* --- 歷史紀錄樣式 --- */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#history-list {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 5px;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    transition: background-color 0.2s;
+}
+
+.history-item:hover {
+    background-color: #e9e9e9;
+}
+
+.history-item-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-grow: 1;
+    text-decoration: none;
+    color: inherit;
+    overflow: hidden;
+}
+
+.history-item-thumbnail {
+    width: 40px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+    background-color: #ccc;
+}
+
+.history-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.history-item-title {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+/* 新增：底部容器樣式 */
+.history-item-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-item-language {
+    font-size: 10px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #5a6268;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: capitalize;
+}
+
+.history-item-time {
+    font-size: 11px;
+    color: #777;
+    text-align: left;
+}
+
+#history-list .empty-message {
+    color: #888;
+    padding: 40px 0;
+    text-align: center;
+}
+
+.history-item-delete-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: none;
+    color: #aaa;
+    font-size: 20px;
+    line-height: 24px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 0;
+    flex-shrink: 0;
+    visibility: hidden;
+}
+
+.history-item:hover .history-item-delete-btn {
+    visibility: visible;
+}
+
+.history-item-delete-btn:hover {
+    background-color: #ddd;
+    color: #333;
 }
