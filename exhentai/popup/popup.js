@@ -1,10 +1,7 @@
 /**
- * 處理彈出視窗的邏輯 (v1.1)
- * - 新增頁籤功能，分離設定與歷史紀錄。
- * - 實作讀取、顯示、清除歷史紀錄的功能。
- * - 新增歷史紀錄數量上限設定。
- * - 新增單筆歷史紀錄刪除功能，並優化版面。
- * - 更新語言標籤顯示位置。
+ * 處理彈出視窗的邏輯 (v1.1.1)
+ * - 新增主題套用功能，使介面能動態切換亮/暗模式。
+ * - 整合頁籤、歷史紀錄、單筆刪除、數量上限等所有功能。
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,6 +18,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const gridColumnsSetting = document.getElementById('grid-columns-setting');
         const readerModeSelect = document.getElementById('reader-mode');
         const historyListContainer = document.getElementById('history-list');
+        const themeModeSelect = document.getElementById('theme-mode');
+
+        // --- 主題處理 ---
+        const applyTheme = (theme) => {
+            const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark-theme', isDark);
+        };
+        
+        // 監聽系統主題變化
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (themeModeSelect.value === 'system') {
+                applyTheme('system');
+            }
+        });
 
         // --- 核心功能函式 ---
 
@@ -131,10 +142,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('max-history-count').value = result.maxHistoryCount;
                 document.getElementById('fit-to-window').checked = result.fitToWindow;
                 document.getElementById('hide-preview-bar').checked = result.hidePreviewBar;
-                document.getElementById('theme-mode').value = result.themeMode;
+                themeModeSelect.value = result.themeMode;
                 
                 gridColumnsSetting.style.display = result.enableGridView ? 'flex' : 'none';
                 toggleReaderModeSettings(result.readerMode);
+
+                // 載入設定後立即套用主題
+                applyTheme(result.themeMode);
             }).catch(error => {
                 console.error('讀取設定時發生錯誤:', error);
             });
@@ -274,6 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         readerModeSelect.addEventListener('change', (event) => {
             toggleReaderModeSettings(event.target.value);
+        });
+
+        themeModeSelect.addEventListener('change', (event) => {
+            applyTheme(event.target.value);
         });
 
         document.getElementById('save-button').addEventListener('click', saveSettings);

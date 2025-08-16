@@ -1,5 +1,7 @@
 /**
- * 處理選項頁面的邏輯：儲存和讀取快捷鍵設定。
+ * 處理選項頁面的邏輯 (v1.1.1)
+ * - 儲存和讀取快捷鍵設定。
+ * - 新增主題套用功能。
  */
 const defaultKeys = {
     keyPrev: 'a',
@@ -7,8 +9,24 @@ const defaultKeys = {
     keyFit: 's',
     keyHide: 'q',
     keyExit: 'e',
-    keyClear: 'w', // 新增預設值
+    keyClear: 'w',
 };
+
+// --- 主題處理 ---
+const applyTheme = (theme) => {
+    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('dark-theme', isDark);
+};
+
+// 監聽系統主題變化
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    browser.storage.local.get({ themeMode: 'system' }).then(result => {
+        if (result.themeMode === 'system') {
+            applyTheme('system');
+        }
+    });
+});
+
 
 // 將 event.key 轉換為更易讀的顯示文字
 function formatKeyForDisplay(key) {
@@ -24,7 +42,7 @@ function saveKeySettings() {
         keyFit: document.getElementById('key-btn-fit').dataset.key || defaultKeys.keyFit,
         keyHide: document.getElementById('key-btn-hide').dataset.key || defaultKeys.keyHide,
         keyExit: document.getElementById('key-btn-exit').dataset.key || defaultKeys.keyExit,
-        keyClear: document.getElementById('key-btn-clear').dataset.key || defaultKeys.keyClear, // 新增儲存邏輯
+        keyClear: document.getElementById('key-btn-clear').dataset.key || defaultKeys.keyClear,
     };
 
     browser.storage.local.set(settings).then(() => {
@@ -38,9 +56,13 @@ function saveKeySettings() {
     });
 }
 
-function loadKeySettings() {
-    browser.storage.local.get(defaultKeys).then(result => {
-        // 更新按鈕列表以包含新的按鍵
+function loadSettings() {
+    // 現在同時讀取按鍵和主題設定
+    browser.storage.local.get({ ...defaultKeys, themeMode: 'system' }).then(result => {
+        // 載入主題
+        applyTheme(result.themeMode);
+
+        // 載入按鍵
         const keyButtons = [ 'prev', 'next', 'fit', 'hide', 'exit', 'clear' ];
         keyButtons.forEach(key => {
             const btn = document.getElementById(`key-btn-${key}`);
@@ -49,7 +71,7 @@ function loadKeySettings() {
             btn.textContent = formatKeyForDisplay(storedKey);
         });
     }).catch(error => {
-        console.error('讀取快捷鍵設定時發生錯誤:', error);
+        console.error('讀取設定時發生錯誤:', error);
     });
 }
 
@@ -97,7 +119,7 @@ function initKeyListeners() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadKeySettings();
+    loadSettings(); // 載入所有設定
     initKeyListeners();
 });
 document.getElementById('save-button').addEventListener('click', saveKeySettings);

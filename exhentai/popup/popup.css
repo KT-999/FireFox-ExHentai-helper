@@ -1,9 +1,41 @@
+:root {
+    --bg-color: #f5f5f5;
+    --text-color: #333;
+    --header-color: #111;
+    --label-color: #555;
+    --input-bg: #fff;
+    --input-border: #ccc;
+    --input-text: #333;
+    --hr-color: #ddd;
+    --hover-bg: #e9e9e9;
+    --tab-hover-bg: #eee;
+    --tab-active-color: #4a90e2;
+    --tab-inactive-color: #555;
+    --btn-danger-text: #fff;
+}
+
+html.dark-theme {
+    --bg-color: #2c2c2c;
+    --text-color: #e0e0e0;
+    --header-color: #f5f5f5;
+    --label-color: #b0b0b0;
+    --input-bg: #3a3a3a;
+    --input-border: #555;
+    --input-text: #e0e0e0;
+    --hr-color: #444;
+    --hover-bg: #404040;
+    --tab-hover-bg: #383838;
+    --tab-active-color: #5d9eff;
+    --tab-inactive-color: #b0b0b0;
+    --btn-danger-text: #f0f0f0;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     width: 380px;
     padding: 15px;
-    background-color: #f5f5f5;
-    color: #333;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     box-sizing: border-box;
     overflow-x: hidden;
 }
@@ -15,7 +47,7 @@ body {
 h3, h4 {
     margin-top: 0;
     margin-bottom: 15px;
-    color: #111;
+    color: var(--header-color);
 }
 
 h4 {
@@ -36,7 +68,7 @@ h4 {
 }
 
 label {
-    color: #555;
+    color: var(--label-color);
     margin-right: 10px;
     text-align: left;
     flex-shrink: 0;
@@ -44,7 +76,9 @@ label {
 
 input[type="number"], select {
     padding: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--input-text);
     border-radius: 4px;
     text-align: center;
     flex-shrink: 0;
@@ -102,6 +136,7 @@ button.btn-secondary:hover {
 
 button.btn-danger {
     background-color: #dc3545;
+    color: var(--btn-danger-text);
     margin-top: 10px;
 }
 
@@ -126,13 +161,13 @@ button.btn-small {
 
 hr {
     border: none;
-    border-top: 1px solid #ddd;
+    border-top: 1px solid var(--hr-color);
     margin: 25px 0 15px;
 }
 
 .setting-description p {
     font-size: 12px;
-    color: #666;
+    color: var(--label-color);
     text-align: left;
     margin: 0 0 10px 0;
     line-height: 1.4;
@@ -160,10 +195,9 @@ hr {
     padding: 8px 15px;
 }
 
-/* --- 頁籤樣式 --- */
 .tab-nav {
     display: flex;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--hr-color);
     margin-bottom: 15px;
 }
 
@@ -173,7 +207,7 @@ hr {
     padding: 10px 15px;
     cursor: pointer;
     font-size: 14px;
-    color: #555;
+    color: var(--tab-inactive-color);
     border-bottom: 3px solid transparent;
     margin-bottom: -1px;
     width: 50%;
@@ -182,13 +216,13 @@ hr {
 }
 
 .tab-btn:hover {
-    background-color: #eee;
-    color: #111;
+    background-color: var(--tab-hover-bg);
+    color: var(--text-color);
 }
 
 .tab-btn.active {
-    color: #4a90e2;
-    border-bottom-color: #4a90e2;
+    color: var(--tab-active-color);
+    border-bottom-color: var(--tab-active-color);
     font-weight: bold;
 }
 
@@ -200,7 +234,6 @@ hr {
     display: block;
 }
 
-/* --- 歷史紀錄樣式 --- */
 .history-header {
     display: flex;
     justify-content: space-between;
@@ -226,7 +259,7 @@ hr {
 }
 
 .history-item:hover {
-    background-color: #e9e9e9;
+    background-color: var(--hover-bg);
 }
 
 .history-item-link {
@@ -265,7 +298,6 @@ hr {
     text-align: left;
 }
 
-/* 新增：底部容器樣式 */
 .history-item-bottom-row {
     display: flex;
     justify-content: space-between;
@@ -284,12 +316,12 @@ hr {
 
 .history-item-time {
     font-size: 11px;
-    color: #777;
+    color: var(--label-color);
     text-align: left;
 }
 
 #history-list .empty-message {
-    color: #888;
+    color: var(--label-color);
     padding: 40px 0;
     text-align: center;
 }
@@ -317,4 +349,9 @@ hr {
 .history-item-delete-btn:hover {
     background-color: #ddd;
     color: #333;
+}
+
+html.dark-theme .history-item-delete-btn:hover {
+    background-color: #555;
+    color: #fff;
 }
