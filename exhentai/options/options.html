@@ -1,36 +1,35 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>ExHentai 小幫手設定</title>
+    <title data-i18n-title="optionsHeader"></title>
     <link rel="stylesheet" href="options.css">
 </head>
 <body>
     <div class="container">
-        <h3>快捷鍵設定</h3>
-        <p class="subtitle">點擊按鈕後按下按鍵以變更設定</p>
+        <h3 data-i18n="optionsHeader"></h3>
+        <p class="subtitle" data-i18n="optionsSubtitle"></p>
         <div class="key-setting-grid">
-            <label>上一頁</label>
+            <label data-i18n="keyPrev"></label>
             <button id="key-btn-prev" class="key-input-btn"></button>
             
-            <label>下一頁</label>
+            <label data-i18n="keyNext"></label>
             <button id="key-btn-next" class="key-input-btn"></button>
 
-            <label>切換縮放</label>
+            <label data-i18n="keyFit"></label>
             <button id="key-btn-fit" class="key-input-btn"></button>
 
-            <label>切換預覽列</label>
+            <label data-i18n="keyHide"></label>
             <button id="key-btn-hide" class="key-input-btn"></button>
 
-            <label>返回目錄</label>
+            <label data-i18n="keyExit"></label>
             <button id="key-btn-exit" class="key-input-btn"></button>
 
-            <!-- 新增的快捷鍵 -->
-            <label>清除快取</label>
+            <label data-i18n="keyClear"></label>
             <button id="key-btn-clear" class="key-input-btn"></button>
         </div>
         
-        <button id="save-button">儲存快捷鍵設定</button>
+        <button id="save-button" data-i18n="saveHotkeys"></button>
         <p id="status-message" class="status"></p>
     </div>
     <script src="options.js"></script>

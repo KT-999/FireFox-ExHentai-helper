@@ -1,15 +1,15 @@
 /**
- * ExHentai 小幫手 - 內容腳本 (v1.1 - 重構版)
+ * ExHentai 小幫手 - 內容腳本 (v1.2 - 重構版)
  *
  * 這個檔案是附加元件的主要進入點。
  * 它的職責是：
  * 1. 載入使用者設定。
- * 2. 判斷當前頁面類型（列表頁、閱讀頁、圖庫主頁）。
+ * 2. 判斷當前頁面類型（列表頁、閱讀頁、圖庫主頁、搜尋頁等）。
  * 3. 根據頁面類型，動態載入並執行對應的功能模組。
  * 4. 監聽設定變更並觸發頁面重載。
  */
 
-console.log("ExHentai 小幫手 v1.1 已啟動 (模組化)。");
+console.log("ExHentai 小幫手 v1.2 已啟動 (模組化)。");
 
 // --- 全域變數 (供各模組使用) ---
 window.navigationContext = {
@@ -48,22 +48,32 @@ async function main() {
     Object.assign(window.scriptSettings, settings);
 
     // 2. 判斷頁面類型
-    const isGalleryListPage = !!document.querySelector('table.itg.gltc');
     const isReaderPage = window.location.pathname.startsWith('/s/');
-    const isGalleryPage = window.location.pathname.startsWith('/g/');
+    const isSingleGalleryPage = window.location.pathname.match(/^\/g\/\d+\/[a-z0-9]+\/?$/);
+    const hasSearchBox = !!document.getElementById('searchbox');
+    const isGalleryListPage = !!document.querySelector('table.itg.gltc');
 
     // 3. 根據頁面類型，動態載入並執行對應的模組
     try {
-        if (isGalleryListPage && window.scriptSettings.enableGridView) {
-            const { initGridView } = await import(browser.runtime.getURL('modules/grid_view.js'));
-            initGridView();
-        } else if (isReaderPage) {
+        if (isReaderPage) {
             const { initReader } = await import(browser.runtime.getURL('modules/reader.js'));
             initReader();
-        } else if (isGalleryPage && !isGalleryListPage) {
+        } else if (isSingleGalleryPage) {
             const { initHistoryRecording } = await import(browser.runtime.getURL('modules/history.js'));
             initHistoryRecording();
         }
+
+        if (isGalleryListPage && window.scriptSettings.enableGridView) {
+            const { initGridView } = await import(browser.runtime.getURL('modules/grid_view.js'));
+            initGridView();
+        }
+
+        // 在所有包含搜尋框，但不是單一圖庫頁面的地方，載入搜尋增強器
+        if (hasSearchBox && !isSingleGalleryPage) {
+            const { initSearchEnhancer } = await import(browser.runtime.getURL('modules/search_enhancer.js'));
+            initSearchEnhancer();
+        }
+
     } catch (e) {
         console.error("[ExH] 載入模組時發生錯誤:", e);
     }
@@ -75,7 +85,6 @@ browser.storage.onChanged.addListener((changes, area) => {
         const isGalleryListPage = !!document.querySelector('table.itg.gltc');
         const isReaderPage = window.location.pathname.startsWith('/s/');
 
-        // 如果影響外觀的設定改變，則重載頁面以套用
         if ((changes.enableGridView || changes.gridColumns) && isGalleryListPage) {
             window.location.reload();
         }

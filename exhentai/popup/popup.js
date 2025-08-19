@@ -1,14 +1,33 @@
 /**
- * 處理彈出視窗的邏輯 (v1.1.1)
- * - 新增主題套用功能，使介面能動態切換亮/暗模式。
- * - 整合頁籤、歷史紀錄、單筆刪除、數量上限等所有功能。
+ * 處理彈出視窗的邏輯 (v1.2.1 - 版本更新)
+ * - 修正多語系功能，使其能根據儲存設定即時切換。
+ * - 登入狀態也套用多語系。
+ * - 修正：移除所有 innerHTML 的使用，改為安全的 DOM 操作以符合上架規範。
+ * - 修正：補上遺失的 getMessage 函式，修復書籤頁籤無法顯示的問題。
  */
+
+// --- 多語系處理 ---
+const localizePage = (messages) => {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const message = messages[key]?.message || key;
+        if (message) el.textContent = message;
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const key = el.getAttribute('data-i18n-title');
+        const message = messages[key]?.message || key;
+        if (message) el.title = message;
+    });
+};
+
 
 document.addEventListener('DOMContentLoaded', () => {
     try {
         // --- 常數定義 ---
         const EXHENTAI_URL = "https://exhentai.org";
         const LOGIN_URL = "https://forums.e-hentai.org/index.php?act=Login&CODE=00";
+        let messages = {}; // 用於儲存當前語言的文字
+        let initialLanguage; // 用於追蹤語言是否變更
 
         // --- UI 元素 ---
         const authSection = document.getElementById('auth-section');
@@ -18,7 +37,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const gridColumnsSetting = document.getElementById('grid-columns-setting');
         const readerModeSelect = document.getElementById('reader-mode');
         const historyListContainer = document.getElementById('history-list');
+        const tagListContainer = document.getElementById('tag-list');
         const themeModeSelect = document.getElementById('theme-mode');
+        const tagFilterSelect = document.getElementById('tag-filter-select');
+        const uiLanguageSelect = document.getElementById('ui-language');
+
+        // --- [修正] 補上遺失的 getMessage 函式 ---
+        const getMessage = (key) => messages[key]?.message || key;
+
+        // --- 安全的 DOM 清理函式 ---
+        const clearElement = (el) => {
+            while (el.firstChild) {
+                el.removeChild(el.firstChild);
+            }
+        };
 
         // --- 主題處理 ---
         const applyTheme = (theme) => {
@@ -26,34 +58,69 @@ document.addEventListener('DOMContentLoaded', () => {
             document.documentElement.classList.toggle('dark-theme', isDark);
         };
         
-        // 監聽系統主題變化
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
             if (themeModeSelect.value === 'system') {
                 applyTheme('system');
             }
         });
 
+        // --- 多語系載入 ---
+        const loadLocaleMessages = async () => {
+            const { uiLanguage = 'auto' } = await browser.storage.local.get('uiLanguage');
+            let lang = uiLanguage;
+            if (lang === 'auto') {
+                lang = browser.i18n.getUILanguage();
+            }
+            const locale = lang.replace('-', '_');
+            
+            try {
+                const response = await fetch(`/_locales/${locale}/messages.json`);
+                if (!response.ok) throw new Error('Locale not found, falling back to en');
+                messages = await response.json();
+            } catch (e) {
+                console.warn(e);
+                const response = await fetch('/_locales/en/messages.json');
+                messages = await response.json();
+            }
+            localizePage(messages);
+        };
+
         // --- 核心功能函式 ---
 
         const updateAuthUI = (isLoggedIn) => {
+            clearElement(authSection); // 安全地清空
             if (isLoggedIn) {
-                authSection.innerHTML = `
-                    <div class="auth-status-text">
-                        登入狀態：<span class="auth-username">已登入</span>
-                    </div>
-                    <button id="logout-button" class="btn-danger">登出</button>
-                `;
-                document.getElementById('logout-button').addEventListener('click', handleLogout);
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'auth-status-text';
+                statusDiv.textContent = messages['loginStatus']?.message || 'Login Status:';
+
+                const usernameSpan = document.createElement('span');
+                usernameSpan.className = 'auth-username';
+                usernameSpan.textContent = ` ${messages['loggedInStatus']?.message || 'Logged In'}`;
+                statusDiv.appendChild(usernameSpan);
+
+                const logoutButton = document.createElement('button');
+                logoutButton.id = 'logout-button';
+                logoutButton.className = 'btn-danger';
+                logoutButton.textContent = messages['logoutButton']?.message || 'Log Out';
+                logoutButton.addEventListener('click', handleLogout);
+                
+                authSection.appendChild(statusDiv);
+                authSection.appendChild(logoutButton);
             } else {
-                authSection.innerHTML = `
-                    <div class="auth-status-text">
-                        您似乎尚未登入。
-                    </div>
-                    <button id="login-button">前往登入頁面</button>
-                `;
-                document.getElementById('login-button').addEventListener('click', () => {
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'auth-status-text';
+                statusDiv.textContent = messages['loggedOutStatus']?.message || 'You are not logged in.';
+                
+                const loginButton = document.createElement('button');
+                loginButton.id = 'login-button';
+                loginButton.textContent = messages['loginButton']?.message || 'Go to Login Page';
+                loginButton.addEventListener('click', () => {
                     browser.tabs.create({ url: LOGIN_URL });
                 });
+
+                authSection.appendChild(statusDiv);
+                authSection.appendChild(loginButton);
             }
         };
         
@@ -85,7 +152,12 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const checkLoginStatus = async () => {
-            authSection.innerHTML = '<p class="auth-status-text">正在檢查登入狀態...</p>';
+            clearElement(authSection);
+            const p = document.createElement('p');
+            p.className = 'auth-status-text';
+            p.textContent = messages['checkingLoginStatus']?.message || 'Checking login status...';
+            authSection.appendChild(p);
+
             try {
                 const memberIdCookie = await browser.cookies.get({ url: EXHENTAI_URL, name: 'ipb_member_id' });
                 const isLoggedIn = !!(memberIdCookie && memberIdCookie.value && memberIdCookie.value !== '0');
@@ -93,12 +165,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 authHr.style.display = 'block';
             } catch (error) {
                 console.error("檢查登入狀態時出錯:", error);
-                authSection.innerHTML = '<p class="auth-status-text" style="color: red;">無法檢查登入狀態，請確認擴充功能權限。</p>';
+                clearElement(authSection);
+                const pError = document.createElement('p');
+                pError.className = 'auth-status-text';
+                pError.style.color = 'red';
+                pError.textContent = messages['loginStatusError']?.message || 'Could not check status.';
+                authSection.appendChild(pError);
                 authHr.style.display = 'block';
             }
         };
 
-        const saveSettings = () => {
+        const saveSettings = async () => {
             const settings = {
                 enableGridView: document.getElementById('enable-grid-view').checked,
                 gridColumns: parseInt(document.getElementById('grid-columns').value, 10) || 5,
@@ -109,21 +186,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 fitToWindow: document.getElementById('fit-to-window').checked,
                 hidePreviewBar: document.getElementById('hide-preview-bar').checked,
                 themeMode: document.getElementById('theme-mode').value,
+                uiLanguage: uiLanguageSelect.value
             };
 
-            browser.storage.local.set(settings).then(() => {
-                statusMessage.textContent = '✅ 設定已儲存！';
-                statusMessage.style.color = '#28a745';
-                setTimeout(() => { statusMessage.textContent = ''; }, 2000);
-            }).catch(error => {
-                console.error('儲存設定時發生錯誤:', error);
-                statusMessage.textContent = '❌ 儲存失敗！';
-                statusMessage.style.color = '#dc3545';
-            });
+            await browser.storage.local.set(settings);
+            
+            const languageChanged = initialLanguage !== settings.uiLanguage;
+            await loadLocaleMessages(); // 儲存後立即重新載入語言並更新UI
+
+            if (languageChanged) {
+                statusMessage.textContent = messages["saveSettingsSuccessLang"]?.message;
+            } else {
+                statusMessage.textContent = messages["saveSettingsSuccess"]?.message;
+            }
+            statusMessage.style.color = '#28a745';
+            setTimeout(() => { statusMessage.textContent = ''; }, 3000);
+            initialLanguage = settings.uiLanguage;
         };
 
-        const loadSettings = () => {
-            browser.storage.local.get({ 
+        const loadSettings = async () => {
+            const result = await browser.storage.local.get({ 
                 enableGridView: false,
                 gridColumns: 5,
                 readerMode: 'horizontal',
@@ -133,25 +215,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 fitToWindow: true,
                 hidePreviewBar: false,
                 themeMode: 'system',
-            }).then(result => {
-                enableGridViewCheckbox.checked = result.enableGridView;
-                document.getElementById('grid-columns').value = result.gridColumns;
-                readerModeSelect.value = result.readerMode;
-                document.getElementById('preload-count').value = result.preloadCount;
-                document.getElementById('cache-size').value = result.cacheSize;
-                document.getElementById('max-history-count').value = result.maxHistoryCount;
-                document.getElementById('fit-to-window').checked = result.fitToWindow;
-                document.getElementById('hide-preview-bar').checked = result.hidePreviewBar;
-                themeModeSelect.value = result.themeMode;
-                
-                gridColumnsSetting.style.display = result.enableGridView ? 'flex' : 'none';
-                toggleReaderModeSettings(result.readerMode);
-
-                // 載入設定後立即套用主題
-                applyTheme(result.themeMode);
-            }).catch(error => {
-                console.error('讀取設定時發生錯誤:', error);
+                uiLanguage: 'auto'
             });
+            enableGridViewCheckbox.checked = result.enableGridView;
+            document.getElementById('grid-columns').value = result.gridColumns;
+            readerModeSelect.value = result.readerMode;
+            document.getElementById('preload-count').value = result.preloadCount;
+            document.getElementById('cache-size').value = result.cacheSize;
+            document.getElementById('max-history-count').value = result.maxHistoryCount;
+            document.getElementById('fit-to-window').checked = result.fitToWindow;
+            document.getElementById('hide-preview-bar').checked = result.hidePreviewBar;
+            themeModeSelect.value = result.themeMode;
+            uiLanguageSelect.value = result.uiLanguage;
+            
+            initialLanguage = result.uiLanguage;
+            
+            gridColumnsSetting.style.display = result.enableGridView ? 'flex' : 'none';
+            toggleReaderModeSettings(result.readerMode);
+            applyTheme(result.themeMode);
         };
         
         const toggleReaderModeSettings = (mode) => {
@@ -167,13 +248,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        // --- 歷史紀錄功能 ---
         const renderHistory = async () => {
             const { history } = await browser.runtime.sendMessage({ type: 'get_history' });
-            historyListContainer.innerHTML = '';
+            clearElement(historyListContainer);
 
             if (!history || history.length === 0) {
-                historyListContainer.innerHTML = '<p class="empty-message">還沒有任何瀏覽紀錄。</p>';
+                const p = document.createElement('p');
+                p.className = 'empty-message';
+                p.textContent = getMessage("historyEmpty");
+                historyListContainer.appendChild(p);
                 return;
             }
 
@@ -223,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'history-item-delete-btn';
-                deleteBtn.innerHTML = '&times;';
+                deleteBtn.textContent = '×';
                 deleteBtn.title = '刪除此筆紀錄';
                 deleteBtn.dataset.url = item.url;
 
@@ -237,25 +320,126 @@ document.addEventListener('DOMContentLoaded', () => {
         const clearHistory = async () => {
             await browser.runtime.sendMessage({ type: 'clear_history' });
             await renderHistory();
-            statusMessage.textContent = '✅ 歷史紀錄已清除！';
-            statusMessage.style.color = '#28a745';
-            setTimeout(() => { statusMessage.textContent = ''; }, 2000);
         };
 
-        const handleDeleteHistoryItem = async (e) => {
-            if (e.target.classList.contains('history-item-delete-btn')) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const urlToDelete = e.target.dataset.url;
-                if (urlToDelete) {
-                    await browser.runtime.sendMessage({ type: 'delete_history_item', url: urlToDelete });
-                    e.target.closest('.history-item').remove();
-                }
+        const handleDeleteHistoryItem = async (deleteBtn) => {
+            const urlToDelete = deleteBtn.dataset.url;
+            if (urlToDelete) {
+                await browser.runtime.sendMessage({ type: 'delete_history_item', url: urlToDelete });
+                deleteBtn.closest('.history-item').remove();
             }
         };
 
-        // --- 頁籤切換邏輯 ---
+        const renderSavedTags = async () => {
+            const { tags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
+            
+            const categoryOrder = ['language', 'parody', 'group', 'artist'];
+            tags.sort((a, b) => {
+                const typeA = a.split(':')[0];
+                const typeB = b.split(':')[0];
+                const indexA = categoryOrder.indexOf(typeA);
+                const indexB = categoryOrder.indexOf(b);
+        
+                const orderA = indexA === -1 ? categoryOrder.length : indexA;
+                const orderB = indexB === -1 ? categoryOrder.length : indexB;
+        
+                if (orderA !== orderB) {
+                    return orderA - orderB;
+                }
+                return a.localeCompare(b);
+            });
+
+            const categories = [...new Set(tags.map(t => t.split(':')[0]))];
+            categories.sort((a, b) => {
+                const indexA = categoryOrder.indexOf(a);
+                const indexB = categoryOrder.indexOf(b);
+                const orderA = indexA === -1 ? categoryOrder.length : indexA;
+                const orderB = indexB === -1 ? categoryOrder.length : indexB;
+                if (orderA !== orderB) return orderA - orderB;
+                return a.localeCompare(b);
+            });
+
+            const currentFilter = tagFilterSelect.value;
+            clearElement(tagFilterSelect);
+            
+            const showAllOption = document.createElement('option');
+            showAllOption.value = 'all';
+            showAllOption.textContent = getMessage("filterShowAll");
+            tagFilterSelect.appendChild(showAllOption);
+
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                tagFilterSelect.appendChild(option);
+            });
+            tagFilterSelect.value = categories.includes(currentFilter) ? currentFilter : 'all';
+
+            const newFilter = tagFilterSelect.value;
+            const filteredTags = newFilter === 'all'
+                ? tags
+                : tags.filter(t => t.startsWith(newFilter + ':'));
+
+            clearElement(tagListContainer);
+            if (!filteredTags || filteredTags.length === 0) {
+                const p = document.createElement('p');
+                p.className = 'empty-message';
+                p.textContent = getMessage("bookmarksEmpty");
+                tagListContainer.appendChild(p);
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+            for (const tag of filteredTags) {
+                const parts = tag.split(':');
+                const type = parts[0];
+                const name = parts.slice(1).join(':');
+
+                const a = document.createElement('a');
+                a.className = 'tag-badge';
+                a.href = `https://exhentai.org/tag/${encodeURIComponent(tag).replace(/%20/g, '+')}`;
+                a.target = '_blank';
+                a.title = tag;
+
+                const validTypes = ['artist', 'group', 'parody', 'character', 'language'];
+                const colorType = validTypes.includes(type) ? type : 'other';
+                a.classList.add(`tag-badge--${colorType}`);
+
+                const typeSpan = document.createElement('span');
+                typeSpan.className = 'tag-badge-type';
+                typeSpan.textContent = type + ':';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'tag-badge-name';
+                nameSpan.textContent = name;
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'tag-badge-delete-btn';
+                deleteBtn.textContent = '×';
+                deleteBtn.title = '刪除此標籤';
+                deleteBtn.dataset.tag = tag;
+
+                a.appendChild(typeSpan);
+                a.appendChild(nameSpan);
+                a.appendChild(deleteBtn);
+                fragment.appendChild(a);
+            }
+            tagListContainer.appendChild(fragment);
+        };
+        
+        const handleClearTags = async () => {
+            await browser.runtime.sendMessage({ type: 'clear_saved_tags' });
+            await renderSavedTags();
+        };
+
+        const handleDeleteTagItem = async (deleteBtn) => {
+            const tagToDelete = deleteBtn.dataset.tag;
+            if (tagToDelete) {
+                await browser.runtime.sendMessage({ type: 'delete_saved_tag', tag: tagToDelete });
+                await renderSavedTags();
+            }
+        };
+
         const setupTabs = () => {
             const tabButtons = document.querySelectorAll('.tab-btn');
             const tabPanes = document.querySelectorAll('.tab-pane');
@@ -271,50 +455,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (button.dataset.tab === 'history') {
                         renderHistory();
+                    } else if (button.dataset.tab === 'bookmarks') {
+                        renderSavedTags();
                     }
                 });
             });
         };
 
-        // --- 初始化執行 ---
-        checkLoginStatus();
-        loadSettings();
-        setupTabs();
+        const initialize = async () => {
+            await loadLocaleMessages();
+            await loadSettings();
+            
+            checkLoginStatus();
+            setupTabs();
 
-        // --- 事件監聽器綁定 ---
-        enableGridViewCheckbox.addEventListener('change', (event) => {
-            gridColumnsSetting.style.display = event.target.checked ? 'flex' : 'none';
-        });
-        
-        readerModeSelect.addEventListener('change', (event) => {
-            toggleReaderModeSettings(event.target.value);
-        });
-
-        themeModeSelect.addEventListener('change', (event) => {
-            applyTheme(event.target.value);
-        });
-
-        document.getElementById('save-button').addEventListener('click', saveSettings);
-        document.getElementById('open-options-button').addEventListener('click', () => {
-            browser.runtime.openOptionsPage();
-        });
-        document.getElementById('clear-cache-button').addEventListener('click', () => {
-            browser.runtime.sendMessage({ type: 'clear_all_cache' }).then(response => {
-                if (response && response.success) {
-                    statusMessage.textContent = `✅ 已清除 ${response.clearedCount} 個圖庫的快取！`;
-                    statusMessage.style.color = '#28a745';
-                    setTimeout(() => { statusMessage.textContent = ''; }, 3000);
-                }
-            }).catch(error => {
-                statusMessage.textContent = '❌ 清除快取失敗！';
-                statusMessage.style.color = '#dc3545';
+            enableGridViewCheckbox.addEventListener('change', (event) => {
+                gridColumnsSetting.style.display = event.target.checked ? 'flex' : 'none';
             });
-        });
-        document.getElementById('clear-history-button').addEventListener('click', clearHistory);
-        historyListContainer.addEventListener('click', handleDeleteHistoryItem);
+            
+            readerModeSelect.addEventListener('change', (event) => {
+                toggleReaderModeSettings(event.target.value);
+            });
+
+            themeModeSelect.addEventListener('change', (event) => {
+                applyTheme(event.target.value);
+            });
+
+            uiLanguageSelect.addEventListener('change', saveSettings);
+
+            tagFilterSelect.addEventListener('change', renderSavedTags);
+
+            document.getElementById('save-button').addEventListener('click', saveSettings);
+            document.getElementById('open-options-button').addEventListener('click', () => {
+                browser.runtime.openOptionsPage();
+            });
+            document.getElementById('clear-cache-button').addEventListener('click', () => {
+                browser.runtime.sendMessage({ type: 'clear_all_cache' }).then(response => {
+                    if (response && response.success) {
+                        statusMessage.textContent = `✅ 已清除 ${response.clearedCount} 個圖庫的快取！`;
+                        statusMessage.style.color = '#28a745';
+                        setTimeout(() => { statusMessage.textContent = ''; }, 3000);
+                    }
+                });
+            });
+
+            document.getElementById('clear-history-button').addEventListener('click', clearHistory);
+            historyListContainer.addEventListener('click', (e) => {
+                const deleteBtn = e.target.closest('.history-item-delete-btn');
+                if (deleteBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDeleteHistoryItem(deleteBtn);
+                }
+            });
+
+            document.getElementById('clear-tags-button').addEventListener('click', handleClearTags);
+            tagListContainer.addEventListener('click', (e) => {
+                const deleteBtn = e.target.closest('.tag-badge-delete-btn');
+                if (deleteBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDeleteTagItem(deleteBtn);
+                }
+            });
+        };
+
+        initialize();
 
     } catch (e) {
         console.error("Popup 腳本發生嚴重錯誤:", e);
-        document.body.innerHTML = `<div style="padding: 10px; color: red; font-family: sans-serif;">擴充功能腳本發生嚴重錯誤，請按 F12 查看瀏覽器擴充功能的控制台以獲取詳細資訊。</div>`;
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = "padding: 10px; color: red; font-family: sans-serif;";
+        errorDiv.textContent = "擴充功能腳本發生嚴重錯誤，請按 F12 查看瀏覽器擴充功能的控制台以獲取詳細資訊。";
+        clearElement(document.body);
+        document.body.appendChild(errorDiv);
     }
 });

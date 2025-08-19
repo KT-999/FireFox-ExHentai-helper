@@ -1,8 +1,43 @@
 /**
- * 處理選項頁面的邏輯 (v1.1.1)
- * - 儲存和讀取快捷鍵設定。
- * - 新增主題套用功能。
+ * 處理選項頁面的邏輯 (v1.2)
+ * - 修正多語系功能，使其能根據儲存設定載入正確語言。
  */
+
+let messages = {};
+
+const getMessage = (key) => messages[key]?.message || key;
+
+const localizePage = () => {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = getMessage(key);
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const key = el.getAttribute('data-i18n-title');
+        el.title = getMessage(key);
+    });
+};
+
+const loadLocaleMessages = async () => {
+    const { uiLanguage = 'auto' } = await browser.storage.local.get('uiLanguage');
+    let lang = uiLanguage;
+    if (lang === 'auto') {
+        lang = browser.i18n.getUILanguage();
+    }
+    const locale = lang.replace('-', '_');
+    
+    try {
+        const response = await fetch(`/_locales/${locale}/messages.json`);
+        if (!response.ok) throw new Error('Locale not found, falling back to en');
+        messages = await response.json();
+    } catch (e) {
+        console.warn(e);
+        const response = await fetch('/_locales/en/messages.json');
+        messages = await response.json();
+    }
+    localizePage();
+};
+
 const defaultKeys = {
     keyPrev: 'a',
     keyNext: 'd',
@@ -12,13 +47,11 @@ const defaultKeys = {
     keyClear: 'w',
 };
 
-// --- 主題處理 ---
 const applyTheme = (theme) => {
     const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.toggle('dark-theme', isDark);
 };
 
-// 監聽系統主題變化
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
     browser.storage.local.get({ themeMode: 'system' }).then(result => {
         if (result.themeMode === 'system') {
@@ -27,8 +60,6 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e =
     });
 });
 
-
-// 將 event.key 轉換為更易讀的顯示文字
 function formatKeyForDisplay(key) {
     if (key === ' ') return 'Space';
     if (key === 'escape') return 'Esc';
@@ -47,22 +78,18 @@ function saveKeySettings() {
 
     browser.storage.local.set(settings).then(() => {
         const status = document.getElementById('status-message');
-        status.textContent = '✅ 快捷鍵設定已儲存！';
+        status.textContent = getMessage("saveSettingsSuccess");
         setTimeout(() => { status.textContent = ''; }, 2000);
     }).catch(error => {
         console.error('儲存快捷鍵設定時發生錯誤:', error);
         const status = document.getElementById('status-message');
-        status.textContent = '❌ 儲存失敗！';
+        status.textContent = getMessage("saveSettingsError");
     });
 }
 
 function loadSettings() {
-    // 現在同時讀取按鍵和主題設定
     browser.storage.local.get({ ...defaultKeys, themeMode: 'system' }).then(result => {
-        // 載入主題
         applyTheme(result.themeMode);
-
-        // 載入按鍵
         const keyButtons = [ 'prev', 'next', 'fit', 'hide', 'exit', 'clear' ];
         keyButtons.forEach(key => {
             const btn = document.getElementById(`key-btn-${key}`);
@@ -107,7 +134,7 @@ function initKeyListeners() {
             }
             listeningButton = btn;
             btn.classList.add('listening');
-            btn.textContent = '請按下按鍵...';
+            btn.textContent = '...';
         });
     });
 
@@ -118,8 +145,9 @@ function initKeyListeners() {
     }, false);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadSettings(); // 載入所有設定
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadLocaleMessages();
+    loadSettings(); 
     initKeyListeners();
 });
 document.getElementById('save-button').addEventListener('click', saveKeySettings);

@@ -1,0 +1,221 @@
+{
+  "extensionName": {
+    "message": "ExHentai Helper",
+    "description": "The name of the extension."
+  },
+  "extensionDescription": {
+    "message": "An assistant tool for exhentai.org, providing multiple reading modes, grid view, and keyboard support.",
+    "description": "The description of the extension."
+  },
+  "popupHeader": {
+    "message": "ExHentai Helper Settings",
+    "description": "Header for the popup settings."
+  },
+  "generalSettings": {
+    "message": "General Settings",
+    "description": "Sub-header for general settings."
+  },
+  "enableGridView": {
+    "message": "Enable Grid View for galleries:",
+    "description": "Label for grid view checkbox."
+  },
+  "gridColumns": {
+    "message": "Columns per row:",
+    "description": "Label for grid columns input."
+  },
+  "readerMode": {
+    "message": "Reader Mode:",
+    "description": "Label for reader mode select."
+  },
+  "readerModeDefault": {
+    "message": "Website Default",
+    "description": "Option for default reader mode."
+  },
+  "readerModeHorizontal": {
+    "message": "Horizontal (Preload)",
+    "description": "Option for horizontal reader mode."
+  },
+  "readerModeVertical": {
+    "message": "Vertical Scroll",
+    "description": "Option for vertical reader mode."
+  },
+  "preloadCount": {
+    "message": "Preload count (Horizontal):",
+    "description": "Label for preload count."
+  },
+  "cacheSize": {
+    "message": "Max cached pages:",
+    "description": "Label for cache size."
+  },
+  "maxHistoryCount": {
+    "message": "Max history items:",
+    "description": "Label for max history items."
+  },
+  "fitToWindow": {
+    "message": "Fit image to window (Horizontal):",
+    "description": "Label for fit to window."
+  },
+  "hidePreviewBar": {
+    "message": "Hide preview bar (Horizontal):",
+    "description": "Label for hide preview bar."
+  },
+  "themeMode": {
+    "message": "Appearance:",
+    "description": "Label for theme mode."
+  },
+  "themeSystem": {
+    "message": "Follow System",
+    "description": "Option for system theme."
+  },
+  "themeLight": {
+    "message": "Light Mode",
+    "description": "Option for light theme."
+  },
+  "themeDark": {
+    "message": "Dark Mode",
+    "description": "Option for dark theme."
+  },
+  "uiLanguage": {
+    "message": "UI Language:",
+    "description": "Label for UI language."
+  },
+  "langSystem": {
+    "message": "Auto (Browser)",
+    "description": "Option for auto language."
+  },
+  "langEN": {
+    "message": "English",
+    "description": "Option for English."
+  },
+  "langZH_TW": {
+    "message": "繁體中文",
+    "description": "Option for Traditional Chinese."
+  },
+  "openOptionsButton": {
+    "message": "Set Hotkeys",
+    "description": "Button to open options page."
+  },
+  "saveButton": {
+    "message": "Save Settings",
+    "description": "Button to save settings."
+  },
+  "saveSettingsSuccess": {
+    "message": "✅ Settings saved!",
+    "description": "Success message after saving settings."
+  },
+  "saveSettingsSuccessLang": {
+    "message": "✅ Language saved! Reopen to apply.",
+    "description": "Success message after changing language."
+  },
+  "saveSettingsError": {
+    "message": "❌ Save failed!",
+    "description": "Error message when saving settings fails."
+  },
+  "advancedOperations": {
+    "message": "Advanced Operations",
+    "description": "Sub-header for advanced operations."
+  },
+  "clearCacheDescription": {
+    "message": "If you encounter image loading issues or display errors, try clearing all cached data. This will remove all preloaded images and page indexes.",
+    "description": "Description for clear cache button."
+  },
+  "clearCacheButton": {
+    "message": "Clear All Cache",
+    "description": "Button to clear all cache."
+  },
+  "tabSettings": {
+    "message": "Settings",
+    "description": "Tab label for settings."
+  },
+  "tabHistory": {
+    "message": "History",
+    "description": "Tab label for history."
+  },
+  "tabBookmarks": {
+    "message": "Bookmarks",
+    "description": "Tab label for bookmarks."
+  },
+  "historyHeader": {
+    "message": "Browsing History",
+    "description": "Header for history tab."
+  },
+  "historyEmpty": {
+    "message": "No browsing history yet.",
+    "description": "Message shown when history is empty."
+  },
+  "clearHistoryButton": {
+    "message": "Clear History",
+    "description": "Button to clear history."
+  },
+  "bookmarksHeader": {
+    "message": "Saved Tags",
+    "description": "Header for bookmarks tab."
+  },
+  "bookmarksEmpty": {
+    "message": "No tags in this category.",
+    "description": "Message shown when bookmarks are empty for a category."
+  },
+  "clearBookmarksButton": {
+    "message": "Clear All",
+    "description": "Button to clear all bookmarks."
+  },
+  "filterByCategory": {
+    "message": "Filter by category:",
+    "description": "Label for tag filter."
+  },
+  "filterShowAll": {
+    "message": "Show All",
+    "description": "Option to show all tags."
+  },
+  "optionsHeader": {
+    "message": "Hotkey Settings",
+    "description": "Header for options page."
+  },
+  "optionsSubtitle": {
+    "message": "Click a button then press a key to change the binding",
+    "description": "Subtitle for options page."
+  },
+  "keyPrev": { "message": "Previous Page" },
+  "keyNext": { "message": "Next Page" },
+  "keyFit": { "message": "Toggle Fit" },
+  "keyHide": { "message": "Toggle Preview Bar" },
+  "keyExit": { "message": "Back to Gallery" },
+  "keyClear": { "message": "Clear Cache" },
+  "saveHotkeys": { "message": "Save Hotkeys" },
+  "contextMenuSaveTag": {
+    "message": "Save this tag",
+    "description": "Context menu item to save a tag."
+  },
+  "checkingLoginStatus": {
+    "message": "Checking login status...",
+    "description": "Text shown while checking login status."
+  },
+  "loginStatus": {
+    "message": "Login Status:",
+    "description": "Label for login status."
+  },
+  "loggedInStatus": {
+    "message": "Logged In",
+    "description": "Status when user is logged in."
+  },
+  "loggedOutStatus": {
+    "message": "You are not logged in.",
+    "description": "Status when user is not logged in."
+  },
+  "loginButton": {
+    "message": "Go to Login Page",
+    "description": "Button to go to login page."
+  },
+  "logoutButton": {
+    "message": "Log Out",
+    "description": "Button to log out."
+  },
+  "loginStatusError": {
+    "message": "Could not check login status. Please check extension permissions.",
+    "description": "Error message for login status check failure."
+  },
+  "toggleSavedTags": {
+    "message": "[Show/Hide Saved Tags]",
+    "description": "Link to toggle the saved tags bar on search pages."
+  }
+}

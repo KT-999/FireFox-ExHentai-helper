@@ -1,0 +1,221 @@
+{
+  "extensionName": {
+    "message": "ExHentai 小幫手",
+    "description": "擴充功能的名稱。"
+  },
+  "extensionDescription": {
+    "message": "一個用於 exhentai.org 的輔助工具，提供多種閱讀模式、網格預覽並支援鍵盤操作。",
+    "description": "擴充功能的描述。"
+  },
+  "popupHeader": {
+    "message": "ExHentai 小幫手設定",
+    "description": "彈出視窗的標題。"
+  },
+  "generalSettings": {
+    "message": "一般設定",
+    "description": "一般設定的副標題。"
+  },
+  "enableGridView": {
+    "message": "以圖片方式預覽書籍：",
+    "description": "網格預覽的標籤。"
+  },
+  "gridColumns": {
+    "message": "每行顯示數量：",
+    "description": "網格數量的標籤。"
+  },
+  "readerMode": {
+    "message": "閱讀器模式：",
+    "description": "閱讀器模式的標籤。"
+  },
+  "readerModeDefault": {
+    "message": "網頁預設模式",
+    "description": "預設閱讀模式選項。"
+  },
+  "readerModeHorizontal": {
+    "message": "翻頁模式 (預先載入)",
+    "description": "翻頁模式選項。"
+  },
+  "readerModeVertical": {
+    "message": "垂直捲動模式",
+    "description": "垂直捲動模式選項。"
+  },
+  "preloadCount": {
+    "message": "預先載入數量 (翻頁模式)：",
+    "description": "預載數量的標籤。"
+  },
+  "cacheSize": {
+    "message": "最高記憶頁數：",
+    "description": "快取大小的標籤。"
+  },
+  "maxHistoryCount": {
+    "message": "歷史紀錄最高筆數：",
+    "description": "歷史紀錄數量的標籤。"
+  },
+  "fitToWindow": {
+    "message": "圖片適應視窗 (翻頁模式)：",
+    "description": "圖片適應視窗的標籤。"
+  },
+  "hidePreviewBar": {
+    "message": "隱藏預覽列 (翻頁模式)：",
+    "description": "隱藏預覽列的標籤。"
+  },
+  "themeMode": {
+    "message": "外觀主題：",
+    "description": "外觀主題的標籤。"
+  },
+  "themeSystem": {
+    "message": "跟隨系統",
+    "description": "跟隨系統主題選項。"
+  },
+  "themeLight": {
+    "message": "亮色模式",
+    "description": "亮色模式選項。"
+  },
+  "themeDark": {
+    "message": "深色模式",
+    "description": "深色模式選項。"
+  },
+  "uiLanguage": {
+    "message": "UI 語言：",
+    "description": "UI 語言的標籤。"
+  },
+  "langSystem": {
+    "message": "自動 (瀏覽器)",
+    "description": "自動語言選項。"
+  },
+  "langEN": {
+    "message": "English",
+    "description": "英文選項。"
+  },
+  "langZH_TW": {
+    "message": "繁體中文",
+    "description": "繁體中文選項。"
+  },
+  "openOptionsButton": {
+    "message": "設定快捷鍵",
+    "description": "開啟設定頁面按鈕。"
+  },
+  "saveButton": {
+    "message": "儲存設定",
+    "description": "儲存設定按鈕。"
+  },
+  "saveSettingsSuccess": {
+    "message": "✅ 設定已儲存！",
+    "description": "儲存設定後的成功訊息。"
+  },
+  "saveSettingsSuccessLang": {
+    "message": "✅ 語言已儲存！請重新開啟以套用。",
+    "description": "變更語言後的成功訊息。"
+  },
+  "saveSettingsError": {
+    "message": "❌ 儲存失敗！",
+    "description": "儲存設定失敗的錯誤訊息。"
+  },
+  "advancedOperations": {
+    "message": "進階操作",
+    "description": "進階操作副標題。"
+  },
+  "clearCacheDescription": {
+    "message": "如果遇到圖片載入問題或顯示錯誤，可以嘗試手動清除所有暫存資料。這將會清空所有已預載的圖片和頁面索引。",
+    "description": "清除快取按鈕的描述。"
+  },
+  "clearCacheButton": {
+    "message": "清除所有快取",
+    "description": "清除快取按鈕。"
+  },
+  "tabSettings": {
+    "message": "設定",
+    "description": "設定頁籤標籤。"
+  },
+  "tabHistory": {
+    "message": "歷史紀錄",
+    "description": "歷史紀錄頁籤標籤。"
+  },
+  "tabBookmarks": {
+    "message": "書籤",
+    "description": "書籤頁籤標籤。"
+  },
+  "historyHeader": {
+    "message": "瀏覽紀錄",
+    "description": "歷史紀錄頁籤標題。"
+  },
+  "historyEmpty": {
+    "message": "還沒有任何瀏覽紀錄。",
+    "description": "歷史紀錄為空時顯示的訊息。"
+  },
+  "clearHistoryButton": {
+    "message": "清除紀錄",
+    "description": "清除歷史紀錄按鈕。"
+  },
+  "bookmarksHeader": {
+    "message": "已儲存標籤",
+    "description": "書籤頁籤標題。"
+  },
+  "bookmarksEmpty": {
+    "message": "沒有符合此類別的標籤。",
+    "description": "書籤為空時顯示的訊息。"
+  },
+  "clearBookmarksButton": {
+    "message": "清除全部",
+    "description": "清除書籤按鈕。"
+  },
+  "filterByCategory": {
+    "message": "篩選類別：",
+    "description": "標籤篩選器標籤。"
+  },
+  "filterShowAll": {
+    "message": "顯示全部",
+    "description": "顯示全部標籤選項。"
+  },
+  "optionsHeader": {
+    "message": "快捷鍵設定",
+    "description": "設定頁面標題。"
+  },
+  "optionsSubtitle": {
+    "message": "點擊按鈕後按下按鍵以變更設定",
+    "description": "設定頁面副標題。"
+  },
+  "keyPrev": { "message": "上一頁" },
+  "keyNext": { "message": "下一頁" },
+  "keyFit": { "message": "切換縮放" },
+  "keyHide": { "message": "切換預覽列" },
+  "keyExit": { "message": "返回目錄" },
+  "keyClear": { "message": "清除快取" },
+  "saveHotkeys": { "message": "儲存快捷鍵設定" },
+  "contextMenuSaveTag": {
+    "message": "儲存此標籤",
+    "description": "右鍵選單儲存標籤的選項。"
+  },
+  "checkingLoginStatus": {
+    "message": "正在檢查登入狀態...",
+    "description": "檢查登入狀態時顯示的文字。"
+  },
+  "loginStatus": {
+    "message": "登入狀態：",
+    "description": "登入狀態的標籤。"
+  },
+  "loggedInStatus": {
+    "message": "已登入",
+    "description": "使用者已登入時的狀態。"
+  },
+  "loggedOutStatus": {
+    "message": "您似乎尚未登入。",
+    "description": "使用者未登入時的狀態。"
+  },
+  "loginButton": {
+    "message": "前往登入頁面",
+    "description": "前往登入頁面的按鈕。"
+  },
+  "logoutButton": {
+    "message": "登出",
+    "description": "登出的按鈕。"
+  },
+  "loginStatusError": {
+    "message": "無法檢查登入狀態，請確認擴充功能權限。",
+    "description": "登入狀態檢查失敗的錯誤訊息。"
+  },
+  "toggleSavedTags": {
+    "message": "[顯示/隱藏 已儲存標籤]",
+    "description": "在搜尋頁面切換已儲存標籤列的連結。"
+  }
+}
