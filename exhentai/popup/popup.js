@@ -1,9 +1,10 @@
 /**
- * 處理彈出視窗的邏輯 (v1.2.1 - 版本更新)
+ * 處理彈出視窗的邏輯 (v1.2.2 - 日期格式修正)
  * - 修正多語系功能，使其能根據儲存設定即時切換。
  * - 登入狀態也套用多語系。
  * - 修正：移除所有 innerHTML 的使用，改為安全的 DOM 操作以符合上架規範。
  * - 修正：補上遺失的 getMessage 函式，修復書籤頁籤無法顯示的問題。
+ * - 修正：將歷史紀錄的時間改為統一的 24 小時制 (YYYY/MM/DD HH:mm:ss)，避免語系問題。
  */
 
 // --- 多語系處理 ---
@@ -42,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const tagFilterSelect = document.getElementById('tag-filter-select');
         const uiLanguageSelect = document.getElementById('ui-language');
 
-        // --- [修正] 補上遺失的 getMessage 函式 ---
         const getMessage = (key) => messages[key]?.message || key;
 
         // --- 安全的 DOM 清理函式 ---
@@ -50,6 +50,18 @@ document.addEventListener('DOMContentLoaded', () => {
             while (el.firstChild) {
                 el.removeChild(el.firstChild);
             }
+        };
+
+        // --- [新增] 日期格式化函式 ---
+        const formatTimestamp24h = (timestamp) => {
+            const date = new Date(timestamp);
+            const YYYY = date.getFullYear();
+            const MM = String(date.getMonth() + 1).padStart(2, '0');
+            const DD = String(date.getDate()).padStart(2, '0');
+            const HH = String(date.getHours()).padStart(2, '0');
+            const mm = String(date.getMinutes()).padStart(2, '0');
+            const ss = String(date.getSeconds()).padStart(2, '0');
+            return `${YYYY}/${MM}/${DD} ${HH}:${mm}:${ss}`;
         };
 
         // --- 主題處理 ---
@@ -288,7 +300,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const timeDiv = document.createElement('div');
                 timeDiv.className = 'history-item-time';
-                timeDiv.textContent = new Date(item.timestamp).toLocaleString();
+                // --- [修改] 使用新的 24 小時制格式化函式 ---
+                timeDiv.textContent = formatTimestamp24h(item.timestamp);
                 bottomRow.appendChild(timeDiv);
                 
                 if (item.language) {
