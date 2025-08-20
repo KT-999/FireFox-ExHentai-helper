@@ -1,11 +1,12 @@
 /**
- * 搜尋增強器模組 (v1.6 - 安全性修正)
+ * 搜尋增強器模組 (v1.7 - 查詢邏輯修正)
  * - 在搜尋框下方新增一個可顯示/隱藏的已儲存標籤列。
  * - 點擊標籤可將其加入搜尋框，並防止重複添加。
  * - 新增標籤分類篩選與排序功能。
  * - 重新設計UI以匹配網站主題。
  * - 新增多語系支援。
  * - 修正：移除 innerHTML 的使用，改為安全的 DOM 操作以符合上架規範。
+ * - 修正：正確處理帶有空格的標籤查詢語法 (例如 artist:"fujisaki hikari$")。
  */
 
 function injectCSS() {
@@ -87,6 +88,7 @@ function handleTagClick(event) {
     if (!tagText || !searchInput) return;
 
     const currentSearchValue = searchInput.value;
+    // 檢查標籤是否已存在於搜尋框中
     const escapedTagText = tagText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const tagRegex = new RegExp(`(^|\\s)("?${escapedTagText}"?\\$?)(\\s|$)`);
 
@@ -95,11 +97,30 @@ function handleTagClick(event) {
         return;
     }
 
-    let searchTerm = tagText;
-    if (searchTerm.includes(' ')) {
-        searchTerm = `"${searchTerm}"`;
+    // --- [修正] 正確處理帶有空格的標籤 ---
+    let searchTerm;
+    const colonIndex = tagText.indexOf(':');
+    
+    // 確保標籤格式正確 (包含一個冒號)
+    if (colonIndex > -1) {
+        const type = tagText.substring(0, colonIndex);
+        const value = tagText.substring(colonIndex + 1);
+
+        if (value.includes(' ')) {
+            // 如果值包含空格，則將值用引號括起來，並將 $ 放在引號內
+            searchTerm = `${type}:"${value}$"`;
+        } else {
+            // 如果值不含空格，則正常添加 $
+            searchTerm = `${tagText}$`;
+        }
+    } else {
+        // 對於沒有分類的標籤 (雖然不常見，但做個保護)
+        if (tagText.includes(' ')) {
+            searchTerm = `"${tagText}$"`;
+        } else {
+            searchTerm = `${tagText}$`;
+        }
     }
-    searchTerm += '$';
 
     if (searchInput.value.trim() === '') {
         searchInput.value = searchTerm;
