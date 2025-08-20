@@ -76,7 +76,7 @@
     "description": "深色模式選項。"
   },
   "uiLanguage": {
-    "message": "UI 語言：",
+    "message": "UI Language:",
     "description": "UI 語言的標籤。"
   },
   "langSystem": {
@@ -90,6 +90,10 @@
   "langZH_TW": {
     "message": "繁體中文",
     "description": "繁體中文選項。"
+  },
+  "langES": {
+    "message": "Español (西班牙文)",
+    "description": "西班牙文選項。"
   },
   "openOptionsButton": {
     "message": "設定快捷鍵",

@@ -1,0 +1,225 @@
+{
+  "extensionName": {
+    "message": "Asistente ExHentai",
+    "description": "El nombre de la extensión."
+  },
+  "extensionDescription": {
+    "message": "Una herramienta de asistencia para exhentai.org, que ofrece múltiples modos de lectura, vista de cuadrícula y soporte de teclado.",
+    "description": "La descripción de la extensión."
+  },
+  "popupHeader": {
+    "message": "Configuración del Asistente ExHentai",
+    "description": "Encabezado para la configuración emergente."
+  },
+  "generalSettings": {
+    "message": "Configuración General",
+    "description": "Sub-encabezado para la configuración general."
+  },
+  "enableGridView": {
+    "message": "Activar vista de cuadrícula para galerías:",
+    "description": "Etiqueta para la casilla de vista de cuadrícula."
+  },
+  "gridColumns": {
+    "message": "Columnas por fila:",
+    "description": "Etiqueta para la entrada de columnas de la cuadrícula."
+  },
+  "readerMode": {
+    "message": "Modo de Lector:",
+    "description": "Etiqueta para la selección del modo de lector."
+  },
+  "readerModeDefault": {
+    "message": "Predeterminado del Sitio Web",
+    "description": "Opción para el modo de lector predeterminado."
+  },
+  "readerModeHorizontal": {
+    "message": "Horizontal (Precarga)",
+    "description": "Opción para el modo de lector horizontal."
+  },
+  "readerModeVertical": {
+    "message": "Desplazamiento Vertical",
+    "description": "Opción para el modo de lector vertical."
+  },
+  "preloadCount": {
+    "message": "Cantidad de precarga (Horizontal):",
+    "description": "Etiqueta para la cantidad de precarga."
+  },
+  "cacheSize": {
+    "message": "Páginas máximas en caché:",
+    "description": "Etiqueta para el tamaño de la caché."
+  },
+  "maxHistoryCount": {
+    "message": "Entradas máximas en historial:",
+    "description": "Etiqueta para la cantidad de historial."
+  },
+  "fitToWindow": {
+    "message": "Ajustar imagen a la ventana (Horizontal):",
+    "description": "Etiqueta para ajustar a la ventana."
+  },
+  "hidePreviewBar": {
+    "message": "Ocultar barra de vista previa (Horizontal):",
+    "description": "Etiqueta para ocultar la barra de vista previa."
+  },
+  "themeMode": {
+    "message": "Tema de Apariencia:",
+    "description": "Etiqueta para el tema de apariencia."
+  },
+  "themeSystem": {
+    "message": "Seguir al sistema",
+    "description": "Opción de tema del sistema."
+  },
+  "themeLight": {
+    "message": "Modo Claro",
+    "description": "Opción de modo claro."
+  },
+  "themeDark": {
+    "message": "Modo Oscuro",
+    "description": "Opción de modo oscuro."
+  },
+  "uiLanguage": {
+    "message": "UI Language:",
+    "description": "Etiqueta para el idioma de la interfaz de usuario."
+  },
+  "langSystem": {
+    "message": "Automático (Navegador)",
+    "description": "Opción de idioma automático."
+  },
+  "langEN": {
+    "message": "English",
+    "description": "Opción de inglés."
+  },
+  "langZH_TW": {
+    "message": "繁體中文",
+    "description": "Opción de chino tradicional."
+  },
+  "langES": {
+    "message": "Español",
+    "description": "Opción de español."
+  },
+  "openOptionsButton": {
+    "message": "Configurar Teclas de Acceso Rápido",
+    "description": "Botón para abrir la página de opciones."
+  },
+  "saveButton": {
+    "message": "Guardar Configuración",
+    "description": "Botón para guardar la configuración."
+  },
+  "saveSettingsSuccess": {
+    "message": "✅ ¡Configuración guardada!",
+    "description": "Mensaje de éxito al guardar la configuración."
+  },
+  "saveSettingsSuccessLang": {
+    "message": "✅ ¡Idioma guardado! Por favor, vuelva a abrir para aplicar.",
+    "description": "Mensaje de éxito después de cambiar el idioma."
+  },
+  "saveSettingsError": {
+    "message": "❌ ¡Error al guardar!",
+    "description": "Mensaje de error al guardar la configuración."
+  },
+  "advancedOperations": {
+    "message": "Operaciones Avanzadas",
+    "description": "Sub-encabezado de operaciones avanzadas."
+  },
+  "clearCacheDescription": {
+    "message": "Si tiene problemas con la carga de imágenes o errores de visualización, intente borrar manualmente todos los datos en caché. Esto eliminará todas las imágenes y los índices de página precargados.",
+    "description": "Descripción del botón de borrar caché."
+  },
+  "clearCacheButton": {
+    "message": "Borrar Toda la Caché",
+    "description": "Botón para borrar la caché."
+  },
+  "tabSettings": {
+    "message": "Configuración",
+    "description": "Etiqueta de la pestaña de configuración."
+  },
+  "tabHistory": {
+    "message": "Historial",
+    "description": "Etiqueta de la pestaña de historial."
+  },
+  "tabBookmarks": {
+    "message": "Marcadores",
+    "description": "Etiqueta de la pestaña de marcadores."
+  },
+  "historyHeader": {
+    "message": "Historial de Navegación",
+    "description": "Encabezado de la pestaña de historial."
+  },
+  "historyEmpty": {
+    "message": "Aún no hay historial de navegación.",
+    "description": "Mensaje que se muestra cuando el historial está vacío."
+  },
+  "clearHistoryButton": {
+    "message": "Borrar Historial",
+    "description": "Botón para borrar el historial."
+  },
+  "bookmarksHeader": {
+    "message": "Etiquetas Guardadas",
+    "description": "Encabezado de la pestaña de marcadores."
+  },
+  "bookmarksEmpty": {
+    "message": "No hay etiquetas que coincidan con esta categoría.",
+    "description": "Mensaje que se muestra cuando los marcadores están vacíos."
+  },
+  "clearBookmarksButton": {
+    "message": "Borrar Todo",
+    "description": "Botón para borrar los marcadores."
+  },
+  "filterByCategory": {
+    "message": "Filtrar por categoría:",
+    "description": "Etiqueta para el filtro de etiquetas."
+  },
+  "filterShowAll": {
+    "message": "Mostrar Todo",
+    "description": "Opción para mostrar todas las etiquetas."
+  },
+  "optionsHeader": {
+    "message": "Configuración de Teclas de Acceso Rápido",
+    "description": "Encabezado de la página de opciones."
+  },
+  "optionsSubtitle": {
+    "message": "Haga clic en un botón y luego presione una tecla para cambiar la configuración",
+    "description": "Subtítulo de la página de opciones."
+  },
+  "keyPrev": { "message": "Página Anterior" },
+  "keyNext": { "message": "Página Siguiente" },
+  "keyFit": { "message": "Alternar Ajuste" },
+  "keyHide": { "message": "Alternar Barra de Vista Previa" },
+  "keyExit": { "message": "Volver a la Galería" },
+  "keyClear": { "message": "Borrar Caché" },
+  "saveHotkeys": { "message": "Guardar Teclas de Acceso Rápido" },
+  "contextMenuSaveTag": {
+    "message": "Guardar esta etiqueta",
+    "description": "Elemento del menú contextual para guardar una etiqueta."
+  },
+  "checkingLoginStatus": {
+    "message": "Comprobando estado de inicio de sesión...",
+    "description": "Texto que se muestra al comprobar el estado de inicio de sesión."
+  },
+  "loginStatus": {
+    "message": "Estado de Inicio de Sesión:",
+    "description": "Etiqueta para el estado de inicio de sesión."
+  },
+  "loggedInStatus": {
+    "message": "Sesión Iniciada",
+    "description": "Estado cuando el usuario ha iniciado sesión."
+  },
+  "loggedOutStatus": {
+    "message": "Parece que no ha iniciado sesión.",
+    "description": "Estado cuando el usuario no ha iniciado sesión."
+  },
+  "loginButton": {
+    "message": "Ir a la Página de Inicio de Sesión",
+    "description": "Botón para ir a la página de inicio de sesión."
+  },
+  "logoutButton": {
+    "message": "Cerrar Sesión",
+    "description": "Botón para cerrar sesión."
+  },
+  "loginStatusError": {
+    "message": "No se pudo comprobar el estado de inicio de sesión, verifique los permisos de la extensión.",
+    "description": "Mensaje de error al fallar la comprobación del estado de inicio de sesión."
+  },
+  "toggleSavedTags": {
+    "message": "[Mostrar/Ocultar Etiquetas Guardadas]",
+    "description": "Enlace para alternar la barra de etiquetas guardadas en la página de búsqueda."
+  }
+}

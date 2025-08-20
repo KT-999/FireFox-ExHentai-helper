@@ -48,8 +48,8 @@
     "description": "Label for cache size."
   },
   "maxHistoryCount": {
-    "message": "Max history items:",
-    "description": "Label for max history items."
+    "message": "Max history entries:",
+    "description": "Label for history count."
   },
   "fitToWindow": {
     "message": "Fit image to window (Horizontal):",
@@ -60,20 +60,20 @@
     "description": "Label for hide preview bar."
   },
   "themeMode": {
-    "message": "Appearance:",
-    "description": "Label for theme mode."
+    "message": "Appearance Theme:",
+    "description": "Label for appearance theme."
   },
   "themeSystem": {
     "message": "Follow System",
-    "description": "Option for system theme."
+    "description": "System theme option."
   },
   "themeLight": {
     "message": "Light Mode",
-    "description": "Option for light theme."
+    "description": "Light mode option."
   },
   "themeDark": {
     "message": "Dark Mode",
-    "description": "Option for dark theme."
+    "description": "Dark mode option."
   },
   "uiLanguage": {
     "message": "UI Language:",
@@ -81,18 +81,22 @@
   },
   "langSystem": {
     "message": "Auto (Browser)",
-    "description": "Option for auto language."
+    "description": "Auto language option."
   },
   "langEN": {
     "message": "English",
-    "description": "Option for English."
+    "description": "English option."
   },
   "langZH_TW": {
     "message": "繁體中文",
-    "description": "Option for Traditional Chinese."
+    "description": "Traditional Chinese option."
+  },
+  "langES": {
+    "message": "Español",
+    "description": "Spanish option."
   },
   "openOptionsButton": {
-    "message": "Set Hotkeys",
+    "message": "Configure Hotkeys",
     "description": "Button to open options page."
   },
   "saveButton": {
@@ -104,40 +108,40 @@
     "description": "Success message after saving settings."
   },
   "saveSettingsSuccessLang": {
-    "message": "✅ Language saved! Reopen to apply.",
+    "message": "✅ Language saved! Please reopen to apply.",
     "description": "Success message after changing language."
   },
   "saveSettingsError": {
     "message": "❌ Save failed!",
-    "description": "Error message when saving settings fails."
+    "description": "Error message on saving settings."
   },
   "advancedOperations": {
     "message": "Advanced Operations",
-    "description": "Sub-header for advanced operations."
+    "description": "Advanced operations sub-header."
   },
   "clearCacheDescription": {
-    "message": "If you encounter image loading issues or display errors, try clearing all cached data. This will remove all preloaded images and page indexes.",
+    "message": "If you encounter image loading issues or display errors, try manually clearing all cached data. This will clear all preloaded images and page indexes.",
     "description": "Description for clear cache button."
   },
   "clearCacheButton": {
     "message": "Clear All Cache",
-    "description": "Button to clear all cache."
+    "description": "Button to clear cache."
   },
   "tabSettings": {
     "message": "Settings",
-    "description": "Tab label for settings."
+    "description": "Settings tab label."
   },
   "tabHistory": {
     "message": "History",
-    "description": "Tab label for history."
+    "description": "History tab label."
   },
   "tabBookmarks": {
     "message": "Bookmarks",
-    "description": "Tab label for bookmarks."
+    "description": "Bookmarks tab label."
   },
   "historyHeader": {
     "message": "Browsing History",
-    "description": "Header for history tab."
+    "description": "History tab header."
   },
   "historyEmpty": {
     "message": "No browsing history yet.",
@@ -149,15 +153,15 @@
   },
   "bookmarksHeader": {
     "message": "Saved Tags",
-    "description": "Header for bookmarks tab."
+    "description": "Bookmarks tab header."
   },
   "bookmarksEmpty": {
-    "message": "No tags in this category.",
-    "description": "Message shown when bookmarks are empty for a category."
+    "message": "No tags match this category.",
+    "description": "Message shown when bookmarks are empty."
   },
   "clearBookmarksButton": {
     "message": "Clear All",
-    "description": "Button to clear all bookmarks."
+    "description": "Button to clear bookmarks."
   },
   "filterByCategory": {
     "message": "Filter by category:",
@@ -172,7 +176,7 @@
     "description": "Header for options page."
   },
   "optionsSubtitle": {
-    "message": "Click a button then press a key to change the binding",
+    "message": "Click a button then press a key to change the setting",
     "description": "Subtitle for options page."
   },
   "keyPrev": { "message": "Previous Page" },
@@ -211,11 +215,11 @@
     "description": "Button to log out."
   },
   "loginStatusError": {
-    "message": "Could not check login status. Please check extension permissions.",
-    "description": "Error message for login status check failure."
+    "message": "Could not check login status, please check extension permissions.",
+    "description": "Error message on login status check failure."
   },
   "toggleSavedTags": {
     "message": "[Show/Hide Saved Tags]",
-    "description": "Link to toggle the saved tags bar on search pages."
+    "description": "Link to toggle saved tags bar on search page."
   }
 }
