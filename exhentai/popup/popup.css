@@ -13,7 +13,7 @@
     --tab-inactive-color: #555;
     --btn-danger-text: #fff;
 
-    /* 新增：標籤顏色 */
+    /* 標籤顏色 */
     --tag-artist-bg: #f0e6ff;
     --tag-artist-text: #9333ea;
     --tag-group-bg: #dcfce7;
@@ -43,7 +43,7 @@ html.dark-theme {
     --tab-inactive-color: #b0b0b0;
     --btn-danger-text: #f0f0f0;
     
-    /* 新增：標籤顏色 (深色模式) */
+    /* 標籤顏色 (深色模式) */
     --tag-artist-bg: #4c2a7e;
     --tag-artist-text: #c084fc;
     --tag-group-bg: #14532d;
@@ -354,7 +354,7 @@ hr {
     text-align: center;
 }
 
-.history-item-delete-btn, .tag-item-delete-btn {
+.history-item-delete-btn {
     width: 24px;
     height: 24px;
     border: none;
@@ -384,78 +384,129 @@ html.dark-theme .history-item-delete-btn:hover {
     color: #fff;
 }
 
-/* --- 書籤 (標籤) 列表樣式 (重新設計) --- */
-#tag-list {
+/* --- 書籤 (標籤) 列表樣式 (版面配置更新) --- */
+.bookmarks-header {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 5px;
-}
-
-.tag-badge {
-    display: inline-flex;
+    justify-content: space-between;
     align-items: center;
-    border-radius: 6px;
+    margin-bottom: 10px;
+}
+.bookmarks-header-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+#tag-list {
+    display: block;
+    padding: 0;
+}
+
+.tag-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 4px 8px 12px; /* 增加左邊距給標記條 */
+    border-bottom: 1px solid var(--hr-color);
     font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+    position: relative; /* 為了標記條定位 */
+}
+.tag-item:last-child {
+    border-bottom: none;
+}
+
+/* 新增：彩色標記條 */
+.tag-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 18px;
+    border-radius: 2px;
+}
+
+/* 為不同類別設定標記條顏色 */
+.tag-item--artist::before { background-color: var(--tag-artist-text); }
+.tag-item--group::before { background-color: var(--tag-group-text); }
+.tag-item--parody::before { background-color: var(--tag-parody-text); }
+.tag-item--character::before { background-color: var(--tag-character-text); }
+.tag-item--language::before { background-color: var(--tag-language-text); }
+.tag-item--other::before { background-color: var(--tag-other-text); }
+
+
+.tag-item-names {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.tag-original-link {
+    color: inherit;
     text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+}
+.tag-original-link:hover {
+    text-decoration: underline;
+    color: var(--tab-active-color);
 }
 
-.tag-badge:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.tag-display-wrapper {
+    display: contents;
 }
 
-.tag-badge-type {
-    padding: 4px 6px;
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
-    opacity: 0.7;
+.tag-display-text {
+    color: var(--label-color);
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 2;
 }
 
-.tag-badge-name {
-    padding: 4px 8px;
+.tag-edit-input {
+    border: 1px solid var(--tab-active-color);
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    flex-grow: 1;
+    min-width: 50px;
 }
 
-.tag-badge-delete-btn {
+.tag-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.tag-item-btn {
     background: none;
     border: none;
-    color: inherit;
-    opacity: 0.5;
+    color: var(--label-color);
     cursor: pointer;
     padding: 4px;
-    margin-right: 4px;
     border-radius: 50%;
     line-height: 1;
+    width: 22px;
+    height: 22px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-
-.tag-badge-delete-btn:hover {
-    opacity: 1;
-    background-color: rgba(0,0,0,0.1);
+.tag-item-btn:hover {
+    color: var(--text-color);
+    background-color: var(--hover-bg);
 }
-
-/* 標籤顏色 */
-.tag-badge--artist { background-color: var(--tag-artist-bg); color: var(--tag-artist-text); }
-.tag-badge--artist .tag-badge-type { background-color: rgba(0,0,0,0.05); }
-
-.tag-badge--group { background-color: var(--tag-group-bg); color: var(--tag-group-text); }
-.tag-badge--group .tag-badge-type { background-color: rgba(0,0,0,0.05); }
-
-.tag-badge--parody { background-color: var(--tag-parody-bg); color: var(--tag-parody-text); }
-.tag-badge--parody .tag-badge-type { background-color: rgba(0,0,0,0.05); }
-
-.tag-badge--character { background-color: var(--tag-character-bg); color: var(--tag-character-text); }
-.tag-badge--character .tag-badge-type { background-color: rgba(0,0,0,0.05); }
-
-.tag-badge--language { background-color: var(--tag-language-bg); color: var(--tag-language-text); }
-.tag-badge--language .tag-badge-type { background-color: rgba(0,0,0,0.05); }
-
-/* 針對 female, male, other 等通用類別 */
-.tag-badge--other { background-color: var(--tag-other-bg); color: var(--tag-other-text); }
-.tag-badge--other .tag-badge-type { background-color: rgba(0,0,0,0.05); }
-
 
 .tag-filter-container {
     display: flex;
@@ -470,4 +521,48 @@ html.dark-theme .history-item-delete-btn:hover {
 
 #tag-filter-select {
     max-width: none;
+}
+
+/* --- Modal 樣式 --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+.modal-content {
+    background-color: var(--bg-color);
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 360px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--label-color);
+    cursor: pointer;
+}
+#export-textarea {
+    width: 100%;
+    height: 150px;
+    margin-top: 10px;
+    font-family: monospace;
+    font-size: 12px;
+    resize: vertical;
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border: 1px solid var(--input-border);
 }

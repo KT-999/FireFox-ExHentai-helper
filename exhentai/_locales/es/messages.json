@@ -221,5 +221,13 @@
   "toggleSavedTags": {
     "message": "[Mostrar/Ocultar Etiquetas Guardadas]",
     "description": "Enlace para alternar la barra de etiquetas guardadas en la página de búsqueda."
+  },
+  "exportButton": {
+    "message": "Exportar i18n",
+    "description": "Botón para exportar los nombres de las etiquetas personalizadas."
+  },
+  "exportModalHeader": {
+    "message": "Resultado de Exportación i18n",
+    "description": "Encabezado del modal de resultados de exportación."
   }
 }

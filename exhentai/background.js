@@ -1,30 +1,59 @@
 /**
- * ExHentai 小幫手 - 背景腳本 (v1.2 - 完整多語系修正)
+ * ExHentai 小幫手 - 背景腳本 (v1.2.5 - 資料遷移)
  *
- * 功能：
- * - 建立右鍵選單以儲存標籤 (支援多語系)。
- * - 處理標籤的儲存、讀取、清除邏輯。
- * - 處理快取與歷史紀錄功能。
- * - 提供 i18n 訊息給內容腳本。
- * - 修正：使右鍵選單能根據使用者設定的語言即時更新。
+ * - 新增：在擴充功能更新時，自動將舊版書籤資料遷移至新格式。
  * - 修正：使內容腳本 (如搜尋增強器) 也能獲取正確的翻譯。
+ * - 新增：將書籤儲存結構改為物件 {original, display}。
+ * - 新增：增加更新書籤顯示文字的邏輯。
  */
 
-console.log("ExHentai 小幫手背景腳本 v1.5 已啟動。");
+console.log("ExHentai 小幫手背景腳本 v1.9 已啟動。");
 
 const galleryCache = new Map();
 const HISTORY_STORAGE_KEY = 'viewingHistory';
 const SAVED_TAGS_KEY = 'savedTags';
 const CONTEXT_MENU_ID = "save-exh-tag";
+const MIGRATION_FLAG_KEY = 'tagsMigrated_v1_2_5'; // 用於標記新物件結構的遷移
 
-// --- 右鍵選單與多語系處理 ---
+// --- 資料遷移函式 ---
+async function migrateTagsData() {
+    try {
+        const { [SAVED_TAGS_KEY]: savedTags, [MIGRATION_FLAG_KEY]: migrated } = await browser.storage.local.get([SAVED_TAGS_KEY, MIGRATION_FLAG_KEY]);
 
-// 由於背景腳本的 i18n API 只會跟隨瀏覽器語言，
-// 我們需要手動載入對應的語言檔案來符合使用者的設定。
+        // 如果已經遷移過，或沒有書籤資料，則不執行
+        if (migrated || !savedTags || savedTags.length === 0) {
+            return;
+        }
+
+        // 檢查第一筆資料是否為舊格式 (string)
+        if (typeof savedTags[0] === 'string') {
+            console.log('[BG] 偵測到舊版書籤資料，開始進行遷移...');
+            const newTags = savedTags.map(tag => ({
+                original: tag,
+                display: tag
+            }));
+            
+            // 儲存新格式的資料，並設定遷移完成旗標
+            await browser.storage.local.set({
+                [SAVED_TAGS_KEY]: newTags,
+                [MIGRATION_FLAG_KEY]: true
+            });
+            console.log('[BG] 書籤資料已成功遷移至新格式。');
+        } else if (typeof savedTags[0] === 'object' && savedTags[0].hasOwnProperty('original')) {
+            // 資料已經是新格式，只需設定旗標，避免未來重複檢查
+            await browser.storage.local.set({ [MIGRATION_FLAG_KEY]: true });
+            console.log('[BG] 書籤資料已是新格式，無需遷移。');
+        }
+    } catch (error) {
+        console.error('[BG] 遷移書籤資料時發生錯誤:', error);
+    }
+}
+
+
+// --- 多語系處理 ---
 let messageCache = null;
 
 async function getLocalizedMessage(key) {
-    // 如果快取不存在，則重新載入語言檔案
     if (!messageCache) {
         try {
             const { uiLanguage = 'auto' } = await browser.storage.local.get('uiLanguage');
@@ -33,7 +62,6 @@ async function getLocalizedMessage(key) {
                 lang = browser.i18n.getUILanguage();
             }
             const locale = lang.replace('-', '_');
-            
             const response = await fetch(`/_locales/${locale}/messages.json`);
             if (!response.ok) throw new Error(`找不到語言檔案: ${locale}`);
             messageCache = await response.json();
@@ -46,48 +74,42 @@ async function getLocalizedMessage(key) {
     return messageCache[key]?.message || key;
 }
 
-// 更新右鍵選單標題的函式
 async function updateContextMenuTitle() {
     const title = await getLocalizedMessage("contextMenuSaveTag");
-    browser.contextMenus.update(CONTEXT_MENU_ID, {
-        title: title
-    });
+    browser.contextMenus.update(CONTEXT_MENU_ID, { title: title });
 }
 
 // --- 事件監聽器 ---
+browser.runtime.onInstalled.addListener(async (details) => {
+    // 在安裝或更新後，首先執行資料遷移
+    await migrateTagsData();
 
-// 附加元件安裝或更新時
-browser.runtime.onInstalled.addListener(() => {
     browser.contextMenus.create({
         id: CONTEXT_MENU_ID,
         title: "Saving tag...", 
         contexts: ["link"],
         documentUrlPatterns: ["*://exhentai.org/g/*", "*://e-hentai.org/g/*"]
     }, () => {
-        if (browser.runtime.lastError) {
-            console.log("右鍵選單已存在，將直接更新。");
-        }
+        if (browser.runtime.lastError) console.log("右鍵選單已存在，將直接更新。");
         messageCache = null; 
         updateContextMenuTitle();
     });
 });
 
-// 瀏覽器啟動時
-browser.runtime.onStartup.addListener(() => {
+browser.runtime.onStartup.addListener(async () => {
+    // 瀏覽器啟動時也檢查一次，確保遷移成功
+    await migrateTagsData();
     messageCache = null; 
     updateContextMenuTitle();
 });
 
-// 當使用者在 popup 中更改語言設定時
 browser.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.uiLanguage) {
-        messageCache = null; // 使快取失效，下次將重新載入
+        messageCache = null;
         updateContextMenuTitle();
     }
 });
 
-
-// --- 右鍵選單點擊事件監聽 ---
 browser.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId === CONTEXT_MENU_ID && info.linkUrl) {
         const url = new URL(info.linkUrl);
@@ -97,6 +119,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
         }
     }
 });
+
 
 async function handleCacheImage(message) {
     const { galleryId, pageUrl, imageUrl } = message;
@@ -171,14 +194,14 @@ async function deleteHistoryItem(url) {
     }
 }
 
-// --- 標籤處理函式 ---
+// --- 書籤 (標籤) 處理函式 ---
 async function addTag(tagString) {
     try {
         const data = await browser.storage.local.get({ [SAVED_TAGS_KEY]: [] });
         let savedTags = data[SAVED_TAGS_KEY];
         
-        if (!savedTags.includes(tagString)) {
-            savedTags.push(tagString);
+        if (!savedTags.some(t => t.original === tagString)) {
+            savedTags.push({ original: tagString, display: tagString });
             await browser.storage.local.set({ [SAVED_TAGS_KEY]: savedTags });
             console.log(`[BG] 已儲存標籤: ${tagString}`);
         } else {
@@ -276,24 +299,35 @@ browser.runtime.onMessage.addListener(async (message) => {
         case 'delete_history_item':
             return await deleteHistoryItem(message.url);
 
-        case 'get_saved_tags':
+        case 'get_saved_tags': {
             const tagsData = await browser.storage.local.get({ [SAVED_TAGS_KEY]: [] });
             return { tags: tagsData[SAVED_TAGS_KEY] };
-
-        case 'delete_saved_tag':
+        }
+        case 'delete_saved_tag': {
             const tagData = await browser.storage.local.get({ [SAVED_TAGS_KEY]: [] });
             let tags = tagData[SAVED_TAGS_KEY];
-            const newTags = tags.filter(t => t !== message.tag);
+            const newTags = tags.filter(t => t.original !== message.tagOriginal);
             await browser.storage.local.set({ [SAVED_TAGS_KEY]: newTags });
             return { success: true };
-
-        case 'clear_saved_tags':
+        }
+        case 'update_saved_tag': {
+            const { original, display } = message.tag;
+            const tagData = await browser.storage.local.get({ [SAVED_TAGS_KEY]: [] });
+            let tags = tagData[SAVED_TAGS_KEY];
+            const tagIndex = tags.findIndex(t => t.original === original);
+            if (tagIndex > -1) {
+                tags[tagIndex].display = display;
+                await browser.storage.local.set({ [SAVED_TAGS_KEY]: tags });
+                return { success: true };
+            }
+            return { success: false, error: 'Tag not found' };
+        }
+        case 'clear_saved_tags': {
             await browser.storage.local.remove(SAVED_TAGS_KEY);
             return { success: true };
-        
+        }
         case 'get_i18n_messages': {
             const messages = {};
-            // 每次都清除快取，以確保內容腳本在語言變更後能拿到最新的翻譯
             messageCache = null; 
             for (const key of message.keys) {
                 messages[key] = await getLocalizedMessage(key);

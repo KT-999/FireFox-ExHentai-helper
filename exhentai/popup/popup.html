@@ -105,9 +105,12 @@
             </div>
 
             <div id="bookmarks" class="tab-pane">
-                <div class="history-header">
+                <div class="bookmarks-header">
                     <h3 data-i18n="bookmarksHeader"></h3>
-                    <button id="clear-tags-button" class="btn-danger btn-small" data-i18n="clearBookmarksButton"></button>
+                    <div class="bookmarks-header-buttons">
+                        <button id="export-tags-button" class="btn-secondary btn-small" data-i18n="exportButton"></button>
+                        <button id="clear-tags-button" class="btn-danger btn-small" data-i18n="clearBookmarksButton"></button>
+                    </div>
                 </div>
                 <div class="tag-filter-container">
                     <label for="tag-filter-select" data-i18n="filterByCategory"></label>
@@ -119,6 +122,16 @@
             </div>
         </div>
     </div>
+
+    <!-- 匯出結果 Modal -->
+    <div id="export-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button id="close-modal-button" class="modal-close-btn">&times;</button>
+            <h4 data-i18n="exportModalHeader"></h4>
+            <textarea id="export-textarea" readonly></textarea>
+        </div>
+    </div>
+
     <script src="popup.js"></script>
 </body>
 </html>

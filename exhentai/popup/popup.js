@@ -1,10 +1,10 @@
 /**
- * 處理彈出視窗的邏輯 (v1.2.2 - 日期格式修正)
- * - 修正多語系功能，使其能根據儲存設定即時切換。
- * - 登入狀態也套用多語系。
- * - 修正：移除所有 innerHTML 的使用，改為安全的 DOM 操作以符合上架規範。
- * - 修正：補上遺失的 getMessage 函式，修復書籤頁籤無法顯示的問題。
- * - 修正：將歷史紀錄的時間改為統一的 24 小時制 (YYYY/MM/DD HH:mm:ss)，避免語系問題。
+ * 處理彈出視窗的邏輯 (v1.2.5 - 書籤顏色更新)
+ * - 新增：允許使用者自訂書籤的顯示文字。
+ * - 新增：提供 i18n 格式的匯出功能。
+ * - 修正：將歷史紀錄的時間改為統一的 24 小時制 (YYYY/MM/DD HH:mm:ss)。
+ * - 更新：將書籤列表改為單列清單佈局，並調整顯示順序。
+ * - 更新：在單列清單佈局中重新加入類別顏色標記。
  */
 
 // --- 多語系處理 ---
@@ -27,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- 常數定義 ---
         const EXHENTAI_URL = "https://exhentai.org";
         const LOGIN_URL = "https://forums.e-hentai.org/index.php?act=Login&CODE=00";
-        let messages = {}; // 用於儲存當前語言的文字
-        let initialLanguage; // 用於追蹤語言是否變更
+        let messages = {};
+        let initialLanguage;
 
         // --- UI 元素 ---
         const authSection = document.getElementById('auth-section');
@@ -45,14 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const getMessage = (key) => messages[key]?.message || key;
 
-        // --- 安全的 DOM 清理函式 ---
         const clearElement = (el) => {
             while (el.firstChild) {
                 el.removeChild(el.firstChild);
             }
         };
 
-        // --- [新增] 日期格式化函式 ---
         const formatTimestamp24h = (timestamp) => {
             const date = new Date(timestamp);
             const YYYY = date.getFullYear();
@@ -64,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return `${YYYY}/${MM}/${DD} ${HH}:${mm}:${ss}`;
         };
 
-        // --- 主題處理 ---
         const applyTheme = (theme) => {
             const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
             document.documentElement.classList.toggle('dark-theme', isDark);
@@ -76,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // --- 多語系載入 ---
         const loadLocaleMessages = async () => {
             const { uiLanguage = 'auto' } = await browser.storage.local.get('uiLanguage');
             let lang = uiLanguage;
@@ -97,24 +93,22 @@ document.addEventListener('DOMContentLoaded', () => {
             localizePage(messages);
         };
 
-        // --- 核心功能函式 ---
-
         const updateAuthUI = (isLoggedIn) => {
-            clearElement(authSection); // 安全地清空
+            clearElement(authSection);
             if (isLoggedIn) {
                 const statusDiv = document.createElement('div');
                 statusDiv.className = 'auth-status-text';
-                statusDiv.textContent = messages['loginStatus']?.message || 'Login Status:';
+                statusDiv.textContent = getMessage('loginStatus');
 
                 const usernameSpan = document.createElement('span');
                 usernameSpan.className = 'auth-username';
-                usernameSpan.textContent = ` ${messages['loggedInStatus']?.message || 'Logged In'}`;
+                usernameSpan.textContent = ` ${getMessage('loggedInStatus')}`;
                 statusDiv.appendChild(usernameSpan);
 
                 const logoutButton = document.createElement('button');
                 logoutButton.id = 'logout-button';
                 logoutButton.className = 'btn-danger';
-                logoutButton.textContent = messages['logoutButton']?.message || 'Log Out';
+                logoutButton.textContent = getMessage('logoutButton');
                 logoutButton.addEventListener('click', handleLogout);
                 
                 authSection.appendChild(statusDiv);
@@ -122,11 +116,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const statusDiv = document.createElement('div');
                 statusDiv.className = 'auth-status-text';
-                statusDiv.textContent = messages['loggedOutStatus']?.message || 'You are not logged in.';
+                statusDiv.textContent = getMessage('loggedOutStatus');
                 
                 const loginButton = document.createElement('button');
                 loginButton.id = 'login-button';
-                loginButton.textContent = messages['loginButton']?.message || 'Go to Login Page';
+                loginButton.textContent = getMessage('loginButton');
                 loginButton.addEventListener('click', () => {
                     browser.tabs.create({ url: LOGIN_URL });
                 });
@@ -167,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             clearElement(authSection);
             const p = document.createElement('p');
             p.className = 'auth-status-text';
-            p.textContent = messages['checkingLoginStatus']?.message || 'Checking login status...';
+            p.textContent = getMessage('checkingLoginStatus');
             authSection.appendChild(p);
 
             try {
@@ -181,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pError = document.createElement('p');
                 pError.className = 'auth-status-text';
                 pError.style.color = 'red';
-                pError.textContent = messages['loginStatusError']?.message || 'Could not check status.';
+                pError.textContent = getMessage('loginStatusError');
                 authSection.appendChild(pError);
                 authHr.style.display = 'block';
             }
@@ -204,12 +198,12 @@ document.addEventListener('DOMContentLoaded', () => {
             await browser.storage.local.set(settings);
             
             const languageChanged = initialLanguage !== settings.uiLanguage;
-            await loadLocaleMessages(); // 儲存後立即重新載入語言並更新UI
+            await loadLocaleMessages();
 
             if (languageChanged) {
-                statusMessage.textContent = messages["saveSettingsSuccessLang"]?.message;
+                statusMessage.textContent = getMessage("saveSettingsSuccessLang");
             } else {
-                statusMessage.textContent = messages["saveSettingsSuccess"]?.message;
+                statusMessage.textContent = getMessage("saveSettingsSuccess");
             }
             statusMessage.style.color = '#28a745';
             setTimeout(() => { statusMessage.textContent = ''; }, 3000);
@@ -300,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const timeDiv = document.createElement('div');
                 timeDiv.className = 'history-item-time';
-                // --- [修改] 使用新的 24 小時制格式化函式 ---
                 timeDiv.textContent = formatTimestamp24h(item.timestamp);
                 bottomRow.appendChild(timeDiv);
                 
@@ -348,21 +341,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const categoryOrder = ['language', 'parody', 'group', 'artist'];
             tags.sort((a, b) => {
-                const typeA = a.split(':')[0];
-                const typeB = b.split(':')[0];
+                const typeA = a.original.split(':')[0];
+                const typeB = b.original.split(':')[0];
                 const indexA = categoryOrder.indexOf(typeA);
-                const indexB = categoryOrder.indexOf(b);
-        
+                const indexB = categoryOrder.indexOf(typeB);
                 const orderA = indexA === -1 ? categoryOrder.length : indexA;
                 const orderB = indexB === -1 ? categoryOrder.length : indexB;
-        
-                if (orderA !== orderB) {
-                    return orderA - orderB;
-                }
-                return a.localeCompare(b);
+                if (orderA !== orderB) return orderA - orderB;
+                return a.original.localeCompare(b.original);
             });
 
-            const categories = [...new Set(tags.map(t => t.split(':')[0]))];
+            const categories = [...new Set(tags.map(t => t.original.split(':')[0]))];
             categories.sort((a, b) => {
                 const indexA = categoryOrder.indexOf(a);
                 const indexB = categoryOrder.indexOf(b);
@@ -391,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newFilter = tagFilterSelect.value;
             const filteredTags = newFilter === 'all'
                 ? tags
-                : tags.filter(t => t.startsWith(newFilter + ':'));
+                : tags.filter(t => t.original.startsWith(newFilter + ':'));
 
             clearElement(tagListContainer);
             if (!filteredTags || filteredTags.length === 0) {
@@ -404,55 +393,141 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const fragment = document.createDocumentFragment();
             for (const tag of filteredTags) {
-                const parts = tag.split(':');
-                const type = parts[0];
-                const name = parts.slice(1).join(':');
-
-                const a = document.createElement('a');
-                a.className = 'tag-badge';
-                a.href = `https://exhentai.org/tag/${encodeURIComponent(tag).replace(/%20/g, '+')}`;
-                a.target = '_blank';
-                a.title = tag;
-
+                const tagItem = document.createElement('div');
+                
+                // 新增：根據標籤類型添加顏色 class
+                const type = tag.original.split(':')[0];
                 const validTypes = ['artist', 'group', 'parody', 'character', 'language'];
                 const colorType = validTypes.includes(type) ? type : 'other';
-                a.classList.add(`tag-badge--${colorType}`);
+                tagItem.className = `tag-item tag-item--${colorType}`;
 
-                const typeSpan = document.createElement('span');
-                typeSpan.className = 'tag-badge-type';
-                typeSpan.textContent = type + ':';
+                // 組合名稱和連結
+                const namesWrapper = document.createElement('div');
+                namesWrapper.className = 'tag-item-names';
 
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'tag-badge-name';
-                nameSpan.textContent = name;
+                const originalLink = document.createElement('a');
+                originalLink.className = 'tag-original-link';
+                originalLink.href = `https://exhentai.org/tag/${encodeURIComponent(tag.original).replace(/%20/g, '+')}`;
+                originalLink.target = '_blank';
+                originalLink.title = `前往標籤頁面: ${tag.original}`;
+                originalLink.textContent = tag.original;
+                namesWrapper.appendChild(originalLink);
+
+                const displayWrapper = document.createElement('div');
+                displayWrapper.className = 'tag-display-wrapper';
+                
+                if (tag.original !== tag.display) {
+                    const displayText = document.createElement('span');
+                    displayText.className = 'tag-display-text';
+                    displayText.textContent = `(${tag.display.split(':').slice(1).join(':').trim()})`;
+                    displayWrapper.appendChild(displayText);
+                }
+                namesWrapper.appendChild(displayWrapper);
+                tagItem.appendChild(namesWrapper);
+
+                // 組合按鈕
+                const actionsWrapper = document.createElement('div');
+                actionsWrapper.className = 'tag-item-actions';
+
+                const editBtn = document.createElement('button');
+                editBtn.className = 'tag-item-btn';
+                editBtn.innerHTML = '&#9998;'; // Pencil icon
+                editBtn.title = '編輯顯示名稱';
+                editBtn.dataset.originalTag = tag.original;
+                editBtn.dataset.currentDisplay = tag.display;
+                actionsWrapper.appendChild(editBtn);
 
                 const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'tag-badge-delete-btn';
+                deleteBtn.className = 'tag-item-btn';
                 deleteBtn.textContent = '×';
                 deleteBtn.title = '刪除此標籤';
-                deleteBtn.dataset.tag = tag;
+                deleteBtn.dataset.originalTag = tag.original;
+                actionsWrapper.appendChild(deleteBtn);
 
-                a.appendChild(typeSpan);
-                a.appendChild(nameSpan);
-                a.appendChild(deleteBtn);
-                fragment.appendChild(a);
+                tagItem.appendChild(actionsWrapper);
+                fragment.appendChild(tagItem);
             }
             tagListContainer.appendChild(fragment);
         };
         
-        const handleClearTags = async () => {
-            await browser.runtime.sendMessage({ type: 'clear_saved_tags' });
-            await renderSavedTags();
+        const handleEditTag = (editBtn) => {
+            const namesWrapper = editBtn.closest('.tag-item').querySelector('.tag-item-names');
+            const displayWrapper = namesWrapper.querySelector('.tag-display-wrapper');
+            const originalTag = editBtn.dataset.originalTag;
+            const currentDisplay = editBtn.dataset.currentDisplay;
+            
+            const currentText = (originalTag === currentDisplay) ? '' : currentDisplay.split(':').slice(1).join(':').trim();
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentText;
+            input.className = 'tag-edit-input';
+            
+            clearElement(displayWrapper);
+            displayWrapper.appendChild(input);
+            input.focus();
+            input.select();
+
+            const saveEdit = async () => {
+                const newName = input.value.trim();
+                let finalDisplayName = originalTag;
+                if (newName) {
+                    const type = originalTag.split(':')[0];
+                    finalDisplayName = `${type}: ${newName}`;
+                }
+                
+                if (finalDisplayName !== currentDisplay) {
+                     await browser.runtime.sendMessage({
+                        type: 'update_saved_tag',
+                        tag: { original: originalTag, display: finalDisplayName }
+                    });
+                }
+                await renderSavedTags();
+            };
+
+            input.addEventListener('blur', saveEdit);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveEdit();
+                }
+                if (e.key === 'Escape') {
+                    renderSavedTags();
+                }
+            });
         };
 
         const handleDeleteTagItem = async (deleteBtn) => {
-            const tagToDelete = deleteBtn.dataset.tag;
-            if (tagToDelete) {
-                await browser.runtime.sendMessage({ type: 'delete_saved_tag', tag: tagToDelete });
+            const tagOriginalToDelete = deleteBtn.dataset.originalTag;
+            if (tagOriginalToDelete) {
+                await browser.runtime.sendMessage({ type: 'delete_saved_tag', tagOriginal: tagOriginalToDelete });
                 await renderSavedTags();
             }
         };
 
+        const handleExportTags = async () => {
+            const { tags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
+            const exportObj = {};
+            
+            tags.forEach(tag => {
+                if (tag.original !== tag.display) {
+                    const key = "tag_" + tag.original.replace(/[:\s]/g, '_').replace(/['"]/g, '');
+                    exportObj[key] = {
+                        "message": tag.display
+                    };
+                }
+            });
+
+            const exportText = JSON.stringify(exportObj, null, 2);
+            document.getElementById('export-textarea').value = exportText;
+            document.getElementById('export-modal').style.display = 'flex';
+        };
+
+        const handleClearTags = async () => {
+            await browser.runtime.sendMessage({ type: 'clear_saved_tags' });
+            await renderSavedTags();
+        };
+        
         const setupTabs = () => {
             const tabButtons = document.querySelectorAll('.tab-btn');
             const tabPanes = document.querySelectorAll('.tab-pane');
@@ -521,14 +596,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     handleDeleteHistoryItem(deleteBtn);
                 }
             });
-
+            
             document.getElementById('clear-tags-button').addEventListener('click', handleClearTags);
             tagListContainer.addEventListener('click', (e) => {
-                const deleteBtn = e.target.closest('.tag-badge-delete-btn');
+                const editBtn = e.target.closest('.tag-item-btn[title="編輯顯示名稱"]');
+                const deleteBtn = e.target.closest('.tag-item-btn[title="刪除此標籤"]');
+                if (editBtn) {
+                    e.preventDefault(); e.stopPropagation();
+                    handleEditTag(editBtn);
+                }
                 if (deleteBtn) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault(); e.stopPropagation();
                     handleDeleteTagItem(deleteBtn);
+                }
+            });
+
+            document.getElementById('export-tags-button').addEventListener('click', handleExportTags);
+            document.getElementById('close-modal-button').addEventListener('click', () => {
+                document.getElementById('export-modal').style.display = 'none';
+            });
+            document.getElementById('export-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'export-modal') {
+                    e.target.style.display = 'none';
                 }
             });
         };

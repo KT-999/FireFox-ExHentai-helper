@@ -221,5 +221,13 @@
   "toggleSavedTags": {
     "message": "[Show/Hide Saved Tags]",
     "description": "Link to toggle saved tags bar on search page."
+  },
+  "exportButton": {
+    "message": "Export i18n",
+    "description": "Button to export custom tag names."
+  },
+  "exportModalHeader": {
+    "message": "i18n Export Result",
+    "description": "Header for the export result modal."
   }
 }

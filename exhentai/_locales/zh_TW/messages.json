@@ -221,5 +221,13 @@
   "toggleSavedTags": {
     "message": "[顯示/隱藏 已儲存標籤]",
     "description": "在搜尋頁面切換已儲存標籤列的連結。"
+  },
+  "exportButton": {
+    "message": "匯出 i18n",
+    "description": "匯出自訂標籤名稱的按鈕。"
+  },
+  "exportModalHeader": {
+    "message": "i18n 匯出結果",
+    "description": "匯出結果視窗的標題。"
   }
 }
