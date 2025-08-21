@@ -1,5 +1,6 @@
 /**
- * 處理彈出視窗的邏輯 (v1.2.6)
+ * 處理彈出視窗的邏輯 (v1.2.7 - 改善搜尋邏輯)
+ * - 更新：書籤頁籤中的搜尋功能現在會排除標籤種類，僅搜尋標籤名稱。
  */
 
 // --- 多語系處理 ---
@@ -37,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const themeModeSelect = document.getElementById('theme-mode');
         const tagFilterSelect = document.getElementById('tag-filter-select');
         const uiLanguageSelect = document.getElementById('ui-language');
+        const tagSearchInput = document.getElementById('tag-search-input');
 
         const getMessage = (key) => messages[key]?.message || key;
 
@@ -334,51 +336,56 @@ document.addEventListener('DOMContentLoaded', () => {
         const renderSavedTags = async () => {
             const { tags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
             
-            const categoryOrder = ['language', 'parody', 'group', 'artist'];
-            tags.sort((a, b) => {
-                const typeA = a.original.split(':')[0];
-                const typeB = b.original.split(':')[0];
-                const indexA = categoryOrder.indexOf(typeA);
-                const indexB = categoryOrder.indexOf(typeB);
-                const orderA = indexA === -1 ? categoryOrder.length : indexA;
-                const orderB = indexB === -1 ? categoryOrder.length : indexB;
-                if (orderA !== orderB) return orderA - orderB;
-                return a.original.localeCompare(b.original);
-            });
+            const getTagValue = (tagString) => {
+                const colonIndex = tagString.indexOf(':');
+                return colonIndex > -1 ? tagString.substring(colonIndex + 1).trim() : tagString;
+            };
 
-            const categories = [...new Set(tags.map(t => t.original.split(':')[0]))];
-            categories.sort((a, b) => {
-                const indexA = categoryOrder.indexOf(a);
-                const indexB = categoryOrder.indexOf(b);
-                const orderA = indexA === -1 ? categoryOrder.length : indexA;
-                const orderB = indexB === -1 ? categoryOrder.length : indexB;
-                if (orderA !== orderB) return orderA - orderB;
-                return a.localeCompare(b);
-            });
+            const categoryFilter = tagFilterSelect.value;
+            const searchTerm = tagSearchInput.value.toLowerCase().trim();
 
-            const currentFilter = tagFilterSelect.value;
-            clearElement(tagFilterSelect);
-            
-            const showAllOption = document.createElement('option');
-            showAllOption.value = 'all';
-            showAllOption.textContent = getMessage("filterShowAll");
-            tagFilterSelect.appendChild(showAllOption);
-
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = cat;
-                tagFilterSelect.appendChild(option);
-            });
-            tagFilterSelect.value = categories.includes(currentFilter) ? currentFilter : 'all';
-
-            const newFilter = tagFilterSelect.value;
-            const filteredTags = newFilter === 'all'
+            const categoryFilteredTags = categoryFilter === 'all'
                 ? tags
-                : tags.filter(t => t.original.startsWith(newFilter + ':'));
+                : tags.filter(t => t.original.startsWith(categoryFilter + ':'));
 
+            const finalFilteredTags = searchTerm === ''
+                ? categoryFilteredTags
+                : categoryFilteredTags.filter(t => {
+                    const originalValue = getTagValue(t.original).toLowerCase();
+                    const displayValue = getTagValue(t.display).toLowerCase();
+                    return originalValue.includes(searchTerm) || displayValue.includes(searchTerm);
+                  });
+
+            if (searchTerm === '') {
+                const categoryOrder = ['language', 'parody', 'group', 'artist'];
+                const categories = [...new Set(tags.map(t => t.original.split(':')[0]))];
+                categories.sort((a, b) => {
+                    const indexA = categoryOrder.indexOf(a);
+                    const indexB = categoryOrder.indexOf(b);
+                    const orderA = indexA === -1 ? categoryOrder.length : indexA;
+                    const orderB = indexB === -1 ? categoryOrder.length : indexB;
+                    if (orderA !== orderB) return orderA - orderB;
+                    return a.localeCompare(b);
+                });
+
+                clearElement(tagFilterSelect);
+                
+                const showAllOption = document.createElement('option');
+                showAllOption.value = 'all';
+                showAllOption.textContent = getMessage("filterShowAll");
+                tagFilterSelect.appendChild(showAllOption);
+
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    tagFilterSelect.appendChild(option);
+                });
+                tagFilterSelect.value = categoryFilter;
+            }
+            
             clearElement(tagListContainer);
-            if (!filteredTags || filteredTags.length === 0) {
+            if (!finalFilteredTags || finalFilteredTags.length === 0) {
                 const p = document.createElement('p');
                 p.className = 'empty-message';
                 p.textContent = getMessage("bookmarksEmpty");
@@ -387,17 +394,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const fragment = document.createDocumentFragment();
-            for (const tag of filteredTags) {
+            for (const tag of finalFilteredTags) {
                 const tagItem = document.createElement('div');
-                
                 const type = tag.original.split(':')[0];
                 const validTypes = ['artist', 'group', 'parody', 'character', 'language'];
                 const colorType = validTypes.includes(type) ? type : 'other';
                 tagItem.className = `tag-item tag-item--${colorType}`;
-
                 const namesWrapper = document.createElement('div');
                 namesWrapper.className = 'tag-item-names';
-
                 const originalLink = document.createElement('a');
                 originalLink.className = 'tag-original-link';
                 originalLink.href = `https://exhentai.org/tag/${encodeURIComponent(tag.original).replace(/%20/g, '+')}`;
@@ -405,10 +409,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 originalLink.title = `前往標籤頁面: ${tag.original}`;
                 originalLink.textContent = tag.original;
                 namesWrapper.appendChild(originalLink);
-
                 const displayWrapper = document.createElement('div');
                 displayWrapper.className = 'tag-display-wrapper';
-                
                 if (tag.original !== tag.display) {
                     const displayText = document.createElement('span');
                     displayText.className = 'tag-display-text';
@@ -417,25 +419,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 namesWrapper.appendChild(displayWrapper);
                 tagItem.appendChild(namesWrapper);
-
                 const actionsWrapper = document.createElement('div');
                 actionsWrapper.className = 'tag-item-actions';
-
                 const editBtn = document.createElement('button');
                 editBtn.className = 'tag-item-btn';
-                editBtn.innerHTML = '&#9998;'; // Pencil icon
+                editBtn.innerHTML = '&#9998;';
                 editBtn.title = '編輯顯示名稱';
                 editBtn.dataset.originalTag = tag.original;
                 editBtn.dataset.currentDisplay = tag.display;
                 actionsWrapper.appendChild(editBtn);
-
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'tag-item-btn';
                 deleteBtn.textContent = '×';
                 deleteBtn.title = '刪除此標籤';
                 deleteBtn.dataset.originalTag = tag.original;
                 actionsWrapper.appendChild(deleteBtn);
-
                 tagItem.appendChild(actionsWrapper);
                 fragment.appendChild(tagItem);
             }
@@ -625,7 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await loadLocaleMessages();
             await loadSettings();
             
-            document.getElementById('import-textarea').placeholder = getMessage('importPlaceholder');
+            tagSearchInput.placeholder = getMessage('searchTagsPlaceholder');
 
             checkLoginStatus();
             setupTabs();
@@ -645,6 +643,7 @@ document.addEventListener('DOMContentLoaded', () => {
             uiLanguageSelect.addEventListener('change', saveSettings);
 
             tagFilterSelect.addEventListener('change', renderSavedTags);
+            tagSearchInput.addEventListener('input', renderSavedTags);
 
             document.getElementById('save-button').addEventListener('click', saveSettings);
             document.getElementById('open-options-button').addEventListener('click', () => {

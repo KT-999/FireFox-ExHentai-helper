@@ -396,6 +396,48 @@ html.dark-theme .history-item-delete-btn:hover {
     gap: 8px;
 }
 
+.tag-controls-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.tag-filter-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.tag-filter-container label {
+    margin-right: 0;
+}
+
+#tag-filter-select {
+    max-width: none;
+}
+
+.tag-search-container {
+    flex-grow: 1;
+}
+
+#tag-search-input {
+    width: 100%;
+    padding: 5px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+#tag-search-input:focus {
+    outline: none;
+    border-color: var(--tab-active-color);
+}
+
 #tag-list {
     display: block;
     padding: 0;
@@ -506,21 +548,6 @@ html.dark-theme .history-item-delete-btn:hover {
 .tag-item-btn:hover {
     color: var(--text-color);
     background-color: var(--hover-bg);
-}
-
-.tag-filter-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.tag-filter-container label {
-    margin-right: 0;
-}
-
-#tag-filter-select {
-    max-width: none;
 }
 
 /* --- Modal 樣式 --- */

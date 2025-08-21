@@ -1,8 +1,6 @@
 /**
- * 搜尋增強器模組 (v1.2.5 - 自訂書籤)
- * - 更新：支援顯示自訂書籤文字，同時使用原始標籤進行搜尋。
- * - 修正：正確處理帶有空格的標籤查詢語法 (例如 artist:"fujisaki hikari$")。
- * - 修正：移除 innerHTML 的使用，改為安全的 DOM 操作以符合上架規範。
+ * 搜尋增強器模組 (v1.2.7 - 改善搜尋邏輯)
+ * - 更新：搜尋功能現在會排除標籤種類 (如 "artist:")，僅搜尋標籤名稱。
  */
 
 function injectCSS() {
@@ -21,6 +19,7 @@ function injectCSS() {
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
+            gap: 15px; /* 新增間距 */
         }
         /* 讓連結樣式與網站原生連結一致 */
         #exh-tags-bar-toggle {
@@ -39,13 +38,26 @@ function injectCSS() {
             gap: 5px;
             font-size: 10pt;
             color: #999;
+            flex-shrink: 0; /* 防止被壓縮 */
         }
-        #exh-tags-filter-select {
+        /* 新增搜尋框樣式 */
+        .exh-tags-search-container {
+            flex-grow: 1; /* 佔滿剩餘空間 */
+            max-width: 250px; /* 可選：限制最大寬度 */
+        }
+        #exh-tags-search-input {
+            width: 100%;
+            padding: 3px 6px;
             font-size: 12px;
             border-radius: 4px;
             border: 1px solid #555;
             background-color: #3a3a3a;
             color: #e0e0e0;
+            box-sizing: border-box;
+        }
+        #exh-tags-search-input:focus {
+            outline: none;
+            border-color: #777;
         }
         #exh-tags-container {
             display: flex;
@@ -119,30 +131,43 @@ function handleTagClick(event) {
     }
 }
 
-function renderTags(allTags, filter, container) {
+function renderTags(allTags, filter, searchTerm, container) {
     while (container.firstChild) {
         container.removeChild(container.firstChild);
     }
 
-    const filteredTags = filter === 'all'
+    // 輔助函式，用於提取標籤字串中的值部分
+    const getTagValue = (tagString) => {
+        const colonIndex = tagString.indexOf(':');
+        return colonIndex > -1 ? tagString.substring(colonIndex + 1).trim() : tagString;
+    };
+
+    // 1. 類別篩選
+    const categoryFilteredTags = filter === 'all'
         ? allTags
         : allTags.filter(t => t.original.startsWith(filter + ':'));
 
-    if (filteredTags.length === 0) return;
+    // 2. 關鍵字搜尋 (僅搜尋標籤值，排除種類)
+    const finalFilteredTags = searchTerm === ''
+        ? categoryFilteredTags
+        : categoryFilteredTags.filter(t => {
+            const originalValue = getTagValue(t.original).toLowerCase();
+            const displayValue = getTagValue(t.display).toLowerCase();
+            return originalValue.includes(searchTerm) || displayValue.includes(searchTerm);
+          });
 
-    filteredTags.forEach(tag => {
+    if (finalFilteredTags.length === 0) return;
+
+    finalFilteredTags.forEach(tag => {
         const parts = tag.original.split(':');
         const type = parts[0];
-
         const tagEl = document.createElement('span');
         tagEl.className = 'exh-search-tag';
         tagEl.textContent = tag.display;
         tagEl.dataset.tag = tag.original;
-
         const validTypes = ['artist', 'group', 'parody', 'character', 'language'];
         const colorType = validTypes.includes(type) ? type : 'other';
         tagEl.classList.add(`exh-search-tag--${colorType}`);
-
         tagEl.addEventListener('click', handleTagClick);
         container.appendChild(tagEl);
     });
@@ -155,7 +180,7 @@ async function createUI() {
 
     const { messages } = await browser.runtime.sendMessage({ 
         type: 'get_i18n_messages', 
-        keys: ['toggleSavedTags', 'filterByCategory', 'filterShowAll'] 
+        keys: ['toggleSavedTags', 'filterByCategory', 'filterShowAll', 'searchTagsPlaceholder'] 
     });
 
     const { tags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
@@ -167,13 +192,9 @@ async function createUI() {
         const typeB = b.original.split(':')[0];
         const indexA = categoryOrder.indexOf(typeA);
         const indexB = categoryOrder.indexOf(typeB);
-
         const orderA = indexA === -1 ? categoryOrder.length : indexA;
         const orderB = indexB === -1 ? categoryOrder.length : indexB;
-
-        if (orderA !== orderB) {
-            return orderA - orderB;
-        }
+        if (orderA !== orderB) return orderA - orderB;
         return a.original.localeCompare(b.original);
     });
 
@@ -185,8 +206,11 @@ async function createUI() {
     
     const toggle = document.createElement('a');
     toggle.id = 'exh-tags-bar-toggle';
-    toggle.href = '#'; // for accessibility
+    toggle.href = '#';
     toggle.textContent = messages.toggleSavedTags || '[Show/Hide Saved Tags]';
+
+    const controlsWrapper = document.createElement('div');
+    controlsWrapper.style.cssText = 'display: flex; align-items: center; gap: 15px; flex-grow: 1; justify-content: flex-end;';
 
     const filterContainer = document.createElement('div');
     filterContainer.className = 'exh-tags-filter-container';
@@ -197,6 +221,14 @@ async function createUI() {
 
     const filterSelect = document.createElement('select');
     filterSelect.id = 'exh-tags-filter-select';
+
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'exh-tags-search-container';
+    const tagSearchInput = document.createElement('input');
+    tagSearchInput.type = 'search';
+    tagSearchInput.id = 'exh-tags-search-input';
+    tagSearchInput.placeholder = messages.searchTagsPlaceholder || 'Search tags...';
+    searchContainer.appendChild(tagSearchInput);
 
     const container = document.createElement('div');
     container.id = 'exh-tags-container';
@@ -216,12 +248,10 @@ async function createUI() {
         if (orderA !== orderB) return orderA - orderB;
         return a.localeCompare(b);
     });
-
     const showAllOption = document.createElement('option');
     showAllOption.value = 'all';
     showAllOption.textContent = messages.filterShowAll || 'Show All';
     filterSelect.appendChild(showAllOption);
-
     categories.forEach(cat => {
         const option = document.createElement('option');
         option.value = cat;
@@ -229,20 +259,30 @@ async function createUI() {
         filterSelect.appendChild(option);
     });
 
-    filterSelect.addEventListener('change', () => {
-        renderTags(tags, filterSelect.value, container);
-    });
+    const updateRender = () => {
+        const category = filterSelect.value;
+        const term = tagSearchInput.value.toLowerCase().trim();
+        renderTags(tags, category, term, container);
+    };
+
+    filterSelect.addEventListener('change', updateRender);
+    tagSearchInput.addEventListener('input', updateRender);
 
     filterContainer.appendChild(filterLabel);
     filterContainer.appendChild(filterSelect);
+    
+    controlsWrapper.appendChild(searchContainer);
+    controlsWrapper.appendChild(filterContainer);
+
     header.appendChild(toggle);
-    header.appendChild(filterContainer);
+    header.appendChild(controlsWrapper);
+
     bar.appendChild(header);
     bar.appendChild(container);
     
     searchInput.parentElement.insertAdjacentElement('afterend', bar);
 
-    renderTags(tags, 'all', container);
+    renderTags(tags, 'all', '', container);
 }
 
 export function initSearchEnhancer() {

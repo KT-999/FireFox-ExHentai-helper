@@ -116,11 +116,16 @@
                         <button id="clear-tags-button" class="btn-danger btn-small" data-i18n="clearBookmarksButton"></button>
                     </div>
                 </div>
-                <div class="tag-filter-container">
-                    <label for="tag-filter-select" data-i18n="filterByCategory"></label>
-                    <select id="tag-filter-select">
-                        <option value="all" data-i18n="filterShowAll"></option>
-                    </select>
+                <div class="tag-controls-container">
+                    <div class="tag-filter-container">
+                        <label for="tag-filter-select" data-i18n="filterByCategory"></label>
+                        <select id="tag-filter-select">
+                            <option value="all" data-i18n="filterShowAll"></option>
+                        </select>
+                    </div>
+                    <div class="tag-search-container">
+                        <input type="search" id="tag-search-input" placeholder="搜尋標籤...">
+                    </div>
                 </div>
                 <div id="tag-list"></div>
             </div>
@@ -150,4 +155,3 @@
     <script src="popup.js"></script>
 </body>
 </html>
-<script src="i18n.js"></script>
