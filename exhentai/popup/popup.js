@@ -1,6 +1,6 @@
 /**
- * 處理彈出視窗的邏輯 (v1.2.7 - 改善搜尋邏輯)
- * - 更新：書籤頁籤中的搜尋功能現在會排除標籤種類，僅搜尋標籤名稱。
+ * 處理彈出視窗的邏輯 (v1.2.7.2 - 修正匯入邏輯)
+ * - 修正：還原標籤名稱時移除多餘的空格，解決匯入時產生重複標籤的問題。
  */
 
 // --- 多語系處理 ---
@@ -368,6 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return a.localeCompare(b);
                 });
 
+                const currentFilterValue = tagFilterSelect.value;
                 clearElement(tagFilterSelect);
                 
                 const showAllOption = document.createElement('option');
@@ -381,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     option.textContent = cat;
                     tagFilterSelect.appendChild(option);
                 });
-                tagFilterSelect.value = categoryFilter;
+                tagFilterSelect.value = currentFilterValue;
             }
             
             clearElement(tagListContainer);
@@ -544,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const keyParts = key.replace(/^tag_/, '').split('_');
                     const namespace = keyParts.shift();
                     const tagName = keyParts.join(' ');
-                    const originalTag = `${namespace}: ${tagName}`;
+                    const originalTag = `${namespace}:${tagName}`; // 修正點：移除多餘的空格
                     
                     const displayMessage = parsedJson[key].message || originalTag;
 
