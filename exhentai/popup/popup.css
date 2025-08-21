@@ -555,7 +555,7 @@ html.dark-theme .history-item-delete-btn:hover {
     color: var(--label-color);
     cursor: pointer;
 }
-#export-textarea {
+#export-textarea, #import-textarea {
     width: 100%;
     height: 150px;
     margin-top: 10px;
@@ -565,4 +565,14 @@ html.dark-theme .history-item-delete-btn:hover {
     background-color: var(--input-bg);
     color: var(--input-text);
     border: 1px solid var(--input-border);
+    box-sizing: border-box; /* 確保 padding 不會影響寬度 */
+}
+
+#import-submit-button {
+    margin-top: 15px;
+}
+
+#import-status-message {
+    margin-top: 10px;
+    height: 15px;
 }

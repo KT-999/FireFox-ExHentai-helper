@@ -40,40 +40,40 @@
     "description": "Option for vertical reader mode."
   },
   "preloadCount": {
-    "message": "Preload count (Horizontal):",
-    "description": "Label for preload count."
+    "message": "Preload Count (Horizontal):",
+    "description": "Label for preload count input."
   },
   "cacheSize": {
-    "message": "Max cached pages:",
-    "description": "Label for cache size."
+    "message": "Max Cached Pages:",
+    "description": "Label for cache size input."
   },
   "maxHistoryCount": {
-    "message": "Max history entries:",
-    "description": "Label for history count."
+    "message": "Max History Items:",
+    "description": "Label for history count input."
   },
   "fitToWindow": {
-    "message": "Fit image to window (Horizontal):",
-    "description": "Label for fit to window."
+    "message": "Fit Image to Window (Horizontal):",
+    "description": "Label for fit to window checkbox."
   },
   "hidePreviewBar": {
-    "message": "Hide preview bar (Horizontal):",
-    "description": "Label for hide preview bar."
+    "message": "Hide Preview Bar (Horizontal):",
+    "description": "Label for hide preview bar checkbox."
   },
   "themeMode": {
-    "message": "Appearance Theme:",
-    "description": "Label for appearance theme."
+    "message": "Theme:",
+    "description": "Label for theme mode select."
   },
   "themeSystem": {
-    "message": "Follow System",
-    "description": "System theme option."
+    "message": "System",
+    "description": "Option for system theme."
   },
   "themeLight": {
-    "message": "Light Mode",
-    "description": "Light mode option."
+    "message": "Light",
+    "description": "Option for light theme."
   },
   "themeDark": {
-    "message": "Dark Mode",
-    "description": "Dark mode option."
+    "message": "Dark",
+    "description": "Option for dark theme."
   },
   "uiLanguage": {
     "message": "UI Language:",
@@ -81,22 +81,34 @@
   },
   "langSystem": {
     "message": "Auto (Browser)",
-    "description": "Auto language option."
+    "description": "Option for auto language."
   },
   "langEN": {
     "message": "English",
-    "description": "English option."
+    "description": "Option for English."
   },
   "langZH_TW": {
-    "message": "繁體中文",
-    "description": "Traditional Chinese option."
+    "message": "Traditional Chinese",
+    "description": "Option for Traditional Chinese."
   },
   "langES": {
-    "message": "Español",
-    "description": "Spanish option."
+    "message": "Español (Spanish)",
+    "description": "Option for Spanish."
+  },
+  "langJA": {
+    "message": "日本語 (Japanese)",
+    "description": "Option for Japanese."
+  },
+  "langKO": {
+    "message": "한국어 (Korean)",
+    "description": "Option for Korean."
+  },
+  "langDE": {
+    "message": "Deutsch (German)",
+    "description": "Option for German."
   },
   "openOptionsButton": {
-    "message": "Configure Hotkeys",
+    "message": "Set Hotkeys",
     "description": "Button to open options page."
   },
   "saveButton": {
@@ -113,14 +125,14 @@
   },
   "saveSettingsError": {
     "message": "❌ Save failed!",
-    "description": "Error message on saving settings."
+    "description": "Error message on save failure."
   },
   "advancedOperations": {
     "message": "Advanced Operations",
-    "description": "Advanced operations sub-header."
+    "description": "Sub-header for advanced operations."
   },
   "clearCacheDescription": {
-    "message": "If you encounter image loading issues or display errors, try manually clearing all cached data. This will clear all preloaded images and page indexes.",
+    "message": "If you encounter image loading issues or display errors, you can try manually clearing all cached data. This will clear all preloaded images and page indexes.",
     "description": "Description for clear cache button."
   },
   "clearCacheButton": {
@@ -129,19 +141,19 @@
   },
   "tabSettings": {
     "message": "Settings",
-    "description": "Settings tab label."
+    "description": "Label for settings tab."
   },
   "tabHistory": {
     "message": "History",
-    "description": "History tab label."
+    "description": "Label for history tab."
   },
   "tabBookmarks": {
     "message": "Bookmarks",
-    "description": "Bookmarks tab label."
+    "description": "Label for bookmarks tab."
   },
   "historyHeader": {
     "message": "Browsing History",
-    "description": "History tab header."
+    "description": "Header for history tab."
   },
   "historyEmpty": {
     "message": "No browsing history yet.",
@@ -153,10 +165,10 @@
   },
   "bookmarksHeader": {
     "message": "Saved Tags",
-    "description": "Bookmarks tab header."
+    "description": "Header for bookmarks tab."
   },
   "bookmarksEmpty": {
-    "message": "No tags match this category.",
+    "message": "No tags in this category.",
     "description": "Message shown when bookmarks are empty."
   },
   "clearBookmarksButton": {
@@ -176,7 +188,7 @@
     "description": "Header for options page."
   },
   "optionsSubtitle": {
-    "message": "Click a button then press a key to change the setting",
+    "message": "Click a button and press a key to change",
     "description": "Subtitle for options page."
   },
   "keyPrev": { "message": "Previous Page" },
@@ -223,11 +235,55 @@
     "description": "Link to toggle saved tags bar on search page."
   },
   "exportButton": {
-    "message": "Export i18n",
+    "message": "Export",
     "description": "Button to export custom tag names."
   },
   "exportModalHeader": {
-    "message": "i18n Export Result",
-    "description": "Header for the export result modal."
+    "message": "Export Results",
+    "description": "Header for the export modal."
+  },
+  "importButton": {
+    "message": "Import",
+    "description": "Button to import custom tag names."
+  },
+  "importModalHeader": {
+    "message": "Import Custom Names",
+    "description": "Header for the import modal."
+  },
+  "importPlaceholder": {
+    "message": "Paste the exported i18n JSON content here...",
+    "description": "Placeholder text for the import textarea."
+  },
+  "importSubmitButton": {
+    "message": "Import",
+    "description": "Text for the confirm import button."
+  },
+  "importSuccess": {
+    "message": "✅ Import complete! Added: {addedCount}, Updated: {updatedCount}.",
+    "description": "Success message after import."
+  },
+  "importSuccessAddOnly": {
+    "message": "✅ Import complete! Added: {addedCount} new tags.",
+    "description": "Success message when only adding tags."
+  },
+  "importSuccessUpdateOnly": {
+    "message": "✅ Import complete! Updated: {updatedCount} custom names.",
+    "description": "Success message when only updating tags."
+  },
+  "importErrorInvalidJson": {
+    "message": "❌ Import failed! Invalid JSON format.",
+    "description": "Error message when JSON format is invalid."
+  },
+  "importErrorNoData": {
+    "message": "❌ Import failed! No valid data found to import.",
+    "description": "Error message when no valid data is found."
+  },
+  "importErrorNoAction": {
+    "message": "ℹ️ No action needed. All imported tags match existing data.",
+    "description": "Message when no changes were made."
+  },
+  "searchTagsPlaceholder": {
+    "message": "Search tags...",
+    "description": "Placeholder for the tag search input."
   }
 }

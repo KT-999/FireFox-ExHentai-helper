@@ -1,0 +1,303 @@
+{
+  "extensionName": {
+    "message": "ExHentai ヘルパー",
+    "description": "拡張機能の名前。"
+  },
+  "extensionDescription": {
+    "message": "exhentai.org のアシスタントツール。複数の閲覧モード、グリッドビュー、キーボードサポートを提供します。",
+    "description": "拡張機能の説明。"
+  },
+  "popupHeader": {
+    "message": "ExHentai ヘルパー設定",
+    "description": "ポップアップウィンドウのヘッダー。"
+  },
+  "generalSettings": {
+    "message": "一般設定",
+    "description": "一般設定のサブヘッダー。"
+  },
+  "enableGridView": {
+    "message": "ギャラリーのグリッドビューを有効にする：",
+    "description": "グリッドビューのラベル。"
+  },
+  "gridColumns": {
+    "message": "一行あたりの表示数：",
+    "description": "グリッド数のラベル。"
+  },
+  "readerMode": {
+    "message": "リーダーモード：",
+    "description": "リーダーモードのラベル。"
+  },
+  "readerModeDefault": {
+    "message": "ウェブサイトのデフォルト",
+    "description": "デフォルトのリーダーモードオプション。"
+  },
+  "readerModeHorizontal": {
+    "message": "水平モード (プリロード)",
+    "description": "水平モードオプション。"
+  },
+  "readerModeVertical": {
+    "message": "垂直スクロールモード",
+    "description": "垂直スクロールモードオプション。"
+  },
+  "preloadCount": {
+    "message": "プリロード数 (水平モード)：",
+    "description": "プリロード数のラベル。"
+  },
+  "cacheSize": {
+    "message": "最大キャッシュページ数：",
+    "description": "キャッシュサイズのラベル。"
+  },
+  "maxHistoryCount": {
+    "message": "最大履歴数：",
+    "description": "履歴数のラベル。"
+  },
+  "fitToWindow": {
+    "message": "画像をウィンドウに合わせる (水平モード)：",
+    "description": "画像をウィンドウに合わせるのラベル。"
+  },
+  "hidePreviewBar": {
+    "message": "プレビューバーを隠す (水平モード)：",
+    "description": "プレビューバーを隠すのラベル。"
+  },
+  "themeMode": {
+    "message": "テーマ：",
+    "description": "テーマのラベル。"
+  },
+  "themeSystem": {
+    "message": "システムに従う",
+    "description": "システムテーマオプション。"
+  },
+  "themeLight": {
+    "message": "ライトモード",
+    "description": "ライトモードオプション。"
+  },
+  "themeDark": {
+    "message": "ダークモード",
+    "description": "ダークモードオプション。"
+  },
+  "uiLanguage": {
+    "message": "UI言語：",
+    "description": "UI言語のラベル。"
+  },
+  "langSystem": {
+    "message": "自動 (ブラウザ)",
+    "description": "自動言語オプション。"
+  },
+  "langEN": {
+    "message": "English",
+    "description": "英語オプション。"
+  },
+  "langZH_TW": {
+    "message": "繁體中文",
+    "description": "繁体中文オプション。"
+  },
+  "langES": {
+    "message": "Español (スペイン語)",
+    "description": "スペイン語オプション。"
+  },
+  "langJA": {
+    "message": "日本語",
+    "description": "日本語オプション。"
+  },
+  "langKO": {
+    "message": "한국어 (韓国語)",
+    "description": "韓国語オプション。"
+  },
+  "langDE": {
+    "message": "Deutsch (ドイツ語)",
+    "description": "ドイツ語オプション。"
+  },
+  "openOptionsButton": {
+    "message": "ホットキー設定",
+    "description": "設定ページを開くボタン。"
+  },
+  "saveButton": {
+    "message": "設定を保存",
+    "description": "設定を保存するボタン。"
+  },
+  "saveSettingsSuccess": {
+    "message": "✅ 設定を保存しました！",
+    "description": "設定保存後の成功メッセージ。"
+  },
+  "saveSettingsSuccessLang": {
+    "message": "✅ 言語設定を保存しました！適用するには再度開いてください。",
+    "description": "言語変更後の成功メッセージ。"
+  },
+  "saveSettingsError": {
+    "message": "❌ 保存に失敗しました！",
+    "description": "設定保存失敗のエラーメッセージ。"
+  },
+  "advancedOperations": {
+    "message": "高度な操作",
+    "description": "高度な操作のサブヘッダー。"
+  },
+  "clearCacheDescription": {
+    "message": "画像の読み込みに問題が発生した場合、キャッシュされたすべてのデータを手動でクリアすることができます。これにより、プリロードされたすべての画像とページインデックスが消去されます。",
+    "description": "キャッシュクリアボタンの説明。"
+  },
+  "clearCacheButton": {
+    "message": "すべてのキャッシュをクリア",
+    "description": "キャッシュクリアボタン。"
+  },
+  "tabSettings": {
+    "message": "設定",
+    "description": "設定タブのラベル。"
+  },
+  "tabHistory": {
+    "message": "履歴",
+    "description": "履歴タブのラベル。"
+  },
+  "tabBookmarks": {
+    "message": "ブックマーク",
+    "description": "ブックマークタブのラベル。"
+  },
+  "historyHeader": {
+    "message": "閲覧履歴",
+    "description": "履歴タブのヘッダー。"
+  },
+  "historyEmpty": {
+    "message": "閲覧履歴はまだありません。",
+    "description": "履歴が空の場合に表示されるメッセージ。"
+  },
+  "clearHistoryButton": {
+    "message": "履歴をクリア",
+    "description": "履歴をクリアするボタン。"
+  },
+  "bookmarksHeader": {
+    "message": "保存済みタグ",
+    "description": "ブックマークタブのヘッダー。"
+  },
+  "bookmarksEmpty": {
+    "message": "このカテゴリにはタグがありません。",
+    "description": "ブックマークが空の場合に表示されるメッセージ。"
+  },
+  "clearBookmarksButton": {
+    "message": "すべてクリア",
+    "description": "ブックマークをクリアするボタン。"
+  },
+  "filterByCategory": {
+    "message": "カテゴリで絞り込む：",
+    "description": "タグフィルターのラベル。"
+  },
+  "filterShowAll": {
+    "message": "すべて表示",
+    "description": "すべてのタグを表示するオプション。"
+  },
+  "optionsHeader": {
+    "message": "ホットキー設定",
+    "description": "設定ページのヘッダー。"
+  },
+  "optionsSubtitle": {
+    "message": "ボタンをクリックしてからキーを押して変更します",
+    "description": "設定ページのサブタイトル。"
+  },
+  "keyPrev": {
+    "message": "前のページ"
+  },
+  "keyNext": {
+    "message": "次のページ"
+  },
+  "keyFit": {
+    "message": "フィット切り替え"
+  },
+  "keyHide": {
+    "message": "プレビューバー切り替え"
+  },
+  "keyExit": {
+    "message": "ギャラリーに戻る"
+  },
+  "keyClear": {
+    "message": "キャッシュをクリア"
+  },
+  "saveHotkeys": {
+    "message": "ホットキーを保存"
+  },
+  "contextMenuSaveTag": {
+    "message": "このタグを保存",
+    "description": "タグを保存するためのコンテキストメニュー項目。"
+  },
+  "checkingLoginStatus": {
+    "message": "ログイン状態を確認中...",
+    "description": "ログイン状態を確認中に表示されるテキスト。"
+  },
+  "loginStatus": {
+    "message": "ログイン状態：",
+    "description": "ログイン状態のラベル。"
+  },
+  "loggedInStatus": {
+    "message": "ログイン済み",
+    "description": "ユーザーがログインしている状態。"
+  },
+  "loggedOutStatus": {
+    "message": "ログインしていないようです。",
+    "description": "ユーザーがログインしていない状態。"
+  },
+  "loginButton": {
+    "message": "ログインページへ",
+    "description": "ログインページに移動するボタン。"
+  },
+  "logoutButton": {
+    "message": "ログアウト",
+    "description": "ログアウトするボタン。"
+  },
+  "loginStatusError": {
+    "message": "ログイン状態を確認できませんでした。拡張機能の権限を確認してください。",
+    "description": "ログイン状態の確認失敗のエラーメッセージ。"
+  },
+  "toggleSavedTags": {
+    "message": "[保存済みタグの表示/非表示]",
+    "description": "検索ページで保存済みタグバーを切り替えるリンク。"
+  },
+  "exportButton": {
+    "message": "エクスポート",
+    "description": "カスタムタグ名をエクスポートするボタン。"
+  },
+  "exportModalHeader": {
+    "message": "エクスポート結果",
+    "description": "エクスポートモーダルのヘッダー。"
+  },
+  "importButton": {
+    "message": "インポート",
+    "description": "カスタムタグ名をインポートするボタン。"
+  },
+  "importModalHeader": {
+    "message": "カスタム名をインポート",
+    "description": "インポートモーダルのヘッダー。"
+  },
+  "importPlaceholder": {
+    "message": "エクスポートされたi18n JSONコンテンツをここに貼り付けてください...",
+    "description": "インポートテキストエリアのプレースホルダーテキスト。"
+  },
+  "importSubmitButton": {
+    "message": "インポート",
+    "description": "インポートを確認するボタンのテキスト。"
+  },
+  "importSuccess": {
+    "message": "✅ インポート完了！追加：{addedCount}件、更新：{updatedCount}件。",
+    "description": "インポート後の成功メッセージ。"
+  },
+  "importSuccessAddOnly": {
+    "message": "✅ インポート完了！{addedCount}件の新しいタグを追加しました。",
+    "description": "タグのみを追加した場合の成功メッセージ。"
+  },
+  "importSuccessUpdateOnly": {
+    "message": "✅ インポート完了！{updatedCount}件のカスタム名を更新しました。",
+    "description": "タグのみを更新した場合の成功メッセージ。"
+  },
+  "importErrorInvalidJson": {
+    "message": "❌ インポート失敗！無効なJSON形式です。",
+    "description": "JSON形式が無効な場合のエラーメッセージ。"
+  },
+  "importErrorNoData": {
+    "message": "❌ インポート失敗！インポートする有効なデータが見つかりません。",
+    "description": "有効なデータが見つからない場合のエラーメッセージ。"
+  },
+  "importErrorNoAction": {
+    "message": "ℹ️ 操作は不要です。インポートされたすべてのタグは既存のデータと一致します。",
+    "description": "変更が行われなかった場合のメッセージ。"
+  },
+  "searchTagsPlaceholder": {
+    "message": "タグを検索...",
+    "description": "タグ検索入力のプレースホルダー。"
+  }
+}

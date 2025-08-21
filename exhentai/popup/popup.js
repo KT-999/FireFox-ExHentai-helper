@@ -1,10 +1,5 @@
 /**
- * 處理彈出視窗的邏輯 (v1.2.5 - 書籤顏色更新)
- * - 新增：允許使用者自訂書籤的顯示文字。
- * - 新增：提供 i18n 格式的匯出功能。
- * - 修正：將歷史紀錄的時間改為統一的 24 小時制 (YYYY/MM/DD HH:mm:ss)。
- * - 更新：將書籤列表改為單列清單佈局，並調整顯示順序。
- * - 更新：在單列清單佈局中重新加入類別顏色標記。
+ * 處理彈出視窗的邏輯 (v1.2.6)
  */
 
 // --- 多語系處理 ---
@@ -395,13 +390,11 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const tag of filteredTags) {
                 const tagItem = document.createElement('div');
                 
-                // 新增：根據標籤類型添加顏色 class
                 const type = tag.original.split(':')[0];
                 const validTypes = ['artist', 'group', 'parody', 'character', 'language'];
                 const colorType = validTypes.includes(type) ? type : 'other';
                 tagItem.className = `tag-item tag-item--${colorType}`;
 
-                // 組合名稱和連結
                 const namesWrapper = document.createElement('div');
                 namesWrapper.className = 'tag-item-names';
 
@@ -425,7 +418,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 namesWrapper.appendChild(displayWrapper);
                 tagItem.appendChild(namesWrapper);
 
-                // 組合按鈕
                 const actionsWrapper = document.createElement('div');
                 actionsWrapper.className = 'tag-item-actions';
 
@@ -523,6 +515,85 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('export-modal').style.display = 'flex';
         };
 
+        const handleImportTags = async () => {
+            const importTextarea = document.getElementById('import-textarea');
+            const status = document.getElementById('import-status-message');
+            const jsonString = importTextarea.value;
+            status.textContent = '';
+
+            if (!jsonString.trim()) {
+                importTextarea.value = '';
+                return;
+            }
+
+            let parsedJson;
+            try {
+                parsedJson = JSON.parse(jsonString);
+            } catch (error) {
+                status.textContent = getMessage("importErrorInvalidJson");
+                status.style.color = '#dc3545';
+                return;
+            }
+
+            const { tags: existingTags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
+            const existingTagsMap = new Map(existingTags.map(t => [t.original, t]));
+            
+            const tagsToAdd = [];
+            const tagsToUpdate = [];
+
+            for (const key in parsedJson) {
+                if (Object.prototype.hasOwnProperty.call(parsedJson, key) && key.startsWith('tag_')) {
+                    const keyParts = key.replace(/^tag_/, '').split('_');
+                    const namespace = keyParts.shift();
+                    const tagName = keyParts.join(' ');
+                    const originalTag = `${namespace}: ${tagName}`;
+                    
+                    const displayMessage = parsedJson[key].message || originalTag;
+
+                    if (existingTagsMap.has(originalTag)) {
+                        if (existingTagsMap.get(originalTag).display !== displayMessage) {
+                            tagsToUpdate.push({ original: originalTag, display: displayMessage });
+                        }
+                    } else {
+                        tagsToAdd.push({ original: originalTag, display: displayMessage });
+                    }
+                }
+            }
+            
+            const addedCount = tagsToAdd.length;
+            const updatedCount = tagsToUpdate.length;
+
+            if (addedCount > 0 || updatedCount > 0) {
+                await browser.runtime.sendMessage({
+                    type: 'batch_update_tags',
+                    tagsToAdd,
+                    tagsToUpdate
+                });
+            }
+
+            if (addedCount > 0 && updatedCount > 0) {
+                status.textContent = getMessage("importSuccess")
+                    .replace('{addedCount}', addedCount)
+                    .replace('{updatedCount}', updatedCount);
+            } else if (addedCount > 0) {
+                status.textContent = getMessage("importSuccessAddOnly").replace('{addedCount}', addedCount);
+            } else if (updatedCount > 0) {
+                status.textContent = getMessage("importSuccessUpdateOnly").replace('{updatedCount}', updatedCount);
+            } else {
+                status.textContent = getMessage("importErrorNoAction");
+                status.style.color = '#6c757d';
+                return;
+            }
+            
+            status.style.color = '#28a745';
+            await renderSavedTags();
+            setTimeout(() => {
+                document.getElementById('import-modal').style.display = 'none';
+                importTextarea.value = '';
+                status.textContent = '';
+            }, 2500);
+        };
+
         const handleClearTags = async () => {
             await browser.runtime.sendMessage({ type: 'clear_saved_tags' });
             await renderSavedTags();
@@ -554,6 +625,8 @@ document.addEventListener('DOMContentLoaded', () => {
             await loadLocaleMessages();
             await loadSettings();
             
+            document.getElementById('import-textarea').placeholder = getMessage('importPlaceholder');
+
             checkLoginStatus();
             setupTabs();
 
@@ -620,6 +693,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.target.style.display = 'none';
                 }
             });
+
+            document.getElementById('import-tags-button').addEventListener('click', () => {
+                document.getElementById('import-modal').style.display = 'flex';
+            });
+            document.getElementById('close-import-modal-button').addEventListener('click', () => {
+                document.getElementById('import-modal').style.display = 'none';
+            });
+            document.getElementById('import-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'import-modal') {
+                    e.target.style.display = 'none';
+                }
+            });
+            document.getElementById('import-submit-button').addEventListener('click', handleImportTags);
         };
 
         initialize();

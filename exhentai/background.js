@@ -1,13 +1,8 @@
 /**
- * ExHentai 小幫手 - 背景腳本 (v1.2.5 - 資料遷移)
- *
- * - 新增：在擴充功能更新時，自動將舊版書籤資料遷移至新格式。
- * - 修正：使內容腳本 (如搜尋增強器) 也能獲取正確的翻譯。
- * - 新增：將書籤儲存結構改為物件 {original, display}。
- * - 新增：增加更新書籤顯示文字的邏輯。
+ * ExHentai 小幫手 - 背景腳本 (v1.2.6)
  */
 
-console.log("ExHentai 小幫手背景腳本 v1.9 已啟動。");
+console.log("ExHentai 小幫手背景腳本 v1.2.6 已啟動。");
 
 const galleryCache = new Map();
 const HISTORY_STORAGE_KEY = 'viewingHistory';
@@ -321,6 +316,32 @@ browser.runtime.onMessage.addListener(async (message) => {
                 return { success: true };
             }
             return { success: false, error: 'Tag not found' };
+        }
+        case 'batch_update_tags': {
+            const { tagsToAdd, tagsToUpdate } = message;
+            const data = await browser.storage.local.get({ [SAVED_TAGS_KEY]: [] });
+            let savedTags = data[SAVED_TAGS_KEY];
+            const savedTagsMap = new Map(savedTags.map(t => [t.original, t]));
+
+            // 應用更新
+            for (const tag of tagsToUpdate) {
+                if (savedTagsMap.has(tag.original)) {
+                    savedTagsMap.get(tag.original).display = tag.display;
+                }
+            }
+
+            // 應用新增
+            for (const tag of tagsToAdd) {
+                if (!savedTagsMap.has(tag.original)) {
+                    savedTagsMap.set(tag.original, tag);
+                }
+            }
+
+            // 將 map 轉回陣列並儲存
+            const newTagsArray = Array.from(savedTagsMap.values());
+            await browser.storage.local.set({ [SAVED_TAGS_KEY]: newTagsArray });
+            console.log(`[BG] 批次更新完成。新增: ${tagsToAdd.length}, 更新: ${tagsToUpdate.length}.`);
+            return { success: true };
         }
         case 'clear_saved_tags': {
             await browser.storage.local.remove(SAVED_TAGS_KEY);

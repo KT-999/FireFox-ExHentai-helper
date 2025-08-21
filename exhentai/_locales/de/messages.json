@@ -1,0 +1,303 @@
+{
+  "extensionName": {
+    "message": "ExHentai Helfer",
+    "description": "Der Name der Erweiterung."
+  },
+  "extensionDescription": {
+    "message": "Ein Hilfsprogramm für exhentai.org, das mehrere Lesemodi, eine Gitteransicht und Tastaturunterstützung bietet.",
+    "description": "Die Beschreibung der Erweiterung."
+  },
+  "popupHeader": {
+    "message": "ExHentai Helfer Einstellungen",
+    "description": "Kopfzeile für das Popup-Fenster."
+  },
+  "generalSettings": {
+    "message": "Allgemeine Einstellungen",
+    "description": "Unterüberschrift für allgemeine Einstellungen."
+  },
+  "enableGridView": {
+    "message": "Gitteransicht für Galerien aktivieren:",
+    "description": "Beschriftung für die Gitteransicht."
+  },
+  "gridColumns": {
+    "message": "Spalten pro Zeile:",
+    "description": "Beschriftung für die Anzahl der Spalten."
+  },
+  "readerMode": {
+    "message": "Lesemodus:",
+    "description": "Beschriftung für den Lesemodus."
+  },
+  "readerModeDefault": {
+    "message": "Website-Standard",
+    "description": "Option für den Standard-Lesemodus."
+  },
+  "readerModeHorizontal": {
+    "message": "Horizontal (Vorladen)",
+    "description": "Option für den horizontalen Modus."
+  },
+  "readerModeVertical": {
+    "message": "Vertikales Scrollen",
+    "description": "Option für den vertikalen Scroll-Modus."
+  },
+  "preloadCount": {
+    "message": "Anzahl Vorladen (Horizontal):",
+    "description": "Beschriftung für die Anzahl des Vorladens."
+  },
+  "cacheSize": {
+    "message": "Max. zwischengespeicherte Seiten:",
+    "description": "Beschriftung für die Cache-Größe."
+  },
+  "maxHistoryCount": {
+    "message": "Max. Verlaufseinträge:",
+    "description": "Beschriftung für die Anzahl der Verlaufseinträge."
+  },
+  "fitToWindow": {
+    "message": "Bild an Fenster anpassen (Horizontal):",
+    "description": "Beschriftung für Bild an Fenster anpassen."
+  },
+  "hidePreviewBar": {
+    "message": "Vorschauleiste ausblenden (Horizontal):",
+    "description": "Beschriftung für Vorschauleiste ausblenden."
+  },
+  "themeMode": {
+    "message": "Thema:",
+    "description": "Beschriftung für das Thema."
+  },
+  "themeSystem": {
+    "message": "Systemeinstellung folgen",
+    "description": "Option für das System-Thema."
+  },
+  "themeLight": {
+    "message": "Heller Modus",
+    "description": "Option für den hellen Modus."
+  },
+  "themeDark": {
+    "message": "Dunkler Modus",
+    "description": "Option für den dunklen Modus."
+  },
+  "uiLanguage": {
+    "message": "UI-Sprache:",
+    "description": "Beschriftung für die UI-Sprache."
+  },
+  "langSystem": {
+    "message": "Automatisch (Browser)",
+    "description": "Option für die automatische Sprache."
+  },
+  "langEN": {
+    "message": "English",
+    "description": "Option für Englisch."
+  },
+  "langZH_TW": {
+    "message": "繁體中文",
+    "description": "Option für traditionelles Chinesisch."
+  },
+  "langES": {
+    "message": "Español (Spanisch)",
+    "description": "Option für Spanisch."
+  },
+  "langJA": {
+    "message": "日本語 (Japanisch)",
+    "description": "Option für Japanisch."
+  },
+  "langKO": {
+    "message": "한국어 (Koreanisch)",
+    "description": "Option für Koreanisch."
+  },
+  "langDE": {
+    "message": "Deutsch",
+    "description": "Option für Deutsch."
+  },
+  "openOptionsButton": {
+    "message": "Hotkeys festlegen",
+    "description": "Schaltfläche zum Öffnen der Einstellungsseite."
+  },
+  "saveButton": {
+    "message": "Einstellungen speichern",
+    "description": "Schaltfläche zum Speichern der Einstellungen."
+  },
+  "saveSettingsSuccess": {
+    "message": "✅ Einstellungen gespeichert!",
+    "description": "Erfolgsmeldung nach dem Speichern der Einstellungen."
+  },
+  "saveSettingsSuccessLang": {
+    "message": "✅ Sprache gespeichert! Bitte erneut öffnen, um zu übernehmen.",
+    "description": "Erfolgsmeldung nach dem Ändern der Sprache."
+  },
+  "saveSettingsError": {
+    "message": "❌ Speichern fehlgeschlagen!",
+    "description": "Fehlermeldung bei fehlgeschlagenem Speichern."
+  },
+  "advancedOperations": {
+    "message": "Erweiterte Operationen",
+    "description": "Unterüberschrift für erweiterte Operationen."
+  },
+  "clearCacheDescription": {
+    "message": "Wenn Probleme beim Laden von Bildern oder Anzeigefehler auftreten, können Sie versuchen, alle zwischengespeicherten Daten manuell zu löschen. Dadurch werden alle vorgeladenen Bilder und Seitenindizes gelöscht.",
+    "description": "Beschreibung für die Schaltfläche zum Leeren des Caches."
+  },
+  "clearCacheButton": {
+    "message": "Gesamten Cache leeren",
+    "description": "Schaltfläche zum Leeren des Caches."
+  },
+  "tabSettings": {
+    "message": "Einstellungen",
+    "description": "Beschriftung für den Einstellungs-Tab."
+  },
+  "tabHistory": {
+    "message": "Verlauf",
+    "description": "Beschriftung für den Verlaufs-Tab."
+  },
+  "tabBookmarks": {
+    "message": "Lesezeichen",
+    "description": "Beschriftung für den Lesezeichen-Tab."
+  },
+  "historyHeader": {
+    "message": "Browserverlauf",
+    "description": "Kopfzeile für den Verlaufs-Tab."
+  },
+  "historyEmpty": {
+    "message": "Noch kein Browserverlauf vorhanden.",
+    "description": "Meldung, die angezeigt wird, wenn der Verlauf leer ist."
+  },
+  "clearHistoryButton": {
+    "message": "Verlauf löschen",
+    "description": "Schaltfläche zum Löschen des Verlaufs."
+  },
+  "bookmarksHeader": {
+    "message": "Gespeicherte Tags",
+    "description": "Kopfzeile für den Lesezeichen-Tab."
+  },
+  "bookmarksEmpty": {
+    "message": "Keine Tags in dieser Kategorie.",
+    "description": "Meldung, die angezeigt wird, wenn keine Lesezeichen vorhanden sind."
+  },
+  "clearBookmarksButton": {
+    "message": "Alle löschen",
+    "description": "Schaltfläche zum Löschen aller Lesezeichen."
+  },
+  "filterByCategory": {
+    "message": "Nach Kategorie filtern:",
+    "description": "Beschriftung für den Tag-Filter."
+  },
+  "filterShowAll": {
+    "message": "Alle anzeigen",
+    "description": "Option, um alle Tags anzuzeigen."
+  },
+  "optionsHeader": {
+    "message": "Hotkey-Einstellungen",
+    "description": "Kopfzeile für die Einstellungsseite."
+  },
+  "optionsSubtitle": {
+    "message": "Klicken Sie auf eine Schaltfläche und drücken Sie eine Taste zum Ändern",
+    "description": "Unterüberschrift für die Einstellungsseite."
+  },
+  "keyPrev": {
+    "message": "Vorherige Seite"
+  },
+  "keyNext": {
+    "message": "Nächste Seite"
+  },
+  "keyFit": {
+    "message": "Anpassung umschalten"
+  },
+  "keyHide": {
+    "message": "Vorschauleiste umschalten"
+  },
+  "keyExit": {
+    "message": "Zurück zur Galerie"
+  },
+  "keyClear": {
+    "message": "Cache leeren"
+  },
+  "saveHotkeys": {
+    "message": "Hotkeys speichern"
+  },
+  "contextMenuSaveTag": {
+    "message": "Diesen Tag speichern",
+    "description": "Kontextmenü-Eintrag zum Speichern eines Tags."
+  },
+  "checkingLoginStatus": {
+    "message": "Anmeldestatus wird überprüft...",
+    "description": "Text, der während der Überprüfung des Anmeldestatus angezeigt wird."
+  },
+  "loginStatus": {
+    "message": "Anmeldestatus:",
+    "description": "Beschriftung für den Anmeldestatus."
+  },
+  "loggedInStatus": {
+    "message": "Angemeldet",
+    "description": "Status, wenn der Benutzer angemeldet ist."
+  },
+  "loggedOutStatus": {
+    "message": "Sie sind anscheinend nicht angemeldet.",
+    "description": "Status, wenn der Benutzer nicht angemeldet ist."
+  },
+  "loginButton": {
+    "message": "Zur Anmeldeseite",
+    "description": "Schaltfläche, um zur Anmeldeseite zu gelangen."
+  },
+  "logoutButton": {
+    "message": "Abmelden",
+    "description": "Schaltfläche zum Abmelden."
+  },
+  "loginStatusError": {
+    "message": "Anmeldestatus konnte nicht überprüft werden. Bitte überprüfen Sie die Berechtigungen der Erweiterung.",
+    "description": "Fehlermeldung bei fehlgeschlagener Überprüfung des Anmeldestatus."
+  },
+  "toggleSavedTags": {
+    "message": "[Gespeicherte Tags anzeigen/ausblenden]",
+    "description": "Link zum Umschalten der Leiste für gespeicherte Tags auf der Suchseite."
+  },
+  "exportButton": {
+    "message": "Exportieren",
+    "description": "Schaltfläche zum Exportieren von benutzerdefinierten Tag-Namen."
+  },
+  "exportModalHeader": {
+    "message": "Exportergebnisse",
+    "description": "Kopfzeile für das Export-Modal."
+  },
+  "importButton": {
+    "message": "Importieren",
+    "description": "Schaltfläche zum Importieren von benutzerdefinierten Tag-Namen."
+  },
+  "importModalHeader": {
+    "message": "Benutzerdefinierte Namen importieren",
+    "description": "Kopfzeile für das Import-Modal."
+  },
+  "importPlaceholder": {
+    "message": "Fügen Sie hier den exportierten i18n-JSON-Inhalt ein...",
+    "description": "Platzhaltertext für das Import-Textfeld."
+  },
+  "importSubmitButton": {
+    "message": "Importieren",
+    "description": "Text für die Bestätigungsschaltfläche des Imports."
+  },
+  "importSuccess": {
+    "message": "✅ Import abgeschlossen! Hinzugefügt: {addedCount}, Aktualisiert: {updatedCount}.",
+    "description": "Erfolgsmeldung nach dem Import."
+  },
+  "importSuccessAddOnly": {
+    "message": "✅ Import abgeschlossen! {addedCount} neue Tags hinzugefügt.",
+    "description": "Erfolgsmeldung, wenn nur Tags hinzugefügt wurden."
+  },
+  "importSuccessUpdateOnly": {
+    "message": "✅ Import abgeschlossen! {updatedCount} benutzerdefinierte Namen aktualisiert.",
+    "description": "Erfolgsmeldung, wenn nur Tags aktualisiert wurden."
+  },
+  "importErrorInvalidJson": {
+    "message": "❌ Import fehlgeschlagen! Ungültiges JSON-Format.",
+    "description": "Fehlermeldung bei ungültigem JSON-Format."
+  },
+  "importErrorNoData": {
+    "message": "❌ Import fehlgeschlagen! Keine gültigen Daten zum Importieren gefunden.",
+    "description": "Fehlermeldung, wenn keine gültigen Daten gefunden wurden."
+  },
+  "importErrorNoAction": {
+    "message": "ℹ️ Keine Aktion erforderlich. Alle importierten Tags stimmen mit den vorhandenen Daten überein.",
+    "description": "Meldung, wenn keine Änderungen vorgenommen wurden."
+  },
+  "searchTagsPlaceholder": {
+    "message": "Tags suchen...",
+    "description": "Platzhalter für die Tag-Sucheingabe."
+  }
+}

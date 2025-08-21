@@ -95,6 +95,18 @@
     "message": "Español (西班牙文)",
     "description": "西班牙文選項。"
   },
+  "langJA": {
+    "message": "日本語 (日文)",
+    "description": "日文選項。"
+  },
+  "langKO": {
+    "message": "한국어 (韓文)",
+    "description": "韓文選項。"
+  },
+  "langDE": {
+    "message": "Deutsch (德文)",
+    "description": "德文選項。"
+  },
   "openOptionsButton": {
     "message": "設定快捷鍵",
     "description": "開啟設定頁面按鈕。"
@@ -223,11 +235,55 @@
     "description": "在搜尋頁面切換已儲存標籤列的連結。"
   },
   "exportButton": {
-    "message": "匯出 i18n",
+    "message": "匯出",
     "description": "匯出自訂標籤名稱的按鈕。"
   },
   "exportModalHeader": {
-    "message": "i18n 匯出結果",
+    "message": "匯出結果",
     "description": "匯出結果視窗的標題。"
+  },
+  "importButton": {
+    "message": "匯入",
+    "description": "匯入自訂標籤名稱的按鈕。"
+  },
+  "importModalHeader": {
+    "message": "匯入自訂名稱",
+    "description": "匯入視窗的標題。"
+  },
+  "importPlaceholder": {
+    "message": "請在此貼上匯出的 i18n JSON 內容...",
+    "description": "匯入文字區域的提示文字。"
+  },
+  "importSubmitButton": {
+    "message": "匯入",
+    "description": "確認匯入按鈕的文字。"
+  },
+  "importSuccess": {
+    "message": "✅ 匯入完成！新增 {addedCount} 筆，更新 {updatedCount} 筆。",
+    "description": "成功匯入後的訊息。"
+  },
+  "importSuccessAddOnly": {
+    "message": "✅ 匯入完成！新增 {addedCount} 筆新標籤。",
+    "description": "僅新增標籤時的成功訊息。"
+  },
+  "importSuccessUpdateOnly": {
+    "message": "✅ 匯入完成！更新 {updatedCount} 筆自訂名稱。",
+    "description": "僅更新標籤時的成功訊息。"
+  },
+  "importErrorInvalidJson": {
+    "message": "❌ 匯入失敗！無效的 JSON 格式。",
+    "description": "JSON 格式錯誤時的匯入失敗訊息。"
+  },
+  "importErrorNoData": {
+    "message": "❌ 匯入失敗！找不到可匯入的有效資料。",
+    "description": "找不到有效資料時的匯入失敗訊息。"
+  },
+  "importErrorNoAction": {
+    "message": "ℹ️ 無需操作。所有匯入的標籤都與現有資料相符。",
+    "description": "未進行任何變更時的訊息。"
+  },
+  "searchTagsPlaceholder": {
+    "message": "搜尋標籤...",
+    "description": "標籤搜尋輸入框的提示文字。"
   }
 }
