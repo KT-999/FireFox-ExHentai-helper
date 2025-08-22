@@ -1,5 +1,6 @@
 /**
- * 搜尋增強器模組 (v1.2.9 - 新增標籤顏色)
+ * 搜尋增強器模組 (v1.3.0 - 改善切換邏輯)
+ * - 更新：[顯示/隱藏] 連結現在會同時控制搜尋框與標籤列表的可見性。
  * - 新增：為 reclass, male 標籤類別增加配色。
  * - 更新：將標籤搜尋框移至獨立的一行，以解決擁擠問題。
  */
@@ -44,7 +45,6 @@ function injectCSS() {
             flex-shrink: 0; /* 防止被壓縮 */
             margin-left: auto; /* 將篩選器推到右邊 */
         }
-        /* --- 版面修正 --- */
         /* 讓搜尋框容器佔滿整行，從而實現換行 */
         .exh-tags-search-container {
             flex-basis: 100%; /* 佔滿父容器的整個寬度 */
@@ -88,7 +88,6 @@ function injectCSS() {
         .exh-search-tag--character { background-color: #1e3a8a; color: #93c5fd; }
         .exh-search-tag--language { background-color: #0c4a6e; color: #7dd3fc; }
         .exh-search-tag--other { background-color: #374151; color: #d1d5db; }
-        /* --- 新增配色 --- */
         .exh-search-tag--male { background-color: #164e63; color: #67e8f9; }
         .exh-search-tag--reclass { background-color: #78350f; color: #fcd34d; }
     `;
@@ -231,14 +230,18 @@ async function createUI() {
     tagSearchInput.id = 'exh-tags-search-input';
     tagSearchInput.placeholder = messages.searchTagsPlaceholder || 'Search tags...';
     searchContainer.appendChild(tagSearchInput);
+    searchContainer.style.display = 'none'; // *** 變更 ***: 預設隱藏搜尋框
 
     const container = document.createElement('div');
     container.id = 'exh-tags-container';
     container.style.display = 'none';
 
+    // *** 變更 ***: 更新事件監聽器以同時控制搜尋框和標籤列表
     toggle.addEventListener('click', (e) => {
         e.preventDefault();
-        container.style.display = container.style.display === 'none' ? 'flex' : 'none';
+        const isHidden = container.style.display === 'none';
+        searchContainer.style.display = isHidden ? 'block' : 'none';
+        container.style.display = isHidden ? 'flex' : 'none';
     });
 
     const categories = [...new Set(tags.map(t => t.original.split(':')[0]))];
