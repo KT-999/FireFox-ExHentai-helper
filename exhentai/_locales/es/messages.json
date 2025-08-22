@@ -107,6 +107,18 @@
     "message": "Deutsch (Alemán)",
     "description": "Opción para el idioma alemán."
   },
+  "langFR": {
+    "message": "Français (Francés)",
+    "description": "Opción para el idioma francés."
+  },
+  "langPT_BR": {
+    "message": "Português (Portugués de Brasil)",
+    "description": "Opción para el idioma portugués de Brasil."
+  },
+  "langRU": {
+    "message": "Русский (Ruso)",
+    "description": "Opción para el idioma ruso."
+  },
   "openOptionsButton": {
     "message": "Configurar Atajos",
     "description": "Botón para abrir la página de opciones."

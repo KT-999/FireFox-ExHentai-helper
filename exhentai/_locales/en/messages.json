@@ -107,6 +107,18 @@
     "message": "Deutsch (German)",
     "description": "Option for German language."
   },
+  "langFR": {
+    "message": "Français (French)",
+    "description": "Option for French language."
+  },
+  "langPT_BR": {
+    "message": "Português (Brasil)",
+    "description": "Option for Brazilian Portuguese language."
+  },
+  "langRU": {
+    "message": "Русский (Russian)",
+    "description": "Option for Russian language."
+  },
   "openOptionsButton": {
     "message": "Configure Hotkeys",
     "description": "Button to open the options page."

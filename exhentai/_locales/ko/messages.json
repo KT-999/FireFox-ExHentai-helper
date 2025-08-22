@@ -107,6 +107,18 @@
     "message": "Deutsch (독일어)",
     "description": "독일어 옵션입니다."
   },
+  "langFR": {
+    "message": "Français (프랑스어)",
+    "description": "프랑스어 옵션입니다."
+  },
+  "langPT_BR": {
+    "message": "Português (브라질 포르투갈어)",
+    "description": "브라질 포르투갈어 옵션입니다."
+  },
+  "langRU": {
+    "message": "Русский (러시아어)",
+    "description": "러시아어 옵션입니다."
+  },
   "openOptionsButton": {
     "message": "단축키 설정",
     "description": "설정 페이지를 여는 버튼입니다."

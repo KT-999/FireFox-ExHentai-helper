@@ -107,6 +107,18 @@
     "message": "Deutsch (德文)",
     "description": "德文選項。"
   },
+  "langFR": {
+    "message": "Français (法文)",
+    "description": "法文選項。"
+  },
+  "langPT_BR": {
+    "message": "Português (巴西葡萄牙文)",
+    "description": "巴西葡萄牙文選項。"
+  },
+  "langRU": {
+    "message": "Русский (俄文)",
+    "description": "俄文選項。"
+  },
   "openOptionsButton": {
     "message": "設定快捷鍵",
     "description": "開啟設定頁面按鈕。"

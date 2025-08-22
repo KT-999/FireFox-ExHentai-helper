@@ -1,0 +1,335 @@
+{
+    "extensionName": {
+        "message": "Assistant ExHentai",
+        "description": "Le nom de l'extension."
+    },
+    "extensionDescription": {
+        "message": "Un outil d'assistance pour exhentai.org, offrant plusieurs modes de lecture, une vue en grille et une prise en charge du clavier.",
+        "description": "La description de l'extension."
+    },
+    "popupHeader": {
+        "message": "Paramètres de l'Assistant ExHentai",
+        "description": "En-tête des paramètres du popup."
+    },
+    "generalSettings": {
+        "message": "Paramètres Généraux",
+        "description": "Sous-en-tête pour les paramètres généraux."
+    },
+    "enableGridView": {
+        "message": "Activer la vue en grille pour les galeries :",
+        "description": "Étiquette pour la case à cocher de la vue en grille."
+    },
+    "gridColumns": {
+        "message": "Colonnes par ligne :",
+        "description": "Étiquette pour le champ de saisie des colonnes de la grille."
+    },
+    "readerMode": {
+        "message": "Mode Lecteur :",
+        "description": "Étiquette pour la sélection du mode lecteur."
+    },
+    "readerModeDefault": {
+        "message": "Défaut du site web",
+        "description": "Option pour le mode lecteur par défaut."
+    },
+    "readerModeHorizontal": {
+        "message": "Horizontal (Préchargement)",
+        "description": "Option pour le mode lecteur horizontal."
+    },
+    "readerModeVertical": {
+        "message": "Défilement Vertical",
+        "description": "Option pour le mode lecteur vertical."
+    },
+    "preloadCount": {
+        "message": "Nombre de préchargements (Horizontal) :",
+        "description": "Étiquette pour le champ de saisie du nombre de préchargements."
+    },
+    "cacheSize": {
+        "message": "Max Pages en Cache :",
+        "description": "Étiquette pour le champ de saisie de la taille du cache."
+    },
+    "maxHistoryCount": {
+        "message": "Max Entrées d'Historique :",
+        "description": "Étiquette pour le champ de saisie du nombre maximum d'entrées d'historique."
+    },
+    "fitToWindow": {
+        "message": "Ajuster l'image à la fenêtre (Horizontal) :",
+        "description": "Étiquette pour la case à cocher d'ajustement à la fenêtre."
+    },
+    "hidePreviewBar": {
+        "message": "Masquer la barre d'aperçu (Horizontal) :",
+        "description": "Étiquette pour la case à cocher pour masquer la barre d'aperçu."
+    },
+    "themeMode": {
+        "message": "Thème :",
+        "description": "Étiquette pour la sélection du thème."
+    },
+    "themeSystem": {
+        "message": "Défaut du système",
+        "description": "Option pour le thème par défaut du système."
+    },
+    "themeLight": {
+        "message": "Mode Clair",
+        "description": "Option pour le thème clair."
+    },
+    "themeDark": {
+        "message": "Mode Sombre",
+        "description": "Option pour le thème sombre."
+    },
+    "uiLanguage": {
+        "message": "UI Language:",
+        "description": "Étiquette pour la sélection de la langue de l'interface utilisateur."
+    },
+    "langSystem": {
+        "message": "Auto (Navigateur)",
+        "description": "Option pour la langue automatique."
+    },
+    "langEN": {
+        "message": "English (Anglais)",
+        "description": "Option pour la langue anglaise."
+    },
+    "langZH_TW": {
+        "message": "繁體中文 (Chinois Traditionnel)",
+        "description": "Option pour la langue chinoise traditionnelle."
+    },
+    "langES": {
+        "message": "Español (Espagnol)",
+        "description": "Option pour la langue espagnole."
+    },
+    "langJA": {
+        "message": "日本語 (Japonais)",
+        "description": "Option pour la langue japonaise."
+    },
+    "langKO": {
+        "message": "한국어 (Coréen)",
+        "description": "Option pour la langue coréenne."
+    },
+    "langDE": {
+        "message": "Deutsch (Allemand)",
+        "description": "Option pour la langue allemande."
+    },
+    "langFR": {
+        "message": "Français",
+        "description": "Option pour la langue française."
+    },
+    "langPT_BR": {
+        "message": "Português (Portugais du Brésil)",
+        "description": "Option pour la langue portugaise du Brésil."
+    },
+    "langRU": {
+        "message": "Русский (Russe)",
+        "description": "Option pour la langue russe."
+    },
+    "openOptionsButton": {
+        "message": "Configurer les raccourcis",
+        "description": "Bouton pour ouvrir la page des options."
+    },
+    "saveButton": {
+        "message": "Enregistrer les paramètres",
+        "description": "Bouton pour enregistrer les paramètres."
+    },
+    "saveSettingsSuccess": {
+        "message": "✅ Paramètres enregistrés !",
+        "description": "Message de succès après l'enregistrement des paramètres."
+    },
+    "saveSettingsSuccessLang": {
+        "message": "✅ Langue enregistrée ! Veuillez rouvrir pour appliquer.",
+        "description": "Message de succès après le changement de langue."
+    },
+    "saveSettingsError": {
+        "message": "❌ Échec de l'enregistrement !",
+        "description": "Message d'erreur lorsque l'enregistrement des paramètres échoue."
+    },
+    "advancedOperations": {
+        "message": "Opérations Avancées",
+        "description": "Sous-en-tête pour les opérations avancées."
+    },
+    "clearCacheDescription": {
+        "message": "Si vous rencontrez des problèmes de chargement d'images ou des erreurs d'affichage, vous pouvez essayer de vider manuellement toutes les données en cache. Cela effacera toutes les images préchargées et les index de pages.",
+        "description": "Description pour le bouton de vidage du cache."
+    },
+    "clearCacheButton": {
+        "message": "Vider tout le cache",
+        "description": "Bouton pour vider tout le cache."
+    },
+    "tabSettings": {
+        "message": "Paramètres",
+        "description": "Étiquette pour l'onglet des paramètres."
+    },
+    "tabHistory": {
+        "message": "Historique",
+        "description": "Étiquette pour l'onglet de l'historique."
+    },
+    "tabBookmarks": {
+        "message": "Favoris",
+        "description": "Étiquette pour l'onglet des favoris."
+    },
+    "historyHeader": {
+        "message": "Historique de navigation",
+        "description": "En-tête pour l'onglet de l'historique."
+    },
+    "historyEmpty": {
+        "message": "Aucun historique de navigation pour le moment.",
+        "description": "Message affiché lorsque l'historique est vide."
+    },
+    "clearHistoryButton": {
+        "message": "Effacer l'historique",
+        "description": "Bouton pour effacer l'historique."
+    },
+    "bookmarksHeader": {
+        "message": "Tags Enregistrés",
+        "description": "En-tête pour l'onglet des favoris."
+    },
+    "bookmarksEmpty": {
+        "message": "Aucun tag dans cette catégorie.",
+        "description": "Message affiché lorsque les favoris sont vides."
+    },
+    "clearBookmarksButton": {
+        "message": "Tout effacer",
+        "description": "Bouton pour effacer tous les favoris."
+    },
+    "filterByCategory": {
+        "message": "Filtrer par catégorie :",
+        "description": "Étiquette pour le filtre de tags."
+    },
+    "filterShowAll": {
+        "message": "Tout afficher",
+        "description": "Option pour afficher tous les tags."
+    },
+    "optionsHeader": {
+        "message": "Paramètres des raccourcis",
+        "description": "En-tête pour la page des options."
+    },
+    "optionsSubtitle": {
+        "message": "Cliquez sur un bouton puis appuyez sur une touche pour changer le raccourci",
+        "description": "Sous-titre pour la page des options."
+    },
+    "keyPrev": {
+        "message": "Page Précédente"
+    },
+    "keyNext": {
+        "message": "Page Suivante"
+    },
+    "keyFit": {
+        "message": "Basculer l'ajustement"
+    },
+    "keyHide": {
+        "message": "Basculer la barre d'aperçu"
+    },
+    "keyExit": {
+        "message": "Retour à la galerie"
+    },
+    "keyClear": {
+        "message": "Vider le cache"
+    },
+    "saveHotkeys": {
+        "message": "Enregistrer les raccourcis"
+    },
+    "contextMenuSaveTag": {
+        "message": "Enregistrer ce tag",
+        "description": "Option du menu contextuel pour enregistrer un tag."
+    },
+    "checkingLoginStatus": {
+        "message": "Vérification du statut de connexion...",
+        "description": "Texte affiché lors de la vérification du statut de connexion."
+    },
+    "loginStatus": {
+        "message": "Statut de connexion :",
+        "description": "Étiquette pour le statut de connexion."
+    },
+    "loggedInStatus": {
+        "message": "Connecté",
+        "description": "Statut lorsque l'utilisateur est connecté."
+    },
+    "loggedOutStatus": {
+        "message": "Vous ne semblez pas être connecté.",
+        "description": "Statut lorsque l'utilisateur n'est pas connecté."
+    },
+    "loginButton": {
+        "message": "Aller à la page de connexion",
+        "description": "Bouton pour aller à la page de connexion."
+    },
+    "logoutButton": {
+        "message": "Déconnexion",
+        "description": "Bouton pour se déconnecter."
+    },
+    "loginStatusError": {
+        "message": "Impossible de vérifier le statut de connexion. Veuillez vérifier les autorisations de l'extension.",
+        "description": "Message d'erreur en cas d'échec de la vérification du statut de connexion."
+    },
+    "toggleSavedTags": {
+        "message": "[Afficher/Masquer les tags enregistrés]",
+        "description": "Lien pour basculer la barre des tags enregistrés sur les pages de recherche."
+    },
+    "importPlaceholder": {
+        "message": "Collez le contenu JSON i18n exporté ici...",
+        "description": "Texte de remplacement pour la zone de texte d'importation."
+    },
+    "importSubmitButton": {
+        "message": "Importer",
+        "description": "Texte pour le bouton de confirmation d'importation."
+    },
+    "importSuccess": {
+        "message": "✅ Importation terminée ! Ajoutés : {addedCount}, Mis à jour : {updatedCount}.",
+        "description": "Message de succès après l'importation."
+    },
+    "importSuccessAddOnly": {
+        "message": "✅ Importation terminée ! {addedCount} nouveaux tags ajoutés.",
+        "description": "Message de succès lors de l'ajout de tags uniquement."
+    },
+    "importSuccessUpdateOnly": {
+        "message": "✅ Importation terminée ! {updatedCount} noms personnalisés mis à jour.",
+        "description": "Message de succès lors de la mise à jour de tags uniquement."
+    },
+    "importErrorInvalidJson": {
+        "message": "❌ Échec de l'importation ! Format JSON invalide.",
+        "description": "Message d'erreur lorsque le format JSON est invalide."
+    },
+    "importErrorNoData": {
+        "message": "❌ Échec de l'importation ! Aucune donnée valide à importer trouvée.",
+        "description": "Message d'erreur lorsqu'aucune donnée valide n'est trouvée."
+    },
+    "importErrorNoAction": {
+        "message": "ℹ️ Aucune action nécessaire. Tous les tags importés correspondent aux données existantes.",
+        "description": "Message lorsqu'aucune modification n'a été apportée."
+    },
+    "searchTagsPlaceholder": {
+        "message": "Rechercher des tags...",
+        "description": "Texte de remplacement pour le champ de recherche de tags."
+    },
+    "tagsIoTitle": {
+        "message": "Importation et Exportation de Favoris",
+        "description": "Le titre de la page d'importation/exportation des tags."
+    },
+    "exportHeader": {
+        "message": "Exporter les Favoris",
+        "description": "En-tête de la section d'exportation."
+    },
+    "exportDescription": {
+        "message": "Cliquez sur le bouton ci-dessous pour générer les données de tous vos favoris enregistrés. Vous pouvez les sauvegarder ou les importer sur un autre appareil.",
+        "description": "Description de la fonctionnalité d'exportation."
+    },
+    "generateExportButton": {
+        "message": "Générer les données d'exportation",
+        "description": "Bouton pour générer les données d'exportation."
+    },
+    "copyToClipboardButton": {
+        "message": "Copier dans le presse-papiers",
+        "description": "Bouton pour copier les données dans le presse-papiers."
+    },
+    "copySuccess": {
+        "message": "✅ Copié avec succès !",
+        "description": "Message de succès après la copie dans le presse-papiers."
+    },
+    "importHeader": {
+        "message": "Importer les Favoris",
+        "description": "En-tête de la section d'importation."
+    },
+    "importDescription": {
+        "message": "Collez les données JSON précédemment exportées dans le champ ci-dessous et cliquez sur 'Importer'. Cela ajoutera de nouveaux favoris et mettra à jour ceux qui existent déjà.",
+        "description": "Description de la fonctionnalité d'importation."
+    },
+    "manageTagsIoButton": {
+        "message": "Importer / Exporter",
+        "description": "Bouton pour ouvrir la page d'importation/exportation des tags."
+    }
+}

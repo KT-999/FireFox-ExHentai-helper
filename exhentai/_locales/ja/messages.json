@@ -107,6 +107,18 @@
     "message": "Deutsch (ドイツ語)",
     "description": "ドイツ語オプション。"
   },
+  "langFR": {
+    "message": "Français (フランス語)",
+    "description": "フランス語オプション。"
+  },
+  "langPT_BR": {
+    "message": "Português (ブラジルポルトガル語)",
+    "description": "ブラジルポルトガル語オプション。"
+  },
+  "langRU": {
+    "message": "Русский (ロシア語)",
+    "description": "ロシア語オプション。"
+  },
   "openOptionsButton": {
     "message": "ホットキーを設定",
     "description": "オプションページを開くボタン。"
