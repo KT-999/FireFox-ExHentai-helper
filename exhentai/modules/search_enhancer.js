@@ -1,8 +1,7 @@
 /**
- * 搜尋增強器模組 (v1.3.3 - 修正重複選取邏輯)
- * - 修正：重寫重複標籤的檢查邏輯，改用更可靠的字串比對，徹底解決含空格標籤的重複選取問題。
- * - 修正：重寫正規表示式生成邏輯，確保能正確防止含空格及引號的標籤被重複選取。
- * - 修正：透過移除前後空格，解決含有空格的標籤 (如 "blue archive$") 無法防止重複選取的問題。
+ * 搜尋增強器模組 (v1.3.6 - 最終修正重複選取與語法問題)
+ * - 修正：重寫正規化函式，確保在任何情況下都能正確防止標籤被重複選取。
+ * - 修正：確保為含空格標籤添加 '$' 時，該符號被正確放置在引號內部。
  * - 更新：[顯示/隱藏] 連結現在會同時控制搜尋框與標籤列表的可見性。
  * - 新增：為 reclass, male 標籤類別增加配色。
  * - 更新：將標籤搜尋框移至獨立的一行，以解決擁擠問題。
@@ -100,6 +99,18 @@ function injectCSS() {
     document.head.appendChild(style);
 }
 
+// *** 修正 ***: 使用更可靠的字串方法重寫正規化函式
+function normalizeTag(tagString) {
+    let cleaned = tagString.trim();
+    // 移除所有的引號
+    cleaned = cleaned.replace(/"/g, '');
+    // 移除結尾的 '$'
+    if (cleaned.endsWith('$')) {
+        cleaned = cleaned.slice(0, -1);
+    }
+    return cleaned;
+}
+
 function handleTagClick(event) {
     const tagText = event.currentTarget.dataset.tag; 
     const searchInput = document.getElementById('f_search');
@@ -107,31 +118,14 @@ function handleTagClick(event) {
 
     const currentSearchValue = searchInput.value.trim();
 
-    // 1. 解構並清理標籤
-    const colonIndex = tagText.indexOf(':');
-    let type = '';
-    let value = tagText.trim();
+    // 1. 正規化要被加入的標籤
+    const normalizedTagToAdd = normalizeTag(tagText);
 
-    if (colonIndex > -1) {
-        type = tagText.substring(0, colonIndex);
-        value = tagText.substring(colonIndex + 1).trim();
-    }
-
-    // 2. 建立標籤在搜尋框中可能出現的樣式 (不含 $)
-    let searchTermInBox;
-    if (value.includes(' ')) {
-        searchTermInBox = type ? `${type}:"${value}"` : `"${value}"`;
-    } else {
-        searchTermInBox = type ? `${type}:${value}` : value;
-    }
-
-    // 3. 使用更可靠的正規表示式來解析搜尋框中的詞組，而不是用 split()
-    const searchTerms = currentSearchValue.match(/(?:[a-zA-Z0-9_]+:"[^"]+"|"[^"]+"|[^\s"]+)/g) || [];
+    // 2. 解析搜尋框中的現有標籤
+    const searchTerms = currentSearchValue.match(/[a-zA-Z0-9_]+:"[^"]+"\$?|"[^"]+"\$?|[^\s"]+\$?/g) || [];
     
-    const exists = searchTerms.some(term => {
-        // 檢查搜尋框中的每個詞是否完全等於 "樣式" 或 "樣式$"
-        return term === searchTermInBox || term === `${searchTermInBox}$`;
-    });
+    // 3. 正規化所有現有標籤並進行比對
+    const exists = searchTerms.some(term => normalizeTag(term) === normalizedTagToAdd);
 
     if (exists) {
         console.log(`標籤 "${tagText}" 已存在於搜尋中，操作已取消。`);
@@ -139,7 +133,20 @@ function handleTagClick(event) {
     }
 
     // 4. 建立要添加到搜尋框的字串
-    const searchTermToAdd = `${searchTermInBox}$`;
+    const colonIndex = tagText.indexOf(':');
+    let type = '';
+    let value = tagText.trim();
+    if (colonIndex > -1) {
+        type = tagText.substring(0, colonIndex);
+        value = tagText.substring(colonIndex + 1).trim();
+    }
+
+    let searchTermToAdd;
+    if (value.includes(' ')) {
+        searchTermToAdd = type ? `${type}:"${value}$"` : `"${value}$"`;
+    } else {
+        searchTermToAdd = type ? `${type}:${value}$` : `${value}$`;
+    }
 
     if (currentSearchValue === '') {
         searchInput.value = searchTermToAdd;

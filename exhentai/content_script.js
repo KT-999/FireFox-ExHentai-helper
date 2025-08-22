@@ -1,8 +1,9 @@
 /**
- * ExHentai 小幫手 - 內容腳本 (v1.2.6)
+ * ExHentai 小幫手 - 內容腳本 (v1.3.6)
+ * - 新增：在書籍詳情頁載入 tag_translator.js 模組，以顯示自訂標籤名稱。
  */
 
-console.log("ExHentai 小幫手 v1.2.6 已啟動 (模組化)。");
+console.log("ExHentai 小幫手 v1.3.0 已啟動 (模組化)。");
 
 // --- 全域變數 (供各模組使用) ---
 window.navigationContext = {
@@ -52,8 +53,13 @@ async function main() {
             const { initReader } = await import(browser.runtime.getURL('modules/reader.js'));
             initReader();
         } else if (isSingleGalleryPage) {
+            // 在書籍詳情頁，同時啟用歷史紀錄和標籤翻譯功能
             const { initHistoryRecording } = await import(browser.runtime.getURL('modules/history.js'));
             initHistoryRecording();
+            
+            // *** 新增 ***: 載入並執行標籤翻譯模組
+            const { initTagTranslator } = await import(browser.runtime.getURL('modules/tag_translator.js'));
+            initTagTranslator();
         }
 
         if (isGalleryListPage && window.scriptSettings.enableGridView) {
