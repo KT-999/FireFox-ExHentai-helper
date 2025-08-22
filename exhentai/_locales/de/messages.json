@@ -37,79 +37,79 @@
   },
   "readerModeVertical": {
     "message": "Vertikales Scrollen",
-    "description": "Option für den vertikalen Scroll-Modus."
+    "description": "Option für den vertikalen Modus."
   },
   "preloadCount": {
     "message": "Anzahl Vorladen (Horizontal):",
-    "description": "Beschriftung für die Anzahl des Vorladens."
+    "description": "Beschriftung für die Anzahl der vorzuladenden Seiten."
   },
   "cacheSize": {
-    "message": "Max. zwischengespeicherte Seiten:",
+    "message": "Max. zwischengesp. Seiten:",
     "description": "Beschriftung für die Cache-Größe."
   },
   "maxHistoryCount": {
     "message": "Max. Verlaufseinträge:",
-    "description": "Beschriftung für die Anzahl der Verlaufseinträge."
+    "description": "Beschriftung für die maximale Anzahl von Verlaufseinträgen."
   },
   "fitToWindow": {
     "message": "Bild an Fenster anpassen (Horizontal):",
-    "description": "Beschriftung für Bild an Fenster anpassen."
+    "description": "Beschriftung für die Option 'An Fenster anpassen'."
   },
   "hidePreviewBar": {
-    "message": "Vorschauleiste ausblenden (Horizontal):",
-    "description": "Beschriftung für Vorschauleiste ausblenden."
+    "message": "Vorschau-Leiste ausblenden (Horizontal):",
+    "description": "Beschriftung für die Option 'Vorschau-Leiste ausblenden'."
   },
   "themeMode": {
     "message": "Thema:",
-    "description": "Beschriftung für das Thema."
+    "description": "Beschriftung für die Themenauswahl."
   },
   "themeSystem": {
-    "message": "Systemeinstellung folgen",
-    "description": "Option für das System-Thema."
+    "message": "Systemstandard",
+    "description": "Option für das Systemstandard-Thema."
   },
   "themeLight": {
     "message": "Heller Modus",
-    "description": "Option für den hellen Modus."
+    "description": "Option für das helle Thema."
   },
   "themeDark": {
     "message": "Dunkler Modus",
-    "description": "Option für den dunklen Modus."
+    "description": "Option für das dunkle Thema."
   },
   "uiLanguage": {
-    "message": "UI-Sprache:",
-    "description": "Beschriftung für die UI-Sprache."
+    "message": "UI Language:",
+    "description": "Beschriftung für die Sprachauswahl."
   },
   "langSystem": {
     "message": "Automatisch (Browser)",
     "description": "Option für die automatische Sprache."
   },
   "langEN": {
-    "message": "English",
-    "description": "Option für Englisch."
+    "message": "English (Englisch)",
+    "description": "Option für die englische Sprache."
   },
   "langZH_TW": {
-    "message": "繁體中文",
-    "description": "Option für traditionelles Chinesisch."
+    "message": "繁體中文 (Traditionelles Chinesisch)",
+    "description": "Option für die traditionelle chinesische Sprache."
   },
   "langES": {
     "message": "Español (Spanisch)",
-    "description": "Option für Spanisch."
+    "description": "Option für die spanische Sprache."
   },
   "langJA": {
     "message": "日本語 (Japanisch)",
-    "description": "Option für Japanisch."
+    "description": "Option für die japanische Sprache."
   },
   "langKO": {
     "message": "한국어 (Koreanisch)",
-    "description": "Option für Koreanisch."
+    "description": "Option für die koreanische Sprache."
   },
   "langDE": {
     "message": "Deutsch",
-    "description": "Option für Deutsch."
+    "description": "Option für die deutsche Sprache."
   },
   "openOptionsButton": {
-    "message": "Hotkeys festlegen",
-    "description": "Schaltfläche zum Öffnen der Einstellungsseite."
+    "message": "Hotkeys konfigurieren",
+    "description": "Schaltfläche zum Öffnen der Optionsseite."
   },
   "saveButton": {
     "message": "Einstellungen speichern",
@@ -125,7 +125,7 @@
   },
   "saveSettingsError": {
     "message": "❌ Speichern fehlgeschlagen!",
-    "description": "Fehlermeldung bei fehlgeschlagenem Speichern."
+    "description": "Fehlermeldung, wenn das Speichern der Einstellungen fehlschlägt."
   },
   "advancedOperations": {
     "message": "Erweiterte Operationen",
@@ -133,11 +133,11 @@
   },
   "clearCacheDescription": {
     "message": "Wenn Probleme beim Laden von Bildern oder Anzeigefehler auftreten, können Sie versuchen, alle zwischengespeicherten Daten manuell zu löschen. Dadurch werden alle vorgeladenen Bilder und Seitenindizes gelöscht.",
-    "description": "Beschreibung für die Schaltfläche zum Leeren des Caches."
+    "description": "Beschreibung für die Schaltfläche 'Cache leeren'."
   },
   "clearCacheButton": {
     "message": "Gesamten Cache leeren",
-    "description": "Schaltfläche zum Leeren des Caches."
+    "description": "Schaltfläche zum Leeren des gesamten Caches."
   },
   "tabSettings": {
     "message": "Einstellungen",
@@ -185,11 +185,11 @@
   },
   "optionsHeader": {
     "message": "Hotkey-Einstellungen",
-    "description": "Kopfzeile für die Einstellungsseite."
+    "description": "Kopfzeile für die Optionsseite."
   },
   "optionsSubtitle": {
-    "message": "Klicken Sie auf eine Schaltfläche und drücken Sie eine Taste zum Ändern",
-    "description": "Unterüberschrift für die Einstellungsseite."
+    "message": "Klicken Sie auf eine Schaltfläche und drücken Sie dann eine Taste, um die Einstellung zu ändern",
+    "description": "Unterüberschrift für die Optionsseite."
   },
   "keyPrev": {
     "message": "Vorherige Seite"
@@ -201,7 +201,7 @@
     "message": "Anpassung umschalten"
   },
   "keyHide": {
-    "message": "Vorschauleiste umschalten"
+    "message": "Vorschau-Leiste umschalten"
   },
   "keyExit": {
     "message": "Zurück zur Galerie"
@@ -214,10 +214,10 @@
   },
   "contextMenuSaveTag": {
     "message": "Diesen Tag speichern",
-    "description": "Kontextmenü-Eintrag zum Speichern eines Tags."
+    "description": "Kontextmenü-Option zum Speichern eines Tags."
   },
   "checkingLoginStatus": {
-    "message": "Anmeldestatus wird überprüft...",
+    "message": "Anmeldestatus wird geprüft...",
     "description": "Text, der während der Überprüfung des Anmeldestatus angezeigt wird."
   },
   "loginStatus": {
@@ -229,7 +229,7 @@
     "description": "Status, wenn der Benutzer angemeldet ist."
   },
   "loggedOutStatus": {
-    "message": "Sie sind anscheinend nicht angemeldet.",
+    "message": "Sie scheinen nicht angemeldet zu sein.",
     "description": "Status, wenn der Benutzer nicht angemeldet ist."
   },
   "loginButton": {
@@ -241,28 +241,12 @@
     "description": "Schaltfläche zum Abmelden."
   },
   "loginStatusError": {
-    "message": "Anmeldestatus konnte nicht überprüft werden. Bitte überprüfen Sie die Berechtigungen der Erweiterung.",
+    "message": "Anmeldestatus konnte nicht geprüft werden. Bitte überprüfen Sie die Erweiterungsberechtigungen.",
     "description": "Fehlermeldung bei fehlgeschlagener Überprüfung des Anmeldestatus."
   },
   "toggleSavedTags": {
     "message": "[Gespeicherte Tags anzeigen/ausblenden]",
-    "description": "Link zum Umschalten der Leiste für gespeicherte Tags auf der Suchseite."
-  },
-  "exportButton": {
-    "message": "Exportieren",
-    "description": "Schaltfläche zum Exportieren von benutzerdefinierten Tag-Namen."
-  },
-  "exportModalHeader": {
-    "message": "Exportergebnisse",
-    "description": "Kopfzeile für das Export-Modal."
-  },
-  "importButton": {
-    "message": "Importieren",
-    "description": "Schaltfläche zum Importieren von benutzerdefinierten Tag-Namen."
-  },
-  "importModalHeader": {
-    "message": "Benutzerdefinierte Namen importieren",
-    "description": "Kopfzeile für das Import-Modal."
+    "description": "Link zum Umschalten der Leiste für gespeicherte Tags auf Suchseiten."
   },
   "importPlaceholder": {
     "message": "Fügen Sie hier den exportierten i18n-JSON-Inhalt ein...",
@@ -298,6 +282,42 @@
   },
   "searchTagsPlaceholder": {
     "message": "Tags suchen...",
-    "description": "Platzhalter für die Tag-Sucheingabe."
+    "description": "Platzhaltertext für die Tag-Suche."
+  },
+  "tagsIoTitle": {
+    "message": "Lesezeichen Import & Export",
+    "description": "Der Titel für die Seite zum Importieren/Exportieren von Tags."
+  },
+  "exportHeader": {
+    "message": "Lesezeichen exportieren",
+    "description": "Kopfzeile für den Exportbereich."
+  },
+  "exportDescription": {
+    "message": "Klicken Sie auf die Schaltfläche unten, um Daten für alle Ihre gespeicherten Lesezeichen zu generieren. Sie können diese sichern oder auf einem anderen Gerät importieren.",
+    "description": "Beschreibung der Exportfunktionalität."
+  },
+  "generateExportButton": {
+    "message": "Exportdaten generieren",
+    "description": "Schaltfläche zum Generieren der Exportdaten."
+  },
+  "copyToClipboardButton": {
+    "message": "In die Zwischenablage kopieren",
+    "description": "Schaltfläche zum Kopieren von Daten in die Zwischenablage."
+  },
+  "copySuccess": {
+    "message": "✅ Erfolgreich kopiert!",
+    "description": "Erfolgsmeldung nach dem Kopieren in die Zwischenablage."
+  },
+  "importHeader": {
+    "message": "Lesezeichen importieren",
+    "description": "Kopfzeile für den Importbereich."
+  },
+  "importDescription": {
+    "message": "Fügen Sie die zuvor exportierten JSON-Daten in das Feld unten ein und klicken Sie auf 'Importieren'. Dadurch werden neue Lesezeichen hinzugefügt und vorhandene aktualisiert.",
+    "description": "Beschreibung der Importfunktionalität."
+  },
+  "manageTagsIoButton": {
+    "message": "Import / Export",
+    "description": "Schaltfläche zum Öffnen der Import-/Exportseite für Tags."
   }
 }

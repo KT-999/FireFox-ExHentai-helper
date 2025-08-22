@@ -1,0 +1,89 @@
+/* 專為 tags_io.html 設計的樣式 */
+body {
+    /* 覆寫 popup.css 的寬度限制，讓頁面滿版 */
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.main-container {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.io-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* 手機上垂直排列 */
+    gap: 25px;
+    margin-top: 20px;
+    text-align: left;
+}
+
+/* 在較寬的螢幕上並排顯示 */
+@media (min-width: 768px) {
+    .io-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.io-card {
+    background-color: var(--input-bg);
+    border: 1px solid var(--hr-color);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+html.dark-theme .io-card {
+     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.io-card h4 {
+    margin-top: 0;
+    color: var(--header-color);
+    border-bottom: 1px solid var(--hr-color);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.io-card .description {
+    font-size: 13px;
+    color: var(--label-color);
+    line-height: 1.5;
+    margin-bottom: 15px;
+    flex-grow: 1; /* 讓描述區塊填滿多餘空間，使按鈕對齊底部 */
+}
+
+.io-card textarea {
+    width: 100%;
+    min-height: 180px;
+    margin-bottom: 15px;
+    font-family: monospace;
+    font-size: 12px;
+    resize: vertical;
+    background-color: var(--bg-color); /* 使用背景色，與表單背景做出區別 */
+    color: var(--input-text);
+    border: 1px solid var(--input-border);
+    box-sizing: border-box;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.io-card .button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.io-card button {
+    margin-top: 0; /* 移除按鈕預設的上邊距 */
+}
+
+.io-card .status {
+    height: 20px; /* 增加高度以容納訊息 */
+    margin-top: 15px;
+    font-size: 13px;
+    font-weight: 500;
+}

@@ -48,8 +48,8 @@
     "description": "Label for cache size input."
   },
   "maxHistoryCount": {
-    "message": "Max History Items:",
-    "description": "Label for history count input."
+    "message": "Max History Entries:",
+    "description": "Label for max history entries input."
   },
   "fitToWindow": {
     "message": "Fit Image to Window (Horizontal):",
@@ -61,59 +61,59 @@
   },
   "themeMode": {
     "message": "Theme:",
-    "description": "Label for theme mode select."
+    "description": "Label for theme select."
   },
   "themeSystem": {
-    "message": "System",
-    "description": "Option for system theme."
+    "message": "System Default",
+    "description": "Option for system default theme."
   },
   "themeLight": {
-    "message": "Light",
+    "message": "Light Mode",
     "description": "Option for light theme."
   },
   "themeDark": {
-    "message": "Dark",
+    "message": "Dark Mode",
     "description": "Option for dark theme."
   },
   "uiLanguage": {
     "message": "UI Language:",
-    "description": "Label for UI language."
+    "description": "Label for UI language select."
   },
   "langSystem": {
     "message": "Auto (Browser)",
-    "description": "Option for auto language."
+    "description": "Option for automatic language."
   },
   "langEN": {
     "message": "English",
-    "description": "Option for English."
+    "description": "Option for English language."
   },
   "langZH_TW": {
-    "message": "Traditional Chinese",
-    "description": "Option for Traditional Chinese."
+    "message": "繁體中文 (Traditional Chinese)",
+    "description": "Option for Traditional Chinese language."
   },
   "langES": {
     "message": "Español (Spanish)",
-    "description": "Option for Spanish."
+    "description": "Option for Spanish language."
   },
   "langJA": {
     "message": "日本語 (Japanese)",
-    "description": "Option for Japanese."
+    "description": "Option for Japanese language."
   },
   "langKO": {
     "message": "한국어 (Korean)",
-    "description": "Option for Korean."
+    "description": "Option for Korean language."
   },
   "langDE": {
     "message": "Deutsch (German)",
-    "description": "Option for German."
+    "description": "Option for German language."
   },
   "openOptionsButton": {
-    "message": "Set Hotkeys",
-    "description": "Button to open options page."
+    "message": "Configure Hotkeys",
+    "description": "Button to open the options page."
   },
   "saveButton": {
     "message": "Save Settings",
-    "description": "Button to save settings."
+    "description": "Button to save the settings."
   },
   "saveSettingsSuccess": {
     "message": "✅ Settings saved!",
@@ -124,8 +124,8 @@
     "description": "Success message after changing language."
   },
   "saveSettingsError": {
-    "message": "❌ Save failed!",
-    "description": "Error message on save failure."
+    "message": "❌ Failed to save!",
+    "description": "Error message when saving settings fails."
   },
   "advancedOperations": {
     "message": "Advanced Operations",
@@ -133,27 +133,27 @@
   },
   "clearCacheDescription": {
     "message": "If you encounter image loading issues or display errors, you can try manually clearing all cached data. This will clear all preloaded images and page indexes.",
-    "description": "Description for clear cache button."
+    "description": "Description for the clear cache button."
   },
   "clearCacheButton": {
     "message": "Clear All Cache",
-    "description": "Button to clear cache."
+    "description": "Button to clear all cache."
   },
   "tabSettings": {
     "message": "Settings",
-    "description": "Label for settings tab."
+    "description": "Label for the settings tab."
   },
   "tabHistory": {
     "message": "History",
-    "description": "Label for history tab."
+    "description": "Label for the history tab."
   },
   "tabBookmarks": {
     "message": "Bookmarks",
-    "description": "Label for bookmarks tab."
+    "description": "Label for the bookmarks tab."
   },
   "historyHeader": {
     "message": "Browsing History",
-    "description": "Header for history tab."
+    "description": "Header for the history tab."
   },
   "historyEmpty": {
     "message": "No browsing history yet.",
@@ -165,7 +165,7 @@
   },
   "bookmarksHeader": {
     "message": "Saved Tags",
-    "description": "Header for bookmarks tab."
+    "description": "Header for the bookmarks tab."
   },
   "bookmarksEmpty": {
     "message": "No tags in this category.",
@@ -173,11 +173,11 @@
   },
   "clearBookmarksButton": {
     "message": "Clear All",
-    "description": "Button to clear bookmarks."
+    "description": "Button to clear all bookmarks."
   },
   "filterByCategory": {
     "message": "Filter by category:",
-    "description": "Label for tag filter."
+    "description": "Label for the tag filter."
   },
   "filterShowAll": {
     "message": "Show All",
@@ -185,22 +185,36 @@
   },
   "optionsHeader": {
     "message": "Hotkey Settings",
-    "description": "Header for options page."
+    "description": "Header for the options page."
   },
   "optionsSubtitle": {
-    "message": "Click a button and press a key to change",
-    "description": "Subtitle for options page."
+    "message": "Click a button then press a key to change the hotkey",
+    "description": "Subtitle for the options page."
   },
-  "keyPrev": { "message": "Previous Page" },
-  "keyNext": { "message": "Next Page" },
-  "keyFit": { "message": "Toggle Fit" },
-  "keyHide": { "message": "Toggle Preview Bar" },
-  "keyExit": { "message": "Back to Gallery" },
-  "keyClear": { "message": "Clear Cache" },
-  "saveHotkeys": { "message": "Save Hotkeys" },
+  "keyPrev": {
+    "message": "Previous Page"
+  },
+  "keyNext": {
+    "message": "Next Page"
+  },
+  "keyFit": {
+    "message": "Toggle Fit"
+  },
+  "keyHide": {
+    "message": "Toggle Preview Bar"
+  },
+  "keyExit": {
+    "message": "Back to Gallery"
+  },
+  "keyClear": {
+    "message": "Clear Cache"
+  },
+  "saveHotkeys": {
+    "message": "Save Hotkeys"
+  },
   "contextMenuSaveTag": {
     "message": "Save this tag",
-    "description": "Context menu item to save a tag."
+    "description": "Context menu option to save a tag."
   },
   "checkingLoginStatus": {
     "message": "Checking login status...",
@@ -208,47 +222,31 @@
   },
   "loginStatus": {
     "message": "Login Status:",
-    "description": "Label for login status."
+    "description": "Label for the login status."
   },
   "loggedInStatus": {
     "message": "Logged In",
-    "description": "Status when user is logged in."
+    "description": "Status when the user is logged in."
   },
   "loggedOutStatus": {
-    "message": "You are not logged in.",
-    "description": "Status when user is not logged in."
+    "message": "You don't seem to be logged in.",
+    "description": "Status when the user is not logged in."
   },
   "loginButton": {
     "message": "Go to Login Page",
-    "description": "Button to go to login page."
+    "description": "Button to go to the login page."
   },
   "logoutButton": {
-    "message": "Log Out",
+    "message": "Logout",
     "description": "Button to log out."
   },
   "loginStatusError": {
-    "message": "Could not check login status, please check extension permissions.",
-    "description": "Error message on login status check failure."
+    "message": "Could not check login status. Please check extension permissions.",
+    "description": "Error message for login status check failure."
   },
   "toggleSavedTags": {
     "message": "[Show/Hide Saved Tags]",
-    "description": "Link to toggle saved tags bar on search page."
-  },
-  "exportButton": {
-    "message": "Export",
-    "description": "Button to export custom tag names."
-  },
-  "exportModalHeader": {
-    "message": "Export Results",
-    "description": "Header for the export modal."
-  },
-  "importButton": {
-    "message": "Import",
-    "description": "Button to import custom tag names."
-  },
-  "importModalHeader": {
-    "message": "Import Custom Names",
-    "description": "Header for the import modal."
+    "description": "Link to toggle the saved tags bar on search pages."
   },
   "importPlaceholder": {
     "message": "Paste the exported i18n JSON content here...",
@@ -263,11 +261,11 @@
     "description": "Success message after import."
   },
   "importSuccessAddOnly": {
-    "message": "✅ Import complete! Added: {addedCount} new tags.",
+    "message": "✅ Import complete! Added {addedCount} new tags.",
     "description": "Success message when only adding tags."
   },
   "importSuccessUpdateOnly": {
-    "message": "✅ Import complete! Updated: {updatedCount} custom names.",
+    "message": "✅ Import complete! Updated {updatedCount} custom names.",
     "description": "Success message when only updating tags."
   },
   "importErrorInvalidJson": {
@@ -284,6 +282,42 @@
   },
   "searchTagsPlaceholder": {
     "message": "Search tags...",
-    "description": "Placeholder for the tag search input."
+    "description": "Placeholder text for the tag search input."
+  },
+  "tagsIoTitle": {
+    "message": "Bookmark Import & Export",
+    "description": "The title for the tags import/export page."
+  },
+  "exportHeader": {
+    "message": "Export Bookmarks",
+    "description": "Header for the export section."
+  },
+  "exportDescription": {
+    "message": "Click the button below to generate data for all your saved bookmarks. You can back this up or import it on another device.",
+    "description": "Description for the export functionality."
+  },
+  "generateExportButton": {
+    "message": "Generate Export Data",
+    "description": "Button to generate the export data."
+  },
+  "copyToClipboardButton": {
+    "message": "Copy to Clipboard",
+    "description": "Button to copy data to the clipboard."
+  },
+  "copySuccess": {
+    "message": "✅ Copied successfully!",
+    "description": "Success message after copying to clipboard."
+  },
+  "importHeader": {
+    "message": "Import Bookmarks",
+    "description": "Header for the import section."
+  },
+  "importDescription": {
+    "message": "Paste the previously exported JSON data into the field below and click 'Import'. This will add new bookmarks and update existing ones.",
+    "description": "Description for the import functionality."
+  },
+  "manageTagsIoButton": {
+    "message": "Import / Export",
+    "description": "Button to open the import/export page for tags."
   }
 }

@@ -1,6 +1,7 @@
 /**
- * 處理彈出視窗的邏輯 (v1.2.7.2 - 修正匯入邏輯)
- * - 修正：還原標籤名稱時移除多餘的空格，解決匯入時產生重複標籤的問題。
+ * 處理彈出視窗的邏輯 (v1.3.0 - 簡化書籤管理介面)
+ * - 變更：將匯入與匯出按鈕合併為單一的「匯入/匯出」按鈕。
+ * - 變更：匯入/匯出頁面現在會開啟在當前分頁的右側，而不是最末端。
  */
 
 // --- 多語系處理 ---
@@ -496,103 +497,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        const handleExportTags = async () => {
-            const { tags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
-            const exportObj = {};
-            
-            tags.forEach(tag => {
-                if (tag.original !== tag.display) {
-                    const key = "tag_" + tag.original.replace(/[:\s]/g, '_').replace(/['"]/g, '');
-                    exportObj[key] = {
-                        "message": tag.display
-                    };
-                }
-            });
-
-            const exportText = JSON.stringify(exportObj, null, 2);
-            document.getElementById('export-textarea').value = exportText;
-            document.getElementById('export-modal').style.display = 'flex';
-        };
-
-        const handleImportTags = async () => {
-            const importTextarea = document.getElementById('import-textarea');
-            const status = document.getElementById('import-status-message');
-            const jsonString = importTextarea.value;
-            status.textContent = '';
-
-            if (!jsonString.trim()) {
-                importTextarea.value = '';
-                return;
-            }
-
-            let parsedJson;
-            try {
-                parsedJson = JSON.parse(jsonString);
-            } catch (error) {
-                status.textContent = getMessage("importErrorInvalidJson");
-                status.style.color = '#dc3545';
-                return;
-            }
-
-            const { tags: existingTags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
-            const existingTagsMap = new Map(existingTags.map(t => [t.original, t]));
-            
-            const tagsToAdd = [];
-            const tagsToUpdate = [];
-
-            for (const key in parsedJson) {
-                if (Object.prototype.hasOwnProperty.call(parsedJson, key) && key.startsWith('tag_')) {
-                    const keyParts = key.replace(/^tag_/, '').split('_');
-                    const namespace = keyParts.shift();
-                    const tagName = keyParts.join(' ');
-                    const originalTag = `${namespace}:${tagName}`; // 修正點：移除多餘的空格
-                    
-                    const displayMessage = parsedJson[key].message || originalTag;
-
-                    if (existingTagsMap.has(originalTag)) {
-                        if (existingTagsMap.get(originalTag).display !== displayMessage) {
-                            tagsToUpdate.push({ original: originalTag, display: displayMessage });
-                        }
-                    } else {
-                        tagsToAdd.push({ original: originalTag, display: displayMessage });
-                    }
-                }
-            }
-            
-            const addedCount = tagsToAdd.length;
-            const updatedCount = tagsToUpdate.length;
-
-            if (addedCount > 0 || updatedCount > 0) {
-                await browser.runtime.sendMessage({
-                    type: 'batch_update_tags',
-                    tagsToAdd,
-                    tagsToUpdate
-                });
-            }
-
-            if (addedCount > 0 && updatedCount > 0) {
-                status.textContent = getMessage("importSuccess")
-                    .replace('{addedCount}', addedCount)
-                    .replace('{updatedCount}', updatedCount);
-            } else if (addedCount > 0) {
-                status.textContent = getMessage("importSuccessAddOnly").replace('{addedCount}', addedCount);
-            } else if (updatedCount > 0) {
-                status.textContent = getMessage("importSuccessUpdateOnly").replace('{updatedCount}', updatedCount);
-            } else {
-                status.textContent = getMessage("importErrorNoAction");
-                status.style.color = '#6c757d';
-                return;
-            }
-            
-            status.style.color = '#28a745';
-            await renderSavedTags();
-            setTimeout(() => {
-                document.getElementById('import-modal').style.display = 'none';
-                importTextarea.value = '';
-                status.textContent = '';
-            }, 2500);
-        };
-
         const handleClearTags = async () => {
             await browser.runtime.sendMessage({ type: 'clear_saved_tags' });
             await renderSavedTags();
@@ -618,6 +522,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             });
+        };
+
+        const openIoPage = async () => {
+            try {
+                const [currentTab] = await browser.tabs.query({ active: true, currentWindow: true });
+                if (currentTab) {
+                    browser.tabs.create({
+                        url: 'tags_io.html',
+                        index: currentTab.index + 1
+                    });
+                } else {
+                    browser.tabs.create({ url: 'tags_io.html' });
+                }
+            } catch (error) {
+                console.error("開啟分頁時發生錯誤:", error);
+                browser.tabs.create({ url: 'tags_io.html' });
+            }
         };
 
         const initialize = async () => {
@@ -684,28 +605,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            document.getElementById('export-tags-button').addEventListener('click', handleExportTags);
-            document.getElementById('close-modal-button').addEventListener('click', () => {
-                document.getElementById('export-modal').style.display = 'none';
-            });
-            document.getElementById('export-modal').addEventListener('click', (e) => {
-                if (e.target.id === 'export-modal') {
-                    e.target.style.display = 'none';
-                }
-            });
-
-            document.getElementById('import-tags-button').addEventListener('click', () => {
-                document.getElementById('import-modal').style.display = 'flex';
-            });
-            document.getElementById('close-import-modal-button').addEventListener('click', () => {
-                document.getElementById('import-modal').style.display = 'none';
-            });
-            document.getElementById('import-modal').addEventListener('click', (e) => {
-                if (e.target.id === 'import-modal') {
-                    e.target.style.display = 'none';
-                }
-            });
-            document.getElementById('import-submit-button').addEventListener('click', handleImportTags);
+            // *** 更新 ***: 監聽合併後的新按鈕
+            document.getElementById('manage-io-button').addEventListener('click', openIoPage);
         };
 
         initialize();

@@ -111,8 +111,8 @@
                 <div class="bookmarks-header">
                     <h3 data-i18n="bookmarksHeader"></h3>
                     <div class="bookmarks-header-buttons">
-                        <button id="import-tags-button" class="btn-secondary btn-small" data-i18n="importButton"></button>
-                        <button id="export-tags-button" class="btn-secondary btn-small" data-i18n="exportButton"></button>
+                        <!-- *** 更新 ***: 合併為一個按鈕 -->
+                        <button id="manage-io-button" class="btn-secondary btn-small" data-i18n="manageTagsIoButton"></button>
                         <button id="clear-tags-button" class="btn-danger btn-small" data-i18n="clearBookmarksButton"></button>
                     </div>
                 </div>
@@ -129,26 +129,6 @@
                 </div>
                 <div id="tag-list"></div>
             </div>
-        </div>
-    </div>
-
-    <!-- 匯出結果 Modal -->
-    <div id="export-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <button id="close-modal-button" class="modal-close-btn">&times;</button>
-            <h4 data-i18n="exportModalHeader"></h4>
-            <textarea id="export-textarea" readonly></textarea>
-        </div>
-    </div>
-
-    <!-- 匯入用 Modal -->
-    <div id="import-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <button id="close-import-modal-button" class="modal-close-btn">&times;</button>
-            <h4 data-i18n="importModalHeader"></h4>
-            <textarea id="import-textarea"></textarea>
-            <button id="import-submit-button" data-i18n="importSubmitButton"></button>
-            <p id="import-status-message" class="status"></p>
         </div>
     </div>
 

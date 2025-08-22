@@ -48,11 +48,11 @@
     "description": "캐시 크기 입력란의 라벨입니다."
   },
   "maxHistoryCount": {
-    "message": "최대 기록 수:",
-    "description": "기록 수 입력란의 라벨입니다."
+    "message": "최대 방문 기록 수:",
+    "description": "최대 방문 기록 수 입력란의 라벨입니다."
   },
   "fitToWindow": {
-    "message": "이미지를 창에 맞춤 (가로 모드):",
+    "message": "이미지 창에 맞춤 (가로 모드):",
     "description": "창에 맞춤 체크박스의 라벨입니다."
   },
   "hidePreviewBar": {
@@ -61,11 +61,11 @@
   },
   "themeMode": {
     "message": "테마:",
-    "description": "테마 모드 선택란의 라벨입니다."
+    "description": "테마 선택란의 라벨입니다."
   },
   "themeSystem": {
     "message": "시스템 설정 따름",
-    "description": "시스템 테마 옵션입니다."
+    "description": "시스템 기본 테마 옵션입니다."
   },
   "themeLight": {
     "message": "라이트 모드",
@@ -76,8 +76,8 @@
     "description": "다크 테마 옵션입니다."
   },
   "uiLanguage": {
-    "message": "UI 언어:",
-    "description": "UI 언어 라벨입니다."
+    "message": "UI Language:",
+    "description": "UI 언어 선택란의 라벨입니다."
   },
   "langSystem": {
     "message": "자동 (브라우저)",
@@ -88,7 +88,7 @@
     "description": "영어 옵션입니다."
   },
   "langZH_TW": {
-    "message": "繁體中文",
+    "message": "繁體中文 (중국어 번체)",
     "description": "중국어 번체 옵션입니다."
   },
   "langES": {
@@ -109,7 +109,7 @@
   },
   "openOptionsButton": {
     "message": "단축키 설정",
-    "description": "옵션 페이지를 여는 버튼입니다."
+    "description": "설정 페이지를 여는 버튼입니다."
   },
   "saveButton": {
     "message": "설정 저장",
@@ -125,27 +125,27 @@
   },
   "saveSettingsError": {
     "message": "❌ 저장에 실패했습니다!",
-    "description": "저장 실패 시 오류 메시지입니다."
+    "description": "설정 저장 실패 시 오류 메시지입니다."
   },
   "advancedOperations": {
     "message": "고급 작업",
     "description": "고급 작업의 하위 헤더입니다."
   },
   "clearCacheDescription": {
-    "message": "이미지 로딩 문제나 표시 오류가 발생하면 캐시된 모든 데이터를 수동으로 지울 수 있습니다. 이렇게 하면 미리 로드된 모든 이미지와 페이지 인덱스가 지워집니다.",
+    "message": "이미지 로딩 문제나 표시 오류가 발생하면 모든 캐시 데이터를 수동으로 지워보세요. 이렇게 하면 미리 로드된 모든 이미지와 페이지 인덱스가 지워집니다.",
     "description": "캐시 지우기 버튼의 설명입니다."
   },
   "clearCacheButton": {
     "message": "모든 캐시 지우기",
-    "description": "캐시를 지우는 버튼입니다."
+    "description": "모든 캐시를 지우는 버튼입니다."
   },
   "tabSettings": {
     "message": "설정",
     "description": "설정 탭의 라벨입니다."
   },
   "tabHistory": {
-    "message": "기록",
-    "description": "기록 탭의 라벨입니다."
+    "message": "방문 기록",
+    "description": "방문 기록 탭의 라벨입니다."
   },
   "tabBookmarks": {
     "message": "북마크",
@@ -153,15 +153,15 @@
   },
   "historyHeader": {
     "message": "방문 기록",
-    "description": "기록 탭의 헤더입니다."
+    "description": "방문 기록 탭의 헤더입니다."
   },
   "historyEmpty": {
     "message": "아직 방문 기록이 없습니다.",
-    "description": "기록이 비어 있을 때 표시되는 메시지입니다."
+    "description": "방문 기록이 없을 때 표시되는 메시지입니다."
   },
   "clearHistoryButton": {
     "message": "기록 지우기",
-    "description": "기록을 지우는 버튼입니다."
+    "description": "방문 기록을 지우는 버튼입니다."
   },
   "bookmarksHeader": {
     "message": "저장된 태그",
@@ -169,14 +169,14 @@
   },
   "bookmarksEmpty": {
     "message": "이 카테고리에 태그가 없습니다.",
-    "description": "북마크가 비어 있을 때 표시되는 메시지입니다."
+    "description": "북마크가 없을 때 표시되는 메시지입니다."
   },
   "clearBookmarksButton": {
     "message": "모두 지우기",
-    "description": "북마크를 모두 지우는 버튼입니다."
+    "description": "모든 북마크를 지우는 버튼입니다."
   },
   "filterByCategory": {
-    "message": "카테고리별로 필터링:",
+    "message": "카테고리별 필터:",
     "description": "태그 필터의 라벨입니다."
   },
   "filterShowAll": {
@@ -185,11 +185,11 @@
   },
   "optionsHeader": {
     "message": "단축키 설정",
-    "description": "옵션 페이지의 헤더입니다."
+    "description": "설정 페이지의 헤더입니다."
   },
   "optionsSubtitle": {
-    "message": "버튼을 클릭한 후 키를 눌러 변경하세요",
-    "description": "옵션 페이지의 부제목입니다."
+    "message": "버튼을 클릭한 후 키를 눌러 설정을 변경하세요",
+    "description": "설정 페이지의 부제목입니다."
   },
   "keyPrev": {
     "message": "이전 페이지"
@@ -214,11 +214,11 @@
   },
   "contextMenuSaveTag": {
     "message": "이 태그 저장",
-    "description": "태그를 저장하는 컨텍스트 메뉴 항목입니다."
+    "description": "태그를 저장하는 컨텍스트 메뉴 옵션입니다."
   },
   "checkingLoginStatus": {
     "message": "로그인 상태 확인 중...",
-    "description": "로그인 상태를 확인하는 동안 표시되는 텍스트입니다."
+    "description": "로그인 상태 확인 중에 표시되는 텍스트입니다."
   },
   "loginStatus": {
     "message": "로그인 상태:",
@@ -229,7 +229,7 @@
     "description": "사용자가 로그인했을 때의 상태입니다."
   },
   "loggedOutStatus": {
-    "message": "로그인되어 있지 않은 것 같습니다.",
+    "message": "로그인되지 않은 것 같습니다.",
     "description": "사용자가 로그인하지 않았을 때의 상태입니다."
   },
   "loginButton": {
@@ -247,22 +247,6 @@
   "toggleSavedTags": {
     "message": "[저장된 태그 표시/숨기기]",
     "description": "검색 페이지에서 저장된 태그 막대를 전환하는 링크입니다."
-  },
-  "exportButton": {
-    "message": "내보내기",
-    "description": "사용자 지정 태그 이름을 내보내는 버튼입니다."
-  },
-  "exportModalHeader": {
-    "message": "내보내기 결과",
-    "description": "내보내기 모달의 헤더입니다."
-  },
-  "importButton": {
-    "message": "가져오기",
-    "description": "사용자 지정 태그 이름을 가져오는 버튼입니다."
-  },
-  "importModalHeader": {
-    "message": "사용자 지정 이름 가져오기",
-    "description": "가져오기 모달의 헤더입니다."
   },
   "importPlaceholder": {
     "message": "내보낸 i18n JSON 콘텐츠를 여기에 붙여넣으세요...",
@@ -289,15 +273,51 @@
     "description": "JSON 형식이 잘못되었을 때의 오류 메시지입니다."
   },
   "importErrorNoData": {
-    "message": "❌ 가져오기 실패! 가져올 유효한 데이터를 찾을 수 없습니다.",
+    "message": "❌ 가져오기 실패! 가져올 유효한 데이터가 없습니다.",
     "description": "유효한 데이터를 찾을 수 없을 때의 오류 메시지입니다."
   },
   "importErrorNoAction": {
-    "message": "ℹ️ 작업이 필요하지 않습니다. 가져온 모든 태그가 기존 데이터와 일치합니다.",
+    "message": "ℹ️ 작업이 필요 없습니다. 가져온 모든 태그가 기존 데이터와 일치합니다.",
     "description": "변경 사항이 없을 때의 메시지입니다."
   },
   "searchTagsPlaceholder": {
     "message": "태그 검색...",
-    "description": "태그 검색 입력란의 플레이스홀더입니다."
+    "description": "태그 검색 입력란의 플레이스홀더 텍스트입니다."
+  },
+  "tagsIoTitle": {
+    "message": "북마크 가져오기 & 내보내기",
+    "description": "태그 가져오기/내보내기 페이지의 제목입니다."
+  },
+  "exportHeader": {
+    "message": "북마크 내보내기",
+    "description": "내보내기 섹션의 헤더입니다."
+  },
+  "exportDescription": {
+    "message": "아래 버튼을 클릭하여 저장된 모든 북마크 데이터를 생성합니다. 이 데이터를 백업하거나 다른 기기에서 가져올 수 있습니다.",
+    "description": "내보내기 기능에 대한 설명입니다."
+  },
+  "generateExportButton": {
+    "message": "내보내기 데이터 생성",
+    "description": "내보내기 데이터를 생성하는 버튼입니다."
+  },
+  "copyToClipboardButton": {
+    "message": "클립보드에 복사",
+    "description": "데이터를 클립보드에 복사하는 버튼입니다."
+  },
+  "copySuccess": {
+    "message": "✅ 성공적으로 복사되었습니다!",
+    "description": "클립보드에 복사한 후 성공 메시지입니다."
+  },
+  "importHeader": {
+    "message": "북마크 가져오기",
+    "description": "가져오기 섹션의 헤더입니다."
+  },
+  "importDescription": {
+    "message": "이전에 내보낸 JSON 데이터를 아래 필드에 붙여넣고 '가져오기'를 클릭하세요. 새 북마크가 추가되고 기존 북마크가 업데이트됩니다.",
+    "description": "가져오기 기능에 대한 설명입니다."
+  },
+  "manageTagsIoButton": {
+    "message": "가져오기 / 내보내기",
+    "description": "태그 가져오기/내보내기 페이지를 여는 버튼입니다."
   }
 }

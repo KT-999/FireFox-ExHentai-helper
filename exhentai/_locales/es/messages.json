@@ -45,67 +45,67 @@
   },
   "cacheSize": {
     "message": "Máx. Páginas en Caché:",
-    "description": "Etiqueta para la entrada del tamaño de caché."
+    "description": "Etiqueta para la entrada del tamaño de la caché."
   },
   "maxHistoryCount": {
-    "message": "Máx. Elementos en Historial:",
-    "description": "Etiqueta para la cantidad de historial."
+    "message": "Máx. Entradas de Historial:",
+    "description": "Etiqueta para la entrada del máximo de entradas de historial."
   },
   "fitToWindow": {
     "message": "Ajustar Imagen a la Ventana (Horizontal):",
     "description": "Etiqueta para la casilla de ajustar a la ventana."
   },
   "hidePreviewBar": {
-    "message": "Ocultar Barra de Vistas Previas (Horizontal):",
-    "description": "Etiqueta para la casilla de ocultar barra de vistas previas."
+    "message": "Ocultar Barra de Vista Previa (Horizontal):",
+    "description": "Etiqueta para la casilla de ocultar barra de vista previa."
   },
   "themeMode": {
     "message": "Tema:",
     "description": "Etiqueta para la selección de tema."
   },
   "themeSystem": {
-    "message": "Sistema",
-    "description": "Opción para el tema del sistema."
+    "message": "Predeterminado del Sistema",
+    "description": "Opción para el tema predeterminado del sistema."
   },
   "themeLight": {
-    "message": "Claro",
+    "message": "Modo Claro",
     "description": "Opción para el tema claro."
   },
   "themeDark": {
-    "message": "Oscuro",
+    "message": "Modo Oscuro",
     "description": "Opción para el tema oscuro."
   },
   "uiLanguage": {
-    "message": "Idioma de la Interfaz:",
-    "description": "Etiqueta para el idioma de la interfaz."
+    "message": "UI Language:",
+    "description": "Etiqueta para la selección del idioma de la IU."
   },
   "langSystem": {
     "message": "Automático (Navegador)",
     "description": "Opción para el idioma automático."
   },
   "langEN": {
-    "message": "English",
-    "description": "Opción para Inglés."
+    "message": "English (Inglés)",
+    "description": "Opción para el idioma inglés."
   },
   "langZH_TW": {
-    "message": "Chino Tradicional",
-    "description": "Opción para Chino Tradicional."
+    "message": "繁體中文 (Chino Tradicional)",
+    "description": "Opción para el idioma chino tradicional."
   },
   "langES": {
     "message": "Español",
-    "description": "Opción para Español."
+    "description": "Opción para el idioma español."
   },
   "langJA": {
     "message": "日本語 (Japonés)",
-    "description": "Opción para Japonés."
+    "description": "Opción para el idioma japonés."
   },
   "langKO": {
     "message": "한국어 (Coreano)",
-    "description": "Opción para Coreano."
+    "description": "Opción para el idioma coreano."
   },
   "langDE": {
     "message": "Deutsch (Alemán)",
-    "description": "Opción para Alemán."
+    "description": "Opción para el idioma alemán."
   },
   "openOptionsButton": {
     "message": "Configurar Atajos",
@@ -120,24 +120,24 @@
     "description": "Mensaje de éxito después de guardar la configuración."
   },
   "saveSettingsSuccessLang": {
-    "message": "✅ ¡Idioma guardado! Por favor, vuelva a abrir para aplicar.",
+    "message": "✅ ¡Idioma guardado! Por favor, reabra para aplicar.",
     "description": "Mensaje de éxito después de cambiar el idioma."
   },
   "saveSettingsError": {
     "message": "❌ ¡Error al guardar!",
-    "description": "Mensaje de error al fallar el guardado."
+    "description": "Mensaje de error cuando falla el guardado de la configuración."
   },
   "advancedOperations": {
     "message": "Operaciones Avanzadas",
     "description": "Sub-encabezado para operaciones avanzadas."
   },
   "clearCacheDescription": {
-    "message": "Si encuentra problemas de carga de imágenes o errores de visualización, puede intentar borrar manualmente todos los datos en caché. Esto borrará todas las imágenes precargadas y los índices de página.",
+    "message": "Si tienes problemas de carga de imágenes o errores de visualización, puedes intentar borrar manualmente todos los datos en caché. Esto eliminará todas las imágenes precargadas y los índices de página.",
     "description": "Descripción para el botón de borrar caché."
   },
   "clearCacheButton": {
     "message": "Borrar Toda la Caché",
-    "description": "Botón para borrar la caché."
+    "description": "Botón para borrar toda la caché."
   },
   "tabSettings": {
     "message": "Configuración",
@@ -173,7 +173,7 @@
   },
   "clearBookmarksButton": {
     "message": "Borrar Todo",
-    "description": "Botón para borrar los marcadores."
+    "description": "Botón para borrar todos los marcadores."
   },
   "filterByCategory": {
     "message": "Filtrar por categoría:",
@@ -188,23 +188,37 @@
     "description": "Encabezado para la página de opciones."
   },
   "optionsSubtitle": {
-    "message": "Haga clic en un botón y presione una tecla para cambiar",
+    "message": "Haz clic en un botón y luego presiona una tecla para cambiar el atajo",
     "description": "Subtítulo para la página de opciones."
   },
-  "keyPrev": { "message": "Página Anterior" },
-  "keyNext": { "message": "Página Siguiente" },
-  "keyFit": { "message": "Alternar Ajuste" },
-  "keyHide": { "message": "Alternar Barra de Vistas Previas" },
-  "keyExit": { "message": "Volver a la Galería" },
-  "keyClear": { "message": "Borrar Caché" },
-  "saveHotkeys": { "message": "Guardar Atajos" },
+  "keyPrev": {
+    "message": "Página Anterior"
+  },
+  "keyNext": {
+    "message": "Página Siguiente"
+  },
+  "keyFit": {
+    "message": "Alternar Ajuste"
+  },
+  "keyHide": {
+    "message": "Alternar Barra de Vista Previa"
+  },
+  "keyExit": {
+    "message": "Volver a la Galería"
+  },
+  "keyClear": {
+    "message": "Borrar Caché"
+  },
+  "saveHotkeys": {
+    "message": "Guardar Atajos"
+  },
   "contextMenuSaveTag": {
     "message": "Guardar esta etiqueta",
-    "description": "Elemento del menú contextual para guardar una etiqueta."
+    "description": "Opción del menú contextual para guardar una etiqueta."
   },
   "checkingLoginStatus": {
     "message": "Comprobando estado de inicio de sesión...",
-    "description": "Texto que se muestra al comprobar el estado de inicio de sesión."
+    "description": "Texto que se muestra mientras se comprueba el estado de inicio de sesión."
   },
   "loginStatus": {
     "message": "Estado de Inicio de Sesión:",
@@ -215,7 +229,7 @@
     "description": "Estado cuando el usuario ha iniciado sesión."
   },
   "loggedOutStatus": {
-    "message": "Parece que no ha iniciado sesión.",
+    "message": "Parece que no has iniciado sesión.",
     "description": "Estado cuando el usuario no ha iniciado sesión."
   },
   "loginButton": {
@@ -227,31 +241,15 @@
     "description": "Botón para cerrar sesión."
   },
   "loginStatusError": {
-    "message": "No se pudo comprobar el estado de inicio de sesión, verifique los permisos de la extensión.",
-    "description": "Mensaje de error al fallar la comprobación del estado de inicio de sesión."
+    "message": "No se pudo comprobar el estado de inicio de sesión. Por favor, revisa los permisos de la extensión.",
+    "description": "Mensaje de error por fallo en la comprobación del estado de inicio de sesión."
   },
   "toggleSavedTags": {
     "message": "[Mostrar/Ocultar Etiquetas Guardadas]",
-    "description": "Enlace para alternar la barra de etiquetas guardadas en la página de búsqueda."
-  },
-  "exportButton": {
-    "message": "Exportar",
-    "description": "Botón para exportar nombres de etiquetas personalizadas."
-  },
-  "exportModalHeader": {
-    "message": "Resultados de la Exportación",
-    "description": "Encabezado del modal de exportación."
-  },
-  "importButton": {
-    "message": "Importar",
-    "description": "Botón para importar nombres de etiquetas personalizadas."
-  },
-  "importModalHeader": {
-    "message": "Importar Nombres Personalizados",
-    "description": "Encabezado del modal de importación."
+    "description": "Enlace para alternar la barra de etiquetas guardadas en las páginas de búsqueda."
   },
   "importPlaceholder": {
-    "message": "Pega aquí el contenido del JSON i18n exportado...",
+    "message": "Pega aquí el contenido JSON i18n exportado...",
     "description": "Texto de ejemplo para el área de texto de importación."
   },
   "importSubmitButton": {
@@ -285,5 +283,41 @@
   "searchTagsPlaceholder": {
     "message": "Buscar etiquetas...",
     "description": "Texto de ejemplo para la entrada de búsqueda de etiquetas."
+  },
+  "tagsIoTitle": {
+    "message": "Importación y Exportación de Marcadores",
+    "description": "El título de la página de importación/exportación de etiquetas."
+  },
+  "exportHeader": {
+    "message": "Exportar Marcadores",
+    "description": "Encabezado de la sección de exportación."
+  },
+  "exportDescription": {
+    "message": "Haz clic en el botón de abajo para generar los datos de todos tus marcadores guardados. Puedes hacer una copia de seguridad o importarlos en otro dispositivo.",
+    "description": "Descripción de la funcionalidad de exportación."
+  },
+  "generateExportButton": {
+    "message": "Generar Datos de Exportación",
+    "description": "Botón para generar los datos de exportación."
+  },
+  "copyToClipboardButton": {
+    "message": "Copiar al Portapapeles",
+    "description": "Botón para copiar datos al portapapeles."
+  },
+  "copySuccess": {
+    "message": "✅ ¡Copiado con éxito!",
+    "description": "Mensaje de éxito después de copiar al portapapeles."
+  },
+  "importHeader": {
+    "message": "Importar Marcadores",
+    "description": "Encabezado de la sección de importación."
+  },
+  "importDescription": {
+    "message": "Pega los datos JSON exportados previamente en el campo de abajo y haz clic en 'Importar'. Esto añadirá nuevos marcadores y actualizará los existentes.",
+    "description": "Descripción de la funcionalidad de importación."
+  },
+  "manageTagsIoButton": {
+    "message": "Importar / Exportar",
+    "description": "Botón para abrir la página de importación/exportación de etiquetas."
   }
 }

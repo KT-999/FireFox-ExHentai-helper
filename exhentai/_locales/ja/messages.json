@@ -49,35 +49,35 @@
   },
   "maxHistoryCount": {
     "message": "最大履歴数：",
-    "description": "履歴数のラベル。"
+    "description": "最大履歴数のラベル。"
   },
   "fitToWindow": {
     "message": "画像をウィンドウに合わせる (水平モード)：",
-    "description": "画像をウィンドウに合わせるのラベル。"
+    "description": "画像をウィンドウに合わせるチェックボックスのラベル。"
   },
   "hidePreviewBar": {
-    "message": "プレビューバーを隠す (水平モード)：",
-    "description": "プレビューバーを隠すのラベル。"
+    "message": "プレビューバーを非表示 (水平モード)：",
+    "description": "プレビューバーを非表示にするチェックボックスのラベル。"
   },
   "themeMode": {
     "message": "テーマ：",
-    "description": "テーマのラベル。"
+    "description": "テーマ選択のラベル。"
   },
   "themeSystem": {
     "message": "システムに従う",
-    "description": "システムテーマオプション。"
+    "description": "システムデフォルトテーマのオプション。"
   },
   "themeLight": {
     "message": "ライトモード",
-    "description": "ライトモードオプション。"
+    "description": "ライトテーマのオプション。"
   },
   "themeDark": {
     "message": "ダークモード",
-    "description": "ダークモードオプション。"
+    "description": "ダークテーマのオプション。"
   },
   "uiLanguage": {
-    "message": "UI言語：",
-    "description": "UI言語のラベル。"
+    "message": "UI Language:",
+    "description": "UI言語選択のラベル。"
   },
   "langSystem": {
     "message": "自動 (ブラウザ)",
@@ -89,7 +89,7 @@
   },
   "langZH_TW": {
     "message": "繁體中文",
-    "description": "繁体中文オプション。"
+    "description": "繁体字中国語オプション。"
   },
   "langES": {
     "message": "Español (スペイン語)",
@@ -108,8 +108,8 @@
     "description": "ドイツ語オプション。"
   },
   "openOptionsButton": {
-    "message": "ホットキー設定",
-    "description": "設定ページを開くボタン。"
+    "message": "ホットキーを設定",
+    "description": "オプションページを開くボタン。"
   },
   "saveButton": {
     "message": "設定を保存",
@@ -120,24 +120,24 @@
     "description": "設定保存後の成功メッセージ。"
   },
   "saveSettingsSuccessLang": {
-    "message": "✅ 言語設定を保存しました！適用するには再度開いてください。",
+    "message": "✅ 言語を保存しました！再起動して適用してください。",
     "description": "言語変更後の成功メッセージ。"
   },
   "saveSettingsError": {
     "message": "❌ 保存に失敗しました！",
-    "description": "設定保存失敗のエラーメッセージ。"
+    "description": "設定保存失敗時のエラーメッセージ。"
   },
   "advancedOperations": {
     "message": "高度な操作",
     "description": "高度な操作のサブヘッダー。"
   },
   "clearCacheDescription": {
-    "message": "画像の読み込みに問題が発生した場合、キャッシュされたすべてのデータを手動でクリアすることができます。これにより、プリロードされたすべての画像とページインデックスが消去されます。",
+    "message": "画像の読み込みに問題がある場合や表示エラーが発生した場合は、手動ですべてのキャッシュデータをクリアしてみてください。これにより、プリロードされたすべての画像とページインデックスが消去されます。",
     "description": "キャッシュクリアボタンの説明。"
   },
   "clearCacheButton": {
     "message": "すべてのキャッシュをクリア",
-    "description": "キャッシュクリアボタン。"
+    "description": "すべてのキャッシュをクリアするボタン。"
   },
   "tabSettings": {
     "message": "設定",
@@ -168,15 +168,15 @@
     "description": "ブックマークタブのヘッダー。"
   },
   "bookmarksEmpty": {
-    "message": "このカテゴリにはタグがありません。",
+    "message": "このカテゴリに一致するタグはありません。",
     "description": "ブックマークが空の場合に表示されるメッセージ。"
   },
   "clearBookmarksButton": {
     "message": "すべてクリア",
-    "description": "ブックマークをクリアするボタン。"
+    "description": "すべてのブックマークをクリアするボタン。"
   },
   "filterByCategory": {
-    "message": "カテゴリで絞り込む：",
+    "message": "カテゴリで絞り込み：",
     "description": "タグフィルターのラベル。"
   },
   "filterShowAll": {
@@ -185,11 +185,11 @@
   },
   "optionsHeader": {
     "message": "ホットキー設定",
-    "description": "設定ページのヘッダー。"
+    "description": "オプションページのヘッダー。"
   },
   "optionsSubtitle": {
-    "message": "ボタンをクリックしてからキーを押して変更します",
-    "description": "設定ページのサブタイトル。"
+    "message": "ボタンをクリックしてからキーを押して設定を変更します",
+    "description": "オプションページのサブタイトル。"
   },
   "keyPrev": {
     "message": "前のページ"
@@ -214,7 +214,7 @@
   },
   "contextMenuSaveTag": {
     "message": "このタグを保存",
-    "description": "タグを保存するためのコンテキストメニュー項目。"
+    "description": "タグを保存するためのコンテキストメニューオプション。"
   },
   "checkingLoginStatus": {
     "message": "ログイン状態を確認中...",
@@ -226,11 +226,11 @@
   },
   "loggedInStatus": {
     "message": "ログイン済み",
-    "description": "ユーザーがログインしている状態。"
+    "description": "ユーザーがログインしているときの状態。"
   },
   "loggedOutStatus": {
     "message": "ログインしていないようです。",
-    "description": "ユーザーがログインしていない状態。"
+    "description": "ユーザーがログインしていないときの状態。"
   },
   "loginButton": {
     "message": "ログインページへ",
@@ -242,27 +242,11 @@
   },
   "loginStatusError": {
     "message": "ログイン状態を確認できませんでした。拡張機能の権限を確認してください。",
-    "description": "ログイン状態の確認失敗のエラーメッセージ。"
+    "description": "ログイン状態の確認に失敗した場合のエラーメッセージ。"
   },
   "toggleSavedTags": {
-    "message": "[保存済みタグの表示/非表示]",
+    "message": "[保存済みタグを表示/非表示]",
     "description": "検索ページで保存済みタグバーを切り替えるリンク。"
-  },
-  "exportButton": {
-    "message": "エクスポート",
-    "description": "カスタムタグ名をエクスポートするボタン。"
-  },
-  "exportModalHeader": {
-    "message": "エクスポート結果",
-    "description": "エクスポートモーダルのヘッダー。"
-  },
-  "importButton": {
-    "message": "インポート",
-    "description": "カスタムタグ名をインポートするボタン。"
-  },
-  "importModalHeader": {
-    "message": "カスタム名をインポート",
-    "description": "インポートモーダルのヘッダー。"
   },
   "importPlaceholder": {
     "message": "エクスポートされたi18n JSONコンテンツをここに貼り付けてください...",
@@ -298,6 +282,42 @@
   },
   "searchTagsPlaceholder": {
     "message": "タグを検索...",
-    "description": "タグ検索入力のプレースホルダー。"
+    "description": "タグ検索入力のプレースホルダーテキスト。"
+  },
+  "tagsIoTitle": {
+    "message": "ブックマークのインポート＆エクスポート",
+    "description": "タグのインポート/エクスポートページのタイトル。"
+  },
+  "exportHeader": {
+    "message": "ブックマークをエクスポート",
+    "description": "エクスポートセクションのヘッダー。"
+  },
+  "exportDescription": {
+    "message": "下のボタンをクリックして、保存されているすべてのブックマークのデータを生成します。バックアップしたり、他のデバイスでインポートしたりできます。",
+    "description": "エクスポート機能の説明。"
+  },
+  "generateExportButton": {
+    "message": "エクスポートデータを生成",
+    "description": "エクスポートデータを生成するボタン。"
+  },
+  "copyToClipboardButton": {
+    "message": "クリップボードにコピー",
+    "description": "データをクリップボードにコピーするボタン。"
+  },
+  "copySuccess": {
+    "message": "✅ コピーしました！",
+    "description": "クリップボードへのコピー成功後のメッセージ。"
+  },
+  "importHeader": {
+    "message": "ブックマークをインポート",
+    "description": "インポートセクションのヘッダー。"
+  },
+  "importDescription": {
+    "message": "以前にエクスポートしたJSONデータを下のフィールドに貼り付け、「インポート」をクリックしてください。新しいブックマークが追加され、既存のものが更新されます。",
+    "description": "インポート機能の説明。"
+  },
+  "manageTagsIoButton": {
+    "message": "インポート / エクスポート",
+    "description": "タグのインポート/エクスポートページを開くボタン。"
   }
 }

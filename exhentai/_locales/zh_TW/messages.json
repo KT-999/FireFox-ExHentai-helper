@@ -191,13 +191,27 @@
     "message": "點擊按鈕後按下按鍵以變更設定",
     "description": "設定頁面副標題。"
   },
-  "keyPrev": { "message": "上一頁" },
-  "keyNext": { "message": "下一頁" },
-  "keyFit": { "message": "切換縮放" },
-  "keyHide": { "message": "切換預覽列" },
-  "keyExit": { "message": "返回目錄" },
-  "keyClear": { "message": "清除快取" },
-  "saveHotkeys": { "message": "儲存快捷鍵設定" },
+  "keyPrev": {
+    "message": "上一頁"
+  },
+  "keyNext": {
+    "message": "下一頁"
+  },
+  "keyFit": {
+    "message": "切換縮放"
+  },
+  "keyHide": {
+    "message": "切換預覽列"
+  },
+  "keyExit": {
+    "message": "返回目錄"
+  },
+  "keyClear": {
+    "message": "清除快取"
+  },
+  "saveHotkeys": {
+    "message": "儲存快捷鍵設定"
+  },
   "contextMenuSaveTag": {
     "message": "儲存此標籤",
     "description": "右鍵選單儲存標籤的選項。"
@@ -234,22 +248,6 @@
     "message": "[顯示/隱藏 已儲存標籤]",
     "description": "在搜尋頁面切換已儲存標籤列的連結。"
   },
-  "exportButton": {
-    "message": "匯出",
-    "description": "匯出自訂標籤名稱的按鈕。"
-  },
-  "exportModalHeader": {
-    "message": "匯出結果",
-    "description": "匯出結果視窗的標題。"
-  },
-  "importButton": {
-    "message": "匯入",
-    "description": "匯入自訂標籤名稱的按鈕。"
-  },
-  "importModalHeader": {
-    "message": "匯入自訂名稱",
-    "description": "匯入視窗的標題。"
-  },
   "importPlaceholder": {
     "message": "請在此貼上匯出的 i18n JSON 內容...",
     "description": "匯入文字區域的提示文字。"
@@ -285,5 +283,41 @@
   "searchTagsPlaceholder": {
     "message": "搜尋標籤...",
     "description": "標籤搜尋輸入框的提示文字。"
+  },
+  "tagsIoTitle": {
+    "message": "書籤匯入與匯出",
+    "description": "The title for the tags import/export page."
+  },
+  "exportHeader": {
+    "message": "匯出書籤",
+    "description": "Header for the export section."
+  },
+  "exportDescription": {
+    "message": "點擊下方按鈕以產生所有已儲存的書籤資料。您可以將其備份，或在其他裝置上匯入。",
+    "description": "Description for the export functionality."
+  },
+  "generateExportButton": {
+    "message": "產生匯出資料",
+    "description": "Button to generate the export data."
+  },
+  "copyToClipboardButton": {
+    "message": "複製到剪貼簿",
+    "description": "Button to copy data to the clipboard."
+  },
+  "copySuccess": {
+    "message": "✅ 已成功複製！",
+    "description": "Success message after copying to clipboard."
+  },
+  "importHeader": {
+    "message": "匯入書籤",
+    "description": "Header for the import section."
+  },
+  "importDescription": {
+    "message": "將先前匯出的 JSON 資料貼到下方欄位中，然後點擊「匯入」按鈕。這將會新增不存在的書籤，並更新已存在的書籤名稱。",
+    "description": "Description for the import functionality."
+  },
+  "manageTagsIoButton": {
+    "message": "匯入 / 匯出",
+    "description": "Button to open the import/export page for tags."
   }
 }
