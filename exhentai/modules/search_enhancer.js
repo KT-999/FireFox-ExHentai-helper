@@ -1,5 +1,8 @@
 /**
- * 搜尋增強器模組 (v1.3.0 - 改善切換邏輯)
+ * 搜尋增強器模組 (v1.3.3 - 修正重複選取邏輯)
+ * - 修正：重寫重複標籤的檢查邏輯，改用更可靠的字串比對，徹底解決含空格標籤的重複選取問題。
+ * - 修正：重寫正規表示式生成邏輯，確保能正確防止含空格及引號的標籤被重複選取。
+ * - 修正：透過移除前後空格，解決含有空格的標籤 (如 "blue archive$") 無法防止重複選取的問題。
  * - 更新：[顯示/隱藏] 連結現在會同時控制搜尋框與標籤列表的可見性。
  * - 新增：為 reclass, male 標籤類別增加配色。
  * - 更新：將標籤搜尋框移至獨立的一行，以解決擁擠問題。
@@ -102,39 +105,46 @@ function handleTagClick(event) {
     const searchInput = document.getElementById('f_search');
     if (!tagText || !searchInput) return;
 
-    const currentSearchValue = searchInput.value;
-    const escapedTagText = tagText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const tagRegex = new RegExp(`(^|\\s)("?${escapedTagText}"?\\$?)(\\s|$)`);
+    const currentSearchValue = searchInput.value.trim();
 
-    if (tagRegex.test(currentSearchValue)) {
+    // 1. 解構並清理標籤
+    const colonIndex = tagText.indexOf(':');
+    let type = '';
+    let value = tagText.trim();
+
+    if (colonIndex > -1) {
+        type = tagText.substring(0, colonIndex);
+        value = tagText.substring(colonIndex + 1).trim();
+    }
+
+    // 2. 建立標籤在搜尋框中可能出現的樣式 (不含 $)
+    let searchTermInBox;
+    if (value.includes(' ')) {
+        searchTermInBox = type ? `${type}:"${value}"` : `"${value}"`;
+    } else {
+        searchTermInBox = type ? `${type}:${value}` : value;
+    }
+
+    // 3. 使用更可靠的正規表示式來解析搜尋框中的詞組，而不是用 split()
+    const searchTerms = currentSearchValue.match(/(?:[a-zA-Z0-9_]+:"[^"]+"|"[^"]+"|[^\s"]+)/g) || [];
+    
+    const exists = searchTerms.some(term => {
+        // 檢查搜尋框中的每個詞是否完全等於 "樣式" 或 "樣式$"
+        return term === searchTermInBox || term === `${searchTermInBox}$`;
+    });
+
+    if (exists) {
         console.log(`標籤 "${tagText}" 已存在於搜尋中，操作已取消。`);
         return;
     }
 
-    let searchTerm;
-    const colonIndex = tagText.indexOf(':');
-    
-    if (colonIndex > -1) {
-        const type = tagText.substring(0, colonIndex);
-        const value = tagText.substring(colonIndex + 1);
+    // 4. 建立要添加到搜尋框的字串
+    const searchTermToAdd = `${searchTermInBox}$`;
 
-        if (value.includes(' ')) {
-            searchTerm = `${type}:"${value}$"`;
-        } else {
-            searchTerm = `${tagText}$`;
-        }
+    if (currentSearchValue === '') {
+        searchInput.value = searchTermToAdd;
     } else {
-        if (tagText.includes(' ')) {
-            searchTerm = `"${tagText}$"`;
-        } else {
-            searchTerm = `${tagText}$`;
-        }
-    }
-
-    if (searchInput.value.trim() === '') {
-        searchInput.value = searchTerm;
-    } else {
-        searchInput.value += ' ' + searchTerm;
+        searchInput.value += ' ' + searchTermToAdd;
     }
 }
 
@@ -230,13 +240,12 @@ async function createUI() {
     tagSearchInput.id = 'exh-tags-search-input';
     tagSearchInput.placeholder = messages.searchTagsPlaceholder || 'Search tags...';
     searchContainer.appendChild(tagSearchInput);
-    searchContainer.style.display = 'none'; // *** 變更 ***: 預設隱藏搜尋框
+    searchContainer.style.display = 'none'; 
 
     const container = document.createElement('div');
     container.id = 'exh-tags-container';
     container.style.display = 'none';
 
-    // *** 變更 ***: 更新事件監聽器以同時控制搜尋框和標籤列表
     toggle.addEventListener('click', (e) => {
         e.preventDefault();
         const isHidden = container.style.display === 'none';
