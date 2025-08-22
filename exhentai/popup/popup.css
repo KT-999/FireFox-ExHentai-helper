@@ -26,6 +26,11 @@
     --tag-language-text: #0284c7;
     --tag-other-bg: #e5e7eb;
     --tag-other-text: #4b5563;
+    /* --- 新增配色 --- */
+    --tag-male-bg: #cffafe;
+    --tag-male-text: #155e75;
+    --tag-reclass-bg: #fef3c7;
+    --tag-reclass-text: #92400e;
 }
 
 html.dark-theme {
@@ -56,6 +61,11 @@ html.dark-theme {
     --tag-language-text: #7dd3fc;
     --tag-other-bg: #374151;
     --tag-other-text: #d1d5db;
+    /* --- 新增配色 (深色模式) --- */
+    --tag-male-bg: #164e63;
+    --tag-male-text: #67e8f9;
+    --tag-reclass-bg: #78350f;
+    --tag-reclass-text: #fcd34d;
 }
 
 body {
@@ -95,21 +105,22 @@ h4 {
     gap: 10px;
 }
 
-label {
+.setting label {
     color: var(--label-color);
     margin-right: 10px;
     text-align: left;
-    flex-shrink: 0;
+    flex-shrink: 1; 
+    word-break: break-word; 
 }
 
-input[type="number"], select {
+input[type="number"], select, input[type="checkbox"] {
     padding: 5px;
     border: 1px solid var(--input-border);
     background-color: var(--input-bg);
     color: var(--input-text);
     border-radius: 4px;
     text-align: center;
-    flex-shrink: 0;
+    flex-shrink: 0; 
 }
 
 input[type="number"] {
@@ -128,6 +139,7 @@ input[type="checkbox"] {
     width: 18px;
     height: 18px;
     cursor: pointer;
+    border: none; 
 }
 
 .button-group {
@@ -262,11 +274,20 @@ hr {
     display: block;
 }
 
-.history-header {
+.history-header, .bookmarks-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+    gap: 10px;
+}
+
+.bookmarks-header-buttons {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0; 
+    flex-wrap: wrap; 
+    justify-content: flex-end; 
 }
 
 #history-list, #tag-list {
@@ -384,38 +405,28 @@ html.dark-theme .history-item-delete-btn:hover {
     color: #fff;
 }
 
-/* --- 書籤 (標籤) 列表樣式 (版面配置更新) --- */
-.bookmarks-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-.bookmarks-header-buttons {
-    display: flex;
-    gap: 8px;
-}
-
 .tag-controls-container {
     display: flex;
-    gap: 15px;
+    flex-direction: column; 
+    gap: 10px; 
     margin-bottom: 10px;
-    align-items: center;
+    align-items: stretch; 
 }
 
 .tag-filter-container {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex-shrink: 0;
 }
 
 .tag-filter-container label {
     margin-right: 0;
+    flex-shrink: 0; 
 }
 
 #tag-filter-select {
     max-width: none;
+    flex-grow: 1; 
 }
 
 .tag-search-container {
@@ -447,16 +458,15 @@ html.dark-theme .history-item-delete-btn:hover {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 4px 8px 12px; /* 增加左邊距給標記條 */
+    padding: 8px 4px 8px 12px; 
     border-bottom: 1px solid var(--hr-color);
     font-size: 13px;
-    position: relative; /* 為了標記條定位 */
+    position: relative; 
 }
 .tag-item:last-child {
     border-bottom: none;
 }
 
-/* 新增：彩色標記條 */
 .tag-item::before {
     content: '';
     position: absolute;
@@ -468,13 +478,15 @@ html.dark-theme .history-item-delete-btn:hover {
     border-radius: 2px;
 }
 
-/* 為不同類別設定標記條顏色 */
 .tag-item--artist::before { background-color: var(--tag-artist-text); }
 .tag-item--group::before { background-color: var(--tag-group-text); }
 .tag-item--parody::before { background-color: var(--tag-parody-text); }
 .tag-item--character::before { background-color: var(--tag-character-text); }
 .tag-item--language::before { background-color: var(--tag-language-text); }
 .tag-item--other::before { background-color: var(--tag-other-text); }
+/* --- 新增配色 --- */
+.tag-item--male::before { background-color: var(--tag-male-text); }
+.tag-item--reclass::before { background-color: var(--tag-reclass-text); }
 
 
 .tag-item-names {
@@ -548,58 +560,4 @@ html.dark-theme .history-item-delete-btn:hover {
 .tag-item-btn:hover {
     color: var(--text-color);
     background-color: var(--hover-bg);
-}
-
-/* --- Modal 樣式 --- */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-}
-.modal-content {
-    background-color: var(--bg-color);
-    padding: 20px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 360px;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-.modal-close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: var(--label-color);
-    cursor: pointer;
-}
-#export-textarea, #import-textarea {
-    width: 100%;
-    height: 150px;
-    margin-top: 10px;
-    font-family: monospace;
-    font-size: 12px;
-    resize: vertical;
-    background-color: var(--input-bg);
-    color: var(--input-text);
-    border: 1px solid var(--input-border);
-    box-sizing: border-box; /* 確保 padding 不會影響寬度 */
-}
-
-#import-submit-button {
-    margin-top: 15px;
-}
-
-#import-status-message {
-    margin-top: 10px;
-    height: 15px;
 }

@@ -1,6 +1,7 @@
 /**
- * 搜尋增強器模組 (v1.2.7 - 改善搜尋邏輯)
- * - 更新：搜尋功能現在會排除標籤種類 (如 "artist:")，僅搜尋標籤名稱。
+ * 搜尋增強器模組 (v1.2.9 - 新增標籤顏色)
+ * - 新增：為 reclass, male 標籤類別增加配色。
+ * - 更新：將標籤搜尋框移至獨立的一行，以解決擁擠問題。
  */
 
 function injectCSS() {
@@ -16,10 +17,11 @@ function injectCSS() {
         }
         .exh-tags-bar-header {
             display: flex;
+            flex-wrap: wrap; /* 允許內部元素換行 */
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
-            gap: 15px; /* 新增間距 */
+            gap: 10px; /* 調整間距 */
         }
         /* 讓連結樣式與網站原生連結一致 */
         #exh-tags-bar-toggle {
@@ -27,6 +29,7 @@ function injectCSS() {
             color: #999;
             cursor: pointer;
             text-decoration: none;
+            flex-shrink: 0; /* 防止切換按鈕被壓縮 */
         }
         #exh-tags-bar-toggle:hover {
             text-decoration: underline;
@@ -39,11 +42,13 @@ function injectCSS() {
             font-size: 10pt;
             color: #999;
             flex-shrink: 0; /* 防止被壓縮 */
+            margin-left: auto; /* 將篩選器推到右邊 */
         }
-        /* 新增搜尋框樣式 */
+        /* --- 版面修正 --- */
+        /* 讓搜尋框容器佔滿整行，從而實現換行 */
         .exh-tags-search-container {
-            flex-grow: 1; /* 佔滿剩餘空間 */
-            max-width: 250px; /* 可選：限制最大寬度 */
+            flex-basis: 100%; /* 佔滿父容器的整個寬度 */
+            order: 3; /* 確保它顯示在最後 */
         }
         #exh-tags-search-input {
             width: 100%;
@@ -83,6 +88,9 @@ function injectCSS() {
         .exh-search-tag--character { background-color: #1e3a8a; color: #93c5fd; }
         .exh-search-tag--language { background-color: #0c4a6e; color: #7dd3fc; }
         .exh-search-tag--other { background-color: #374151; color: #d1d5db; }
+        /* --- 新增配色 --- */
+        .exh-search-tag--male { background-color: #164e63; color: #67e8f9; }
+        .exh-search-tag--reclass { background-color: #78350f; color: #fcd34d; }
     `;
     const style = document.createElement('style');
     style.id = styleId;
@@ -91,7 +99,7 @@ function injectCSS() {
 }
 
 function handleTagClick(event) {
-    const tagText = event.currentTarget.dataset.tag; // 使用 currentTarget 以確保點到的是父元素
+    const tagText = event.currentTarget.dataset.tag; 
     const searchInput = document.getElementById('f_search');
     if (!tagText || !searchInput) return;
 
@@ -136,18 +144,15 @@ function renderTags(allTags, filter, searchTerm, container) {
         container.removeChild(container.firstChild);
     }
 
-    // 輔助函式，用於提取標籤字串中的值部分
     const getTagValue = (tagString) => {
         const colonIndex = tagString.indexOf(':');
         return colonIndex > -1 ? tagString.substring(colonIndex + 1).trim() : tagString;
     };
 
-    // 1. 類別篩選
     const categoryFilteredTags = filter === 'all'
         ? allTags
         : allTags.filter(t => t.original.startsWith(filter + ':'));
 
-    // 2. 關鍵字搜尋 (僅搜尋標籤值，排除種類)
     const finalFilteredTags = searchTerm === ''
         ? categoryFilteredTags
         : categoryFilteredTags.filter(t => {
@@ -165,7 +170,7 @@ function renderTags(allTags, filter, searchTerm, container) {
         tagEl.className = 'exh-search-tag';
         tagEl.textContent = tag.display;
         tagEl.dataset.tag = tag.original;
-        const validTypes = ['artist', 'group', 'parody', 'character', 'language'];
+        const validTypes = ['artist', 'group', 'parody', 'character', 'language', 'male', 'reclass'];
         const colorType = validTypes.includes(type) ? type : 'other';
         tagEl.classList.add(`exh-search-tag--${colorType}`);
         tagEl.addEventListener('click', handleTagClick);
@@ -208,9 +213,6 @@ async function createUI() {
     toggle.id = 'exh-tags-bar-toggle';
     toggle.href = '#';
     toggle.textContent = messages.toggleSavedTags || '[Show/Hide Saved Tags]';
-
-    const controlsWrapper = document.createElement('div');
-    controlsWrapper.style.cssText = 'display: flex; align-items: center; gap: 15px; flex-grow: 1; justify-content: flex-end;';
 
     const filterContainer = document.createElement('div');
     filterContainer.className = 'exh-tags-filter-container';
@@ -271,11 +273,9 @@ async function createUI() {
     filterContainer.appendChild(filterLabel);
     filterContainer.appendChild(filterSelect);
     
-    controlsWrapper.appendChild(searchContainer);
-    controlsWrapper.appendChild(filterContainer);
-
     header.appendChild(toggle);
-    header.appendChild(controlsWrapper);
+    header.appendChild(filterContainer);
+    header.appendChild(searchContainer);
 
     bar.appendChild(header);
     bar.appendChild(container);

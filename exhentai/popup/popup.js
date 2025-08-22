@@ -1,5 +1,7 @@
 /**
- * 處理彈出視窗的邏輯 (v1.3.0 - 簡化書籤管理介面)
+ * 處理彈出視窗的邏輯 (v1.3.2 - 新增標籤顏色)
+ * - 新增：為 reclass, male 標籤類別增加配色。
+ * - 修正：已儲存標籤列表未依照預設順序 (language, parody, etc.) 排列的問題。
  * - 變更：將匯入與匯出按鈕合併為單一的「匯入/匯出」按鈕。
  * - 變更：匯入/匯出頁面現在會開啟在當前分頁的右側，而不是最末端。
  */
@@ -337,6 +339,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const renderSavedTags = async () => {
             const { tags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
             
+            const categoryOrder = ['language', 'parody', 'group', 'artist'];
+            tags.sort((a, b) => {
+                const typeA = a.original.split(':')[0];
+                const typeB = b.original.split(':')[0];
+                const indexA = categoryOrder.indexOf(typeA);
+                const indexB = categoryOrder.indexOf(typeB);
+                const orderA = indexA === -1 ? categoryOrder.length : indexA;
+                const orderB = indexB === -1 ? categoryOrder.length : indexB;
+                if (orderA !== orderB) return orderA - orderB;
+                return a.original.localeCompare(b.original);
+            });
+
             const getTagValue = (tagString) => {
                 const colonIndex = tagString.indexOf(':');
                 return colonIndex > -1 ? tagString.substring(colonIndex + 1).trim() : tagString;
@@ -358,7 +372,6 @@ document.addEventListener('DOMContentLoaded', () => {
                   });
 
             if (searchTerm === '') {
-                const categoryOrder = ['language', 'parody', 'group', 'artist'];
                 const categories = [...new Set(tags.map(t => t.original.split(':')[0]))];
                 categories.sort((a, b) => {
                     const indexA = categoryOrder.indexOf(a);
@@ -399,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const tag of finalFilteredTags) {
                 const tagItem = document.createElement('div');
                 const type = tag.original.split(':')[0];
-                const validTypes = ['artist', 'group', 'parody', 'character', 'language'];
+                const validTypes = ['artist', 'group', 'parody', 'character', 'language', 'male', 'reclass'];
                 const colorType = validTypes.includes(type) ? type : 'other';
                 tagItem.className = `tag-item tag-item--${colorType}`;
                 const namesWrapper = document.createElement('div');
@@ -605,7 +618,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // *** 更新 ***: 監聽合併後的新按鈕
             document.getElementById('manage-io-button').addEventListener('click', openIoPage);
         };
 
