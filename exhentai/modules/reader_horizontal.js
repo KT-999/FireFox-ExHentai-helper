@@ -1,11 +1,39 @@
 /**
- * 水平翻頁閱讀器模組 (v1.1)
+ * 水平翻頁閱讀器模組 (v1.2.1 - 修正邏輯錯誤)
+ * - 修正：重構 navigateTo 函式以解決競爭條件問題，防止在快速翻頁時跳轉到錯誤的頁面。
+ * - 更新：使用 try...finally 結構確保導覽鎖的可靠釋放。
+ * - 移除：廢除不穩定的 setTimeout 延遲來釋放導覽鎖。
+ * - 修正：替換了 `findIndex` 中不可靠的 `.includes()` 檢查，改用精準的 URL Pathname 比對，解決初始化時可能跳轉到錯誤頁面的問題。
+ * - 新增：新增 `getPageNumberFromUrl` 輔助函式，統一頁碼解析邏輯。
  */
 import { fetchAndParsePage, reloadImageFromAPI } from './utils.js';
 
 const FIT_STYLE_ID = 'exh-helper-fit-style';
 const VIEWER_STYLE_ID = 'exh-helper-viewer-style';
 let ensurePagesAreIndexed; // 由主模組傳入
+
+// --- 新增：統一的頁碼解析函式 ---
+function getPageNumberFromUrl(url) {
+    if (!url) return null;
+    try {
+        // 優先使用正規表示式從字串末尾解析，最為可靠
+        const match = url.match(/-(\d+)$/);
+        if (match) return match[1];
+        
+        // 備用方法：如果正規表示式失敗，再嘗試 URL 解析
+        const path = new URL(url).pathname;
+        const parts = path.split('-');
+        const lastPart = parts[parts.length - 1];
+        if (!isNaN(parseInt(lastPart, 10))) {
+            return lastPart;
+        }
+        return null;
+    } catch (e) {
+        console.error(`[ExH] 從 URL 解析頁碼失敗: ${url}`, e);
+        return null;
+    }
+}
+
 
 function createStatusDisplay() {
     if (document.getElementById('exh-status-bar')) return;
@@ -64,8 +92,11 @@ function addPreviewImageToStatus(imageUrl, pageUrl, direction, updateId) {
 function updateStatusText() {
     const statusText = document.getElementById('exh-status-text');
     if (!statusText) return;
-    const currentPageMatch = (window.navigationContext.masterList[window.navigationContext.currentIndex] || '').match(/-(\d+)$/);
-    const currentPage = currentPageMatch ? currentPageMatch[1] : '?';
+    
+    // --- 修改：使用新的輔助函式 ---
+    const currentUrl = window.navigationContext.masterList[window.navigationContext.currentIndex];
+    const currentPage = getPageNumberFromUrl(currentUrl) || '?';
+    
     const totalPages = window.navigationContext.totalImageCount || '?';
     const pageInfo = `${currentPage} / ${totalPages}`;
     const prevCount = document.getElementById('exh-prev-previews').children.length;
@@ -258,41 +289,55 @@ async function proactiveIndexCheck(currentIndex) {
 }
 
 async function navigateTo(targetIndex) {
-    if (targetIndex < 0 || window.navigationContext.isNavigating) return;
-    if (targetIndex >= window.navigationContext.masterList.length) {
-        console.warn("[ExH] 觸發了邊界擴展，正常情況應由預測性索引處理。");
-        const { galleryId, totalGalleryPages, backToGalleryUrl } = window.navigationContext;
-        let galleryData = await browser.runtime.sendMessage({ type: 'get_gallery_data', galleryId });
-        const indexedPageNumbers = galleryData ? Object.keys(galleryData.pages).map(Number) : [];
-        const lastIndexedPage = indexedPageNumbers.length > 0 ? Math.max(...indexedPageNumbers) : -1;
-        if (lastIndexedPage < totalGalleryPages - 1) {
-            const nextPageToIndex = lastIndexedPage + 1;
-            await ensurePagesAreIndexed(galleryId, [nextPageToIndex], backToGalleryUrl);
-            const { masterList: newMasterList } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
-            if (newMasterList.length > window.navigationContext.masterList.length) {
-                window.navigationContext.masterList = newMasterList;
-                rebuildSlider(newMasterList);
-            } else {
-                window.navigationContext.isNavigating = false;
-                return;
-            }
-        } else {
-             return;
-        }
+    if (targetIndex < 0 || window.navigationContext.isNavigating) {
+        return;
     }
     window.navigationContext.isNavigating = true;
-    window.navigationContext.currentIndex = targetIndex;
-    proactiveIndexCheck(targetIndex);
-    const slider = document.getElementById('exh-image-slider');
-    slider.style.transform = `translateX(-${targetIndex * 100}vw)`;
-    if (window.navigationContext.masterList[targetIndex]) {
-        history.pushState(null, '', window.navigationContext.masterList[targetIndex]);
+    try {
+        if (targetIndex >= window.navigationContext.masterList.length) {
+            console.log(`[ExH] 觸發邊界擴展，目標索引: ${targetIndex}`);
+            const { galleryId, totalGalleryPages, backToGalleryUrl } = window.navigationContext;
+            let galleryData = await browser.runtime.sendMessage({ type: 'get_gallery_data', galleryId });
+            
+            const indexedPageNumbers = galleryData ? Object.keys(galleryData.pages).map(Number) : [];
+            const lastIndexedPage = indexedPageNumbers.length > 0 ? Math.max(...indexedPageNumbers) : -1;
+
+            if (lastIndexedPage < totalGalleryPages - 1) {
+                const nextPageToIndex = lastIndexedPage + 1;
+                await ensurePagesAreIndexed(galleryId, [nextPageToIndex], backToGalleryUrl);
+                
+                const { masterList: newMasterList } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
+                if (newMasterList.length > window.navigationContext.masterList.length) {
+                    window.navigationContext.masterList = newMasterList;
+                    rebuildSlider(newMasterList);
+                } else {
+                    console.warn("[ExH] 索引完成後，沒有新的頁面可供導覽。");
+                    return;
+                }
+            } else {
+                console.log("[ExH] 已到達圖庫結尾，無法導覽至下一頁。");
+                return;
+            }
+        }
+
+        window.navigationContext.currentIndex = targetIndex;
+        proactiveIndexCheck(targetIndex);
+        const slider = document.getElementById('exh-image-slider');
+        slider.style.transform = `translateX(-${targetIndex * 100}vw)`;
+
+        if (window.navigationContext.masterList[targetIndex]) {
+            history.pushState(null, '', window.navigationContext.masterList[targetIndex]);
+        }
+        loadSlot(targetIndex - 1);
+        loadSlot(targetIndex);
+        loadSlot(targetIndex + 1);
+        updatePreviewBar();
+
+    } catch (error) {
+        console.error(`[ExH] 導覽至索引 ${targetIndex} 時發生錯誤:`, error);
+    } finally {
+        window.navigationContext.isNavigating = false;
     }
-    loadSlot(targetIndex - 1);
-    loadSlot(targetIndex);
-    loadSlot(targetIndex + 1);
-    updatePreviewBar();
-    setTimeout(() => { window.navigationContext.isNavigating = false; }, 300);
 }
 
 function handleHorizontalKeyDown(event) {
@@ -316,7 +361,6 @@ function handleHorizontalKeyDown(event) {
         });
         return;
     }
-    if (window.navigationContext.isNavigating) return;
     if (key === 'arrowleft' || key === window.scriptSettings.keyPrev) navigateTo(window.navigationContext.currentIndex - 1);
     else if (key === 'arrowright' || key === window.scriptSettings.keyNext) navigateTo(window.navigationContext.currentIndex + 1);
 }
@@ -328,7 +372,7 @@ function runHorizontalSliderReader() {
             e.preventDefault();
             const targetUrl = link.href;
             const targetIndex = window.navigationContext.masterList.findIndex(url => url === targetUrl);
-            if (targetIndex !== -1 && !window.navigationContext.isNavigating) navigateTo(targetIndex);
+            if (targetIndex !== -1) navigateTo(targetIndex);
         }
     }, true);
 
@@ -358,15 +402,32 @@ function runHorizontalSliderReader() {
     statusText.textContent = `正在初始化水平閱讀模式...`;
 
     const currentPath = window.location.pathname;
-    const currentIndex = window.navigationContext.masterList.findIndex(link => link.includes(currentPath));
+    
+    // --- 修改：使用更精準的 Pathname 比對來取代 includes ---
+    const currentIndex = window.navigationContext.masterList.findIndex(link => {
+        try {
+            return new URL(link).pathname === currentPath;
+        } catch (e) {
+            // 如果 URL 格式錯誤，則退回舊方法
+            return link.includes(currentPath);
+        }
+    });
+
     if (currentIndex === -1) {
         statusText.textContent = '❌ 錯誤：在當前索引範圍中找不到此頁面。';
         return;
     }
-    window.navigationContext.currentIndex = currentIndex;
+    
     rebuildSlider(window.navigationContext.masterList);
     slider.style.transition = 'none';
-    navigateTo(currentIndex);
+    
+    window.navigationContext.currentIndex = currentIndex;
+    slider.style.transform = `translateX(-${currentIndex * 100}vw)`;
+    loadSlot(currentIndex - 1);
+    loadSlot(currentIndex);
+    loadSlot(currentIndex + 1);
+    updatePreviewBar();
+
     setTimeout(() => { slider.style.transition = 'transform 0.3s ease-in-out;'; }, 50);
     applyFitStyle();
     document.addEventListener('keydown', handleHorizontalKeyDown);
@@ -376,3 +437,4 @@ export function initHorizontalReader(ensurePagesFunc) {
     ensurePagesAreIndexed = ensurePagesFunc;
     runHorizontalSliderReader();
 }
+
