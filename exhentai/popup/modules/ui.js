@@ -91,11 +91,13 @@ export const showConfirmationModal = (title, message) => {
         buttonGroup.className = 'confirm-modal-buttons';
 
         const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = getMessage('cancelButtonText');
+        // *** 修正 ***: 使用正確的 i18n 鍵名
+        cancelBtn.textContent = getMessage('cancelButton');
         cancelBtn.className = 'confirm-modal-cancel-btn';
 
         const confirmBtn = document.createElement('button');
-        confirmBtn.textContent = getMessage('confirmButtonText');
+        // *** 修正 ***: 使用正確的 i18n 鍵名
+        confirmBtn.textContent = getMessage('confirmButton');
         confirmBtn.className = 'confirm-modal-confirm-btn';
 
         buttonGroup.appendChild(cancelBtn);
@@ -122,4 +124,3 @@ export const showConfirmationModal = (title, message) => {
         };
     });
 };
-

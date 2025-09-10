@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "1.4.0",
+  "version": "1.4.1.1",
   "default_locale": "en",
   "developer": {
     "name": "KT-999",
@@ -43,6 +43,7 @@
     {
       "resources": [
         "modules/*",
+        "popup/modules/*",
         "_locales/**/*.json"
       ],
       "matches": ["*://exhentai.org/*", "*://e-hentai.org/*"]
@@ -50,7 +51,10 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "ExHentai-helper@kenny"
+      "id": "ExHentai-helper@kenny.dev",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   }
 }
