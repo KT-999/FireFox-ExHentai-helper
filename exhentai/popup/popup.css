@@ -219,9 +219,25 @@ hr {
     text-align: left;
 }
 
+#auth-section .auth-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
 #auth-section .auth-status-text {
     font-size: 14px;
-    margin-bottom: 10px;
+    margin-bottom: 0;
+    flex-grow: 1;
+}
+
+.extension-version {
+    font-size: 12px;
+    color: var(--label-color);
+    flex-shrink: 0;
+    padding-left: 10px;
 }
 
 #auth-section .auth-username {
@@ -561,3 +577,70 @@ html.dark-theme .history-item-delete-btn:hover {
     color: var(--text-color);
     background-color: var(--hover-bg);
 }
+
+/* Confirmation Modal */
+.confirm-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.confirm-modal-dialog {
+    background-color: var(--bg-color);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    width: 300px;
+    text-align: center;
+}
+
+.confirm-modal-dialog h4 {
+    margin-top: 0;
+    color: var(--header-color);
+}
+
+.confirm-modal-dialog p {
+    color: var(--text-color);
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.confirm-modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.confirm-modal-buttons button {
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    width: auto;
+    margin-top: 0;
+}
+
+.confirm-modal-confirm-btn {
+    background-color: #dc3545;
+    color: #fff;
+}
+.confirm-modal-confirm-btn:hover {
+    background-color: #c82333;
+}
+
+.confirm-modal-cancel-btn {
+    background-color: #6c757d;
+    color: #fff;
+}
+.confirm-modal-cancel-btn:hover {
+    background-color: #5a6268;
+}
+

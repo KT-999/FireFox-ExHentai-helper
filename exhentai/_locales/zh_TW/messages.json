@@ -331,5 +331,33 @@
   "manageTagsIoButton": {
     "message": "匯入 / 匯出",
     "description": "Button to open the import/export page for tags."
+  },
+  "confirmClearHistoryTitle": {
+    "message": "確認清除紀錄",
+    "description": "Confirmation modal title for clearing history."
+  },
+  "confirmClearHistoryMessage": {
+    "message": "您確定要清除所有瀏覽紀錄嗎？此操作無法復原。",
+    "description": "Confirmation modal message for clearing history."
+  },
+  "confirmClearBookmarksTitle": {
+    "message": "確認清除全部書籤",
+    "description": "Confirmation modal title for clearing all bookmarks."
+  },
+  "confirmClearBookmarksMessage": {
+    "message": "您確定要清除所有已儲存的標籤嗎？此操作無法復原。",
+    "description": "Confirmation modal message for clearing all bookmarks."
+  },
+  "confirmButton": {
+    "message": "確認",
+    "description": "Generic confirm button text."
+  },
+  "cancelButton": {
+    "message": "取消",
+    "description": "Generic cancel button text."
+  },
+  "keyExitWithShortcut": {
+    "message": "返回目錄 ({key})",
+    "description": "Tooltip for the back-to-gallery button in the reader, showing the shortcut key."
   }
 }

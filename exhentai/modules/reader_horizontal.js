@@ -1,5 +1,6 @@
 /**
- * 水平翻頁閱讀器模組 (v1.2.1 - 修正邏輯錯誤)
+ * 水平翻頁閱讀器模組 (v1.3.0)
+ * - 新增：在下方的狀態列中，增加一個「返回目錄」的圖示按鈕，提供快捷鍵以外的退出方式。
  * - 修正：重構 navigateTo 函式以解決競爭條件問題，防止在快速翻頁時跳轉到錯誤的頁面。
  * - 更新：使用 try...finally 結構確保導覽鎖的可靠釋放。
  * - 移除：廢除不穩定的 setTimeout 延遲來釋放導覽鎖。
@@ -11,6 +12,7 @@ import { fetchAndParsePage, reloadImageFromAPI } from './utils.js';
 const FIT_STYLE_ID = 'exh-helper-fit-style';
 const VIEWER_STYLE_ID = 'exh-helper-viewer-style';
 let ensurePagesAreIndexed; // 由主模組傳入
+let exitTooltipText = 'Back to Gallery (E)'; // 預設提示文字
 
 // --- 新增：統一的頁碼解析函式 ---
 function getPageNumberFromUrl(url) {
@@ -19,7 +21,7 @@ function getPageNumberFromUrl(url) {
         // 優先使用正規表示式從字串末尾解析，最為可靠
         const match = url.match(/-(\d+)$/);
         if (match) return match[1];
-        
+
         // 備用方法：如果正規表示式失敗，再嘗試 URL 解析
         const path = new URL(url).pathname;
         const parts = path.split('-');
@@ -50,25 +52,49 @@ function createStatusDisplay() {
     const prevPreviewArea = document.createElement('div');
     prevPreviewArea.id = 'exh-prev-previews';
     prevPreviewArea.style.cssText = `display: flex; flex-direction: row-reverse; gap: 8px; align-items: center; overflow-x: auto; flex: 1; justify-content: flex-start;`;
+
     const statusText = document.createElement('span');
     statusText.id = 'exh-status-text';
     statusText.textContent = 'ExHentai 小幫手：正在初始化...';
-    statusText.style.cssText = `padding: 0 20px; flex-shrink: 0; text-align: center;`;
+
     const nextPreviewArea = document.createElement('div');
     nextPreviewArea.id = 'exh-next-previews';
     nextPreviewArea.style.cssText = `display: flex; gap: 8px; align-items: center; overflow-x: auto; flex: 1; justify-content: flex-start;`;
-    
+
+    // *** 新增：建立返回目錄按鈕 ***
+    const exitButtonLink = document.createElement('a');
+    exitButtonLink.id = 'exh-exit-btn';
+    exitButtonLink.href = window.navigationContext.backToGalleryUrl || '#';
+    exitButtonLink.title = exitTooltipText;
+    exitButtonLink.innerHTML = `<img src="https://exhentai.org/img/b.png" style="height: 18px; display: block;" referrerpolicy="no-referrer">`;
+    exitButtonLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (window.navigationContext.backToGalleryUrl) {
+            window.location.href = window.navigationContext.backToGalleryUrl;
+        }
+    });
+
+    // *** 新增：建立中央容器 ***
+    const centralContainer = document.createElement('div');
+    centralContainer.id = 'exh-central-container';
+    centralContainer.appendChild(statusText);
+    centralContainer.appendChild(exitButtonLink);
+
     const styleSheet = document.createElement("style");
     styleSheet.innerText = `
         #exh-prev-previews::-webkit-scrollbar, #exh-next-previews::-webkit-scrollbar { height: 4px; }
         #exh-prev-previews::-webkit-scrollbar-track, #exh-next-previews::-webkit-scrollbar-track { background: #333; }
         #exh-prev-previews::-webkit-scrollbar-thumb, #exh-next-previews::-webkit-scrollbar-thumb { background: #666; border-radius: 2px; }
         .exh-bar-hidden { display: none !important; }
+        /* *** 新增：中央容器與按鈕的樣式 *** */
+        #exh-central-container { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
+        #exh-exit-btn { display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: 5px; transition: background-color 0.2s; }
+        #exh-exit-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
     `;
     document.head.appendChild(styleSheet);
-    
+
     statusBar.appendChild(prevPreviewArea);
-    statusBar.appendChild(statusText);
+    statusBar.appendChild(centralContainer);
     statusBar.appendChild(nextPreviewArea);
     document.body.appendChild(statusBar);
 }
@@ -92,11 +118,11 @@ function addPreviewImageToStatus(imageUrl, pageUrl, direction, updateId) {
 function updateStatusText() {
     const statusText = document.getElementById('exh-status-text');
     if (!statusText) return;
-    
+
     // --- 修改：使用新的輔助函式 ---
     const currentUrl = window.navigationContext.masterList[window.navigationContext.currentIndex];
     const currentPage = getPageNumberFromUrl(currentUrl) || '?';
-    
+
     const totalPages = window.navigationContext.totalImageCount || '?';
     const pageInfo = `${currentPage} / ${totalPages}`;
     const prevCount = document.getElementById('exh-prev-previews').children.length;
@@ -298,14 +324,14 @@ async function navigateTo(targetIndex) {
             console.log(`[ExH] 觸發邊界擴展，目標索引: ${targetIndex}`);
             const { galleryId, totalGalleryPages, backToGalleryUrl } = window.navigationContext;
             let galleryData = await browser.runtime.sendMessage({ type: 'get_gallery_data', galleryId });
-            
+
             const indexedPageNumbers = galleryData ? Object.keys(galleryData.pages).map(Number) : [];
             const lastIndexedPage = indexedPageNumbers.length > 0 ? Math.max(...indexedPageNumbers) : -1;
 
             if (lastIndexedPage < totalGalleryPages - 1) {
                 const nextPageToIndex = lastIndexedPage + 1;
                 await ensurePagesAreIndexed(galleryId, [nextPageToIndex], backToGalleryUrl);
-                
+
                 const { masterList: newMasterList } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
                 if (newMasterList.length > window.navigationContext.masterList.length) {
                     window.navigationContext.masterList = newMasterList;
@@ -378,7 +404,7 @@ function runHorizontalSliderReader() {
 
     createStatusDisplay();
     setPreviewBarVisibility(window.scriptSettings.hidePreviewBar);
-    
+
     const viewer = document.createElement('div');
     viewer.id = 'exh-viewer';
     const slider = document.createElement('div');
@@ -402,7 +428,7 @@ function runHorizontalSliderReader() {
     statusText.textContent = `正在初始化水平閱讀模式...`;
 
     const currentPath = window.location.pathname;
-    
+
     // --- 修改：使用更精準的 Pathname 比對來取代 includes ---
     const currentIndex = window.navigationContext.masterList.findIndex(link => {
         try {
@@ -417,10 +443,10 @@ function runHorizontalSliderReader() {
         statusText.textContent = '❌ 錯誤：在當前索引範圍中找不到此頁面。';
         return;
     }
-    
+
     rebuildSlider(window.navigationContext.masterList);
     slider.style.transition = 'none';
-    
+
     window.navigationContext.currentIndex = currentIndex;
     slider.style.transform = `translateX(-${currentIndex * 100}vw)`;
     loadSlot(currentIndex - 1);
@@ -433,8 +459,24 @@ function runHorizontalSliderReader() {
     document.addEventListener('keydown', handleHorizontalKeyDown);
 }
 
-export function initHorizontalReader(ensurePagesFunc) {
-    ensurePagesAreIndexed = ensurePagesFunc;
+// *** 新增：非同步啟動函式 ***
+async function setupAndRunReader() {
+    try {
+        const { messages } = await browser.runtime.sendMessage({
+            type: 'get_i18n_messages',
+            keys: ['keyExitWithShortcut']
+        });
+        if (messages && messages.keyExitWithShortcut) {
+            const key = window.scriptSettings.keyExit || 'E';
+            exitTooltipText = messages.keyExitWithShortcut.replace('{key}', key.toUpperCase());
+        }
+    } catch (e) {
+        console.warn('[ExH] 讀取閱讀器 i18n 訊息時失敗。', e);
+    }
     runHorizontalSliderReader();
 }
 
+export function initHorizontalReader(ensurePagesFunc) {
+    ensurePagesAreIndexed = ensurePagesFunc;
+    setupAndRunReader();
+}

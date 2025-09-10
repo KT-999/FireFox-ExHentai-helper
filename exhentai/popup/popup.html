@@ -21,7 +21,7 @@
                 <hr id="auth-hr" style="display: none;">
 
                 <h3 data-i18n="popupHeader"></h3>
-                
+
                 <div class="section">
                     <h4 data-i18n="generalSettings"></h4>
                     <div class="setting">
@@ -32,7 +32,7 @@
                         <label for="grid-columns" data-i18n="gridColumns"></label>
                         <input type="number" id="grid-columns" min="3" max="8" value="5">
                     </div>
-                     <div class="setting">
+                    <div class="setting">
                         <label for="reader-mode" data-i18n="readerMode"></label>
                         <select id="reader-mode">
                             <option value="default" data-i18n="readerModeDefault"></option>
@@ -78,22 +78,21 @@
                             <option value="ja" data-i18n="langJA"></option>
                             <option value="ko" data-i18n="langKO"></option>
                             <option value="de" data-i18n="langDE"></option>
-                            <!-- *** 新增語言選項 *** -->
                             <option value="fr" data-i18n="langFR"></option>
                             <option value="pt_BR" data-i18n="langPT_BR"></option>
                             <option value="ru" data-i18n="langRU"></option>
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="button-group">
                     <button id="open-options-button" class="btn-secondary" data-i18n="openOptionsButton"></button>
                     <button id="save-button" data-i18n="saveButton"></button>
                 </div>
                 <p id="status-message" class="status"></p>
-        
+
                 <hr>
-        
+
                 <div class="section">
                     <h4 data-i18n="advancedOperations"></h4>
                     <div class="setting-description">
@@ -106,7 +105,8 @@
             <div id="history" class="tab-pane">
                 <div class="history-header">
                     <h3 data-i18n="historyHeader"></h3>
-                    <button id="clear-history-button" class="btn-danger btn-small" data-i18n="clearHistoryButton"></button>
+                    <button id="clear-history-button" class="btn-danger btn-small"
+                        data-i18n="clearHistoryButton"></button>
                 </div>
                 <div id="history-list"></div>
             </div>
@@ -115,8 +115,10 @@
                 <div class="bookmarks-header">
                     <h3 data-i18n="bookmarksHeader"></h3>
                     <div class="bookmarks-header-buttons">
-                        <button id="manage-io-button" class="btn-secondary btn-small" data-i18n="manageTagsIoButton"></button>
-                        <button id="clear-tags-button" class="btn-danger btn-small" data-i18n="clearBookmarksButton"></button>
+                        <button id="manage-io-button" class="btn-secondary btn-small"
+                            data-i18n="manageTagsIoButton"></button>
+                        <button id="clear-tags-button" class="btn-danger btn-small"
+                            data-i18n="clearBookmarksButton"></button>
                     </div>
                 </div>
                 <div class="tag-controls-container">
@@ -127,7 +129,7 @@
                         </select>
                     </div>
                     <div class="tag-search-container">
-                        <input type="search" id="tag-search-input" placeholder="搜尋標籤...">
+                        <input type="search" id="tag-search-input" data-i18n-placeholder="searchTagsPlaceholder">
                     </div>
                 </div>
                 <div id="tag-list"></div>
@@ -135,6 +137,7 @@
         </div>
     </div>
 
-    <script src="popup.js"></script>
+    <script src="popup.js" type="module"></script>
 </body>
+
 </html>

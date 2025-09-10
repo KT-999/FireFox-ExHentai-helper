@@ -331,5 +331,33 @@
   "manageTagsIoButton": {
     "message": "インポート / エクスポート",
     "description": "タグのインポート/エクスポートページを開くボタン。"
+  },
+  "confirmClearHistoryTitle": {
+    "message": "履歴のクリアを確認",
+    "description": "Confirmation modal title for clearing history."
+  },
+  "confirmClearHistoryMessage": {
+    "message": "すべての閲覧履歴をクリアしてもよろしいですか？この操作は元に戻せません。",
+    "description": "Confirmation modal message for clearing history."
+  },
+  "confirmClearBookmarksTitle": {
+    "message": "すべてのブックマークのクリアを確認",
+    "description": "Confirmation modal title for clearing all bookmarks."
+  },
+  "confirmClearBookmarksMessage": {
+    "message": "保存されているすべてのタグをクリアしてもよろしいですか？この操作は元に戻せません。",
+    "description": "Confirmation modal message for clearing all bookmarks."
+  },
+  "confirmButton": {
+    "message": "確認",
+    "description": "Generic confirm button text."
+  },
+  "cancelButton": {
+    "message": "キャンセル",
+    "description": "Generic cancel button text."
+  },
+  "keyExitWithShortcut": {
+    "message": "ギャラリーに戻る ({key})",
+    "description": "Tooltip for the back-to-gallery button in the reader, showing the shortcut key."
   }
 }

@@ -331,5 +331,33 @@
   "manageTagsIoButton": {
     "message": "Importar / Exportar",
     "description": "Botón para abrir la página de importación/exportación de etiquetas."
+  },
+  "confirmClearHistoryTitle": {
+    "message": "Confirmar Borrar Historial",
+    "description": "Confirmation modal title for clearing history."
+  },
+  "confirmClearHistoryMessage": {
+    "message": "¿Estás seguro de que quieres borrar todo el historial de navegación? Esta acción no se puede deshacer.",
+    "description": "Confirmation modal message for clearing history."
+  },
+  "confirmClearBookmarksTitle": {
+    "message": "Confirmar Borrar Todos los Marcadores",
+    "description": "Confirmation modal title for clearing all bookmarks."
+  },
+  "confirmClearBookmarksMessage": {
+    "message": "¿Estás seguro de que quieres borrar todas las etiquetas guardadas? Esta acción no se puede deshacer.",
+    "description": "Confirmation modal message for clearing all bookmarks."
+  },
+  "confirmButton": {
+    "message": "Confirmar",
+    "description": "Generic confirm button text."
+  },
+  "cancelButton": {
+    "message": "Cancelar",
+    "description": "Generic cancel button text."
+  },
+  "keyExitWithShortcut": {
+    "message": "Volver a la Galería ({key})",
+    "description": "Tooltip for the back-to-gallery button in the reader, showing the shortcut key."
   }
 }

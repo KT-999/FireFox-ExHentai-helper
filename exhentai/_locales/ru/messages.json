@@ -331,5 +331,33 @@
     "manageTagsIoButton": {
         "message": "Импорт / Экспорт",
         "description": "Кнопка для открытия страницы импорта/экспорта тегов."
+    },
+    "confirmClearHistoryTitle": {
+        "message": "Подтвердить очистку истории",
+        "description": "Confirmation modal title for clearing history."
+    },
+    "confirmClearHistoryMessage": {
+        "message": "Вы уверены, что хотите очистить всю историю просмотров? Это действие нельзя отменить.",
+        "description": "Confirmation modal message for clearing history."
+    },
+    "confirmClearBookmarksTitle": {
+        "message": "Подтвердить удаление всех закладок",
+        "description": "Confirmation modal title for clearing all bookmarks."
+    },
+    "confirmClearBookmarksMessage": {
+        "message": "Вы уверены, что хотите удалить все сохраненные теги? Это действие нельзя отменить.",
+        "description": "Confirmation modal message for clearing all bookmarks."
+    },
+    "confirmButton": {
+        "message": "Подтвердить",
+        "description": "Generic confirm button text."
+    },
+    "cancelButton": {
+        "message": "Отмена",
+        "description": "Generic cancel button text."
+    },
+    "keyExitWithShortcut": {
+        "message": "Назад в галерею ({key})",
+        "description": "Tooltip for the back-to-gallery button in the reader, showing the shortcut key."
     }
 }

@@ -1,6 +1,17 @@
 /**
- * 網格視圖功能模組 (v1.1)
+ * 網格視圖功能模組 (v1.3.2)
+ * - 修正：擴大分頁列的搜尋範圍，以支援 .searchnav 結構，解決在首頁或搜尋頁面的無限滾動問題。
+ * - 修正：無限滾動功能在標籤搜尋等頁面失效的問題，改用更可靠的方式尋找「下一頁」的連結。
+ * - 新增：實現無限滾動功能，當使用者滾動到頁面底部時，會自動載入並附加下一頁的內容。
+ * - 新增：在頁面底部增加載入狀態指示器。
+ * - 重構：將單一項目從列表轉換為網格的邏輯提取到獨立函式中，以供重複使用。
  */
+import { fetchAndParsePage } from './utils.js';
+
+let isLoadingNextPage = false;
+let nextPageUrl = null;
+let intersectionObserver = null;
+const translationMap = new Map();
 
 function injectGridViewCSS() {
     const styleId = 'exh-grid-view-style';
@@ -143,6 +154,13 @@ function injectGridViewCSS() {
             vertical-align: middle;
             background: url(https://s.exhentai.org/img/ir.png) no-repeat;
         }
+        .exh-grid-loader {
+            grid-column: 1 / -1; /* Span all columns */
+            text-align: center;
+            padding: 20px;
+            font-size: 16px;
+            color: #888;
+        }
     `;
     const style = document.createElement('style');
     style.id = styleId;
@@ -150,127 +168,230 @@ function injectGridViewCSS() {
     document.head.appendChild(style);
 }
 
-function transformToGridView() {
+function createGridItemFromRow(row) {
+    try {
+        const categoryDiv = row.querySelector('.gl1c div');
+        const thumbImg = row.querySelector('.glthumb img');
+        const linkA = row.querySelector('.gl3c a');
+        const titleDiv = row.querySelector('.glink');
+        const ratingDiv = row.querySelector('.ir');
+        const pagesDiv = row.querySelector('.gl4c div:last-child');
+        const tagsContainer = row.querySelector('.gl3c > a > div:last-child');
+        const dateDiv = row.querySelector('div[id^="posted_"]');
+        const langTagDiv = row.querySelector('.gt[title^="language:"]');
+
+        if (!linkA || !titleDiv || !thumbImg) return null;
+
+        const gridItem = document.createElement('a');
+        gridItem.className = 'exh-grid-item';
+        gridItem.href = linkA.href;
+
+        const imgSrc = thumbImg.getAttribute('data-src') || thumbImg.src;
+        const ratingStyleAttr = ratingDiv ? ratingDiv.getAttribute('style') : '';
+        const pagesText = pagesDiv ? pagesDiv.textContent : '';
+        const dateText = dateDiv ? dateDiv.textContent : '';
+        const langText = langTagDiv ? langTagDiv.textContent : '';
+
+        const thumbnailLink = document.createElement('div');
+        thumbnailLink.className = 'exh-grid-thumbnail-link';
+        const img = document.createElement('img');
+        img.src = imgSrc;
+        img.alt = titleDiv.textContent;
+        img.loading = 'lazy';
+        thumbnailLink.appendChild(img);
+        gridItem.appendChild(thumbnailLink);
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'exh-grid-info';
+
+        const infoTopDiv = document.createElement('div');
+        const titleEl = document.createElement('div');
+        titleEl.className = 'exh-grid-title';
+        titleEl.textContent = titleDiv.textContent;
+        infoTopDiv.appendChild(titleEl);
+
+        const categoryRow = document.createElement('div');
+        categoryRow.className = 'exh-grid-category-row';
+        if (categoryDiv) {
+            categoryRow.appendChild(categoryDiv.cloneNode(true));
+        }
+        infoTopDiv.appendChild(categoryRow);
+        infoDiv.appendChild(infoTopDiv);
+
+        if (ratingDiv) {
+            const ratingEl = document.createElement('div');
+            ratingEl.className = 'ir';
+            ratingEl.style.cssText = ratingStyleAttr;
+            infoDiv.appendChild(ratingEl);
+        }
+
+        const footerDiv = document.createElement('div');
+        footerDiv.className = 'exh-grid-footer';
+
+        const dateSpan = document.createElement('span');
+        dateSpan.className = 'exh-grid-date';
+        dateSpan.textContent = dateText;
+        footerDiv.appendChild(dateSpan);
+
+        if (langText) {
+            const langSpan = document.createElement('span');
+            langSpan.className = 'exh-grid-language';
+            langSpan.textContent = langText;
+            footerDiv.appendChild(langSpan);
+        }
+
+        const pagesSpan = document.createElement('span');
+        pagesSpan.textContent = `${pagesText.replace(' pages', '')}p`;
+        footerDiv.appendChild(pagesSpan);
+
+        infoDiv.appendChild(footerDiv);
+        gridItem.appendChild(infoDiv);
+
+        const overlayDiv = document.createElement('div');
+        overlayDiv.className = 'exh-grid-overlay';
+
+        if (titleDiv) {
+            const overlayTitle = document.createElement('div');
+            overlayTitle.className = 'exh-overlay-title';
+            overlayTitle.textContent = titleDiv.textContent;
+            overlayDiv.appendChild(overlayTitle);
+        }
+
+        if (tagsContainer) {
+            const overlayTags = document.createElement('div');
+            overlayTags.className = 'exh-overlay-tags';
+
+            Array.from(tagsContainer.children).forEach(child => {
+                const clonedTag = child.cloneNode(true);
+                const originalTag = clonedTag.getAttribute('title');
+
+                if (translationMap.has(originalTag)) {
+                    const displayTag = translationMap.get(originalTag);
+                    const displayValue = displayTag.substring(displayTag.indexOf(':') + 1).trim();
+                    if (displayValue) {
+                        clonedTag.textContent = displayValue;
+                    }
+                }
+                overlayTags.appendChild(clonedTag);
+            });
+            overlayDiv.appendChild(overlayTags);
+        }
+        gridItem.appendChild(overlayDiv);
+        return gridItem;
+    } catch (e) {
+        console.error('[ExH] 轉換單個項目到網格視圖時出錯:', e, row);
+        return null;
+    }
+}
+
+async function loadNextPage() {
+    if (isLoadingNextPage || !nextPageUrl) return;
+
+    isLoadingNextPage = true;
+    const loader = document.getElementById('exh-grid-loader');
+    if (loader) loader.textContent = '正在載入下一頁...';
+
+    try {
+        const doc = await fetchAndParsePage(nextPageUrl);
+        if (!doc) {
+            throw new Error('無法抓取或解析下一頁的內容。');
+        }
+
+        const gridContainer = document.querySelector('.exh-grid-view');
+        const newRows = doc.querySelectorAll('table.itg.gltc tbody > tr');
+        newRows.forEach(row => {
+            const gridItem = createGridItemFromRow(row);
+            if (gridItem) {
+                gridContainer.appendChild(gridItem);
+            }
+        });
+
+        const pagination = doc.querySelector('.ptb, .ptt, .searchnav');
+        const nextLink = pagination ? Array.from(pagination.querySelectorAll('a')).find(a => a.textContent.trim() === 'Next >') : null;
+
+        if (nextLink && nextLink.href) {
+            nextPageUrl = nextLink.href;
+        } else {
+            nextPageUrl = null;
+            if (loader) loader.textContent = '已載入所有內容。';
+            if (intersectionObserver) intersectionObserver.disconnect();
+        }
+
+    } catch (error) {
+        console.error('[ExH] 載入下一頁時發生錯誤:', error);
+        if (loader) loader.textContent = '載入失敗，請檢查主控台。';
+        if (intersectionObserver) intersectionObserver.disconnect();
+    } finally {
+        isLoadingNextPage = false;
+    }
+}
+
+function setupInfiniteScroll() {
+    const pagination = document.querySelector('.ptb, .ptt, .searchnav');
+    if (!pagination) return;
+
+    const nextLink = Array.from(pagination.querySelectorAll('a')).find(a => a.textContent.trim() === 'Next >');
+
+    if (nextLink && nextLink.href) {
+        nextPageUrl = nextLink.href;
+    } else {
+        return; // 沒有下一頁了
+    }
+
+    const gridContainer = document.querySelector('.exh-grid-view');
+    const loader = document.createElement('div');
+    loader.id = 'exh-grid-loader';
+    loader.className = 'exh-grid-loader';
+    gridContainer.insertAdjacentElement('afterend', loader);
+
+    intersectionObserver = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) {
+            loadNextPage();
+        }
+    }, { rootMargin: '200px' });
+
+    intersectionObserver.observe(loader);
+}
+
+async function transformToGridView() {
     const originalTable = document.querySelector('table.itg.gltc');
     if (!originalTable || document.querySelector('.exh-grid-view')) return;
 
-    console.log('[ExH] 啟用網格視圖...');
+    console.log('[ExH] 啟用網格視圖並設定無限滾動...');
     injectGridViewCSS();
+
+    translationMap.clear();
+    const { tags: savedTags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
+    if (savedTags && savedTags.length > 0) {
+        for (const tag of savedTags) {
+            if (tag.original !== tag.display) {
+                translationMap.set(tag.original, tag.display);
+            }
+        }
+    }
 
     const gridContainer = document.createElement('div');
     gridContainer.className = 'exh-grid-view';
 
     const rows = originalTable.querySelectorAll('tbody > tr');
-
     rows.forEach(row => {
-        try {
-            const categoryDiv = row.querySelector('.gl1c div');
-            const thumbImg = row.querySelector('.glthumb img');
-            const linkA = row.querySelector('.gl3c a');
-            const titleDiv = row.querySelector('.glink');
-            const ratingDiv = row.querySelector('.ir');
-            const pagesDiv = row.querySelector('.gl4c div:last-child');
-            const tagsContainer = row.querySelector('.gl3c > a > div:last-child');
-            const dateDiv = row.querySelector('div[id^="posted_"]');
-            const langTagDiv = row.querySelector('.gt[title^="language:"]');
-
-            if (!linkA || !titleDiv || !thumbImg) return;
-
-            const gridItem = document.createElement('a');
-            gridItem.className = 'exh-grid-item';
-            gridItem.href = linkA.href;
-
-            const imgSrc = thumbImg.getAttribute('data-src') || thumbImg.src;
-            const ratingStyleAttr = ratingDiv ? ratingDiv.getAttribute('style') : '';
-            const pagesText = pagesDiv ? pagesDiv.textContent : '';
-            const dateText = dateDiv ? dateDiv.textContent : '';
-            const langText = langTagDiv ? langTagDiv.textContent : '';
-
-            const thumbnailLink = document.createElement('div');
-            thumbnailLink.className = 'exh-grid-thumbnail-link';
-            const img = document.createElement('img');
-            img.src = imgSrc;
-            img.alt = titleDiv.textContent;
-            img.loading = 'lazy';
-            thumbnailLink.appendChild(img);
-            gridItem.appendChild(thumbnailLink);
-
-            const infoDiv = document.createElement('div');
-            infoDiv.className = 'exh-grid-info';
-
-            const infoTopDiv = document.createElement('div');
-            const titleEl = document.createElement('div');
-            titleEl.className = 'exh-grid-title';
-            titleEl.textContent = titleDiv.textContent;
-            infoTopDiv.appendChild(titleEl);
-
-            const categoryRow = document.createElement('div');
-            categoryRow.className = 'exh-grid-category-row';
-            if (categoryDiv) {
-                categoryRow.appendChild(categoryDiv.cloneNode(true));
-            }
-            infoTopDiv.appendChild(categoryRow);
-            infoDiv.appendChild(infoTopDiv);
-
-            if (ratingDiv) {
-                const ratingEl = document.createElement('div');
-                ratingEl.className = 'ir';
-                ratingEl.style.cssText = ratingStyleAttr;
-                infoDiv.appendChild(ratingEl);
-            }
-
-            const footerDiv = document.createElement('div');
-            footerDiv.className = 'exh-grid-footer';
-            
-            const dateSpan = document.createElement('span');
-            dateSpan.className = 'exh-grid-date';
-            dateSpan.textContent = dateText;
-            footerDiv.appendChild(dateSpan);
-
-            if (langText) {
-                const langSpan = document.createElement('span');
-                langSpan.className = 'exh-grid-language';
-                langSpan.textContent = langText;
-                footerDiv.appendChild(langSpan);
-            }
-
-            const pagesSpan = document.createElement('span');
-            pagesSpan.textContent = `${pagesText.replace(' pages', '')}p`;
-            footerDiv.appendChild(pagesSpan);
-
-            infoDiv.appendChild(footerDiv);
-            gridItem.appendChild(infoDiv);
-
-            const overlayDiv = document.createElement('div');
-            overlayDiv.className = 'exh-grid-overlay';
-            
-            if (titleDiv) {
-                const overlayTitle = document.createElement('div');
-                overlayTitle.className = 'exh-overlay-title';
-                overlayTitle.textContent = titleDiv.textContent;
-                overlayDiv.appendChild(overlayTitle);
-            }
-
-            if (tagsContainer) {
-                const overlayTags = document.createElement('div');
-                overlayTags.className = 'exh-overlay-tags';
-                Array.from(tagsContainer.children).forEach(child => {
-                    overlayTags.appendChild(child.cloneNode(true));
-                });
-                overlayDiv.appendChild(overlayTags);
-            }
-            gridItem.appendChild(overlayDiv);
-
+        const gridItem = createGridItemFromRow(row);
+        if (gridItem) {
             gridContainer.appendChild(gridItem);
-        } catch (e) {
-            console.error('[ExH] 轉換單個項目到網格視圖時出錯:', e, row);
         }
     });
 
     originalTable.style.display = 'none';
+
+    const pagenator = document.querySelector('.ptt, .searchnav');
+    if (pagenator) pagenator.style.display = 'none';
+
     originalTable.parentElement.insertBefore(gridContainer, originalTable);
+
+    setupInfiniteScroll();
 }
 
-export function initGridView() {
-    transformToGridView();
+export async function initGridView() {
+    await transformToGridView();
 }
+
