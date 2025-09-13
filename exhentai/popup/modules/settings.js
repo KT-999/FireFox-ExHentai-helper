@@ -1,7 +1,7 @@
 // popup/modules/settings.js
 import { applyTheme, getMessage } from './ui.js';
 
-let initialLanguage;
+let statusTimeout;
 
 const toggleReaderModeSettings = (mode) => {
     const horizontalSettings = [
@@ -16,36 +16,65 @@ const toggleReaderModeSettings = (mode) => {
     }
 };
 
-const saveSettings = async () => {
+// 顯示儲存成功的回饋訊息
+const showSaveFeedback = (isLanguageChange = false) => {
     const statusMessage = document.getElementById('status-message');
-    const settings = {
-        enableGridView: document.getElementById('enable-grid-view').checked,
-        gridColumns: parseInt(document.getElementById('grid-columns').value, 10) || 5,
-        readerMode: document.getElementById('reader-mode').value,
-        preloadCount: parseInt(document.getElementById('preload-count').value, 10) || 3,
-        cacheSize: parseInt(document.getElementById('cache-size').value, 10) || 50,
-        maxHistoryCount: parseInt(document.getElementById('max-history-count').value, 10) || 200,
-        fitToWindow: document.getElementById('fit-to-window').checked,
-        hidePreviewBar: document.getElementById('hide-preview-bar').checked,
-        themeMode: document.getElementById('theme-mode').value,
-        uiLanguage: document.getElementById('ui-language').value
-    };
+    clearTimeout(statusTimeout);
 
-    await browser.storage.local.set(settings);
-
-    const languageChanged = initialLanguage !== settings.uiLanguage;
-
-    // 如果語言變更，我們需要重新載入訊息，這將在主腳本中處理
-    if (languageChanged) {
-        statusMessage.textContent = getMessage("saveSettingsSuccessLang");
-        // 主腳本應監聽此事件並重新載入 i18n
-        document.dispatchEvent(new CustomEvent('languageChanged'));
-    } else {
-        statusMessage.textContent = getMessage("saveSettingsSuccess");
-    }
+    const messageKey = isLanguageChange ? "saveSettingsSuccessLang" : "saveSettingsSuccess";
+    statusMessage.textContent = `✓ ${getMessage(messageKey)}`;
     statusMessage.style.color = '#28a745';
-    setTimeout(() => { statusMessage.textContent = ''; }, 3000);
-    initialLanguage = settings.uiLanguage;
+
+    statusTimeout = setTimeout(() => {
+        statusMessage.textContent = '';
+    }, 2500);
+};
+
+// 處理單一設定項的變更並立即儲存
+const handleSettingChange = async (event) => {
+    const element = event.target;
+    const key = element.dataset.settingKey;
+    if (!key) return;
+
+    let value;
+    switch (element.type) {
+        case 'checkbox':
+            value = element.checked;
+            break;
+        case 'number':
+            value = parseInt(element.value, 10);
+            break;
+        default:
+            value = element.value;
+            break;
+    }
+
+    // 處理有連動關係的 UI
+    if (key === 'enableGridView') {
+        document.getElementById('grid-columns-setting').style.display = value ? 'flex' : 'none';
+    }
+    if (key === 'readerMode') {
+        toggleReaderModeSettings(value);
+    }
+    if (key === 'themeMode') {
+        applyTheme(value);
+    }
+
+    try {
+        await browser.storage.local.set({ [key]: value });
+        const isLanguageChange = key === 'uiLanguage';
+        showSaveFeedback(isLanguageChange);
+
+        if (isLanguageChange) {
+            // 觸發事件，讓主腳本 popup.js 重新載入多語系檔案
+            document.dispatchEvent(new CustomEvent('languageChanged'));
+        }
+    } catch (error) {
+        console.error(`儲存設定 ${key} 時發生錯誤:`, error);
+        const statusMessage = document.getElementById('status-message');
+        statusMessage.textContent = `✗ ${getMessage("saveSettingsError")}`;
+        statusMessage.style.color = '#dc3545';
+    }
 };
 
 const loadSettings = async () => {
@@ -61,19 +90,23 @@ const loadSettings = async () => {
         themeMode: 'system',
         uiLanguage: 'auto'
     });
-    document.getElementById('enable-grid-view').checked = result.enableGridView;
-    document.getElementById('grid-columns').value = result.gridColumns;
-    document.getElementById('reader-mode').value = result.readerMode;
-    document.getElementById('preload-count').value = result.preloadCount;
-    document.getElementById('cache-size').value = result.cacheSize;
-    document.getElementById('max-history-count').value = result.maxHistoryCount;
-    document.getElementById('fit-to-window').checked = result.fitToWindow;
-    document.getElementById('hide-preview-bar').checked = result.hidePreviewBar;
-    document.getElementById('theme-mode').value = result.themeMode;
-    document.getElementById('ui-language').value = result.uiLanguage;
 
-    initialLanguage = result.uiLanguage;
+    // 遍歷所有設定並填入 UI
+    for (const key in result) {
+        const element = document.querySelector(`[data-setting-key="${key}"]`);
+        if (element) {
+            switch (element.type) {
+                case 'checkbox':
+                    element.checked = result[key];
+                    break;
+                default:
+                    element.value = result[key];
+                    break;
+            }
+        }
+    }
 
+    // 初始化有連動關係的 UI 狀態
     document.getElementById('grid-columns-setting').style.display = result.enableGridView ? 'flex' : 'none';
     toggleReaderModeSettings(result.readerMode);
     applyTheme(result.themeMode);
@@ -82,33 +115,23 @@ const loadSettings = async () => {
 export const initSettings = async () => {
     await loadSettings();
 
-    document.getElementById('enable-grid-view').addEventListener('change', (event) => {
-        document.getElementById('grid-columns-setting').style.display = event.target.checked ? 'flex' : 'none';
+    // 為所有具備 data-setting-key 的元素綁定事件監聽器
+    document.querySelectorAll('[data-setting-key]').forEach(element => {
+        element.addEventListener('change', handleSettingChange);
     });
 
-    document.getElementById('reader-mode').addEventListener('change', (event) => {
-        toggleReaderModeSettings(event.target.value);
-    });
-
-    document.getElementById('theme-mode').addEventListener('change', (event) => {
-        applyTheme(event.target.value);
-    });
-
-    // 語言變更會立即儲存以觸發重載
-    document.getElementById('ui-language').addEventListener('change', saveSettings);
-
-    document.getElementById('save-button').addEventListener('click', saveSettings);
     document.getElementById('open-options-button').addEventListener('click', () => {
         browser.runtime.openOptionsPage();
     });
 
     document.getElementById('clear-cache-button').addEventListener('click', () => {
         browser.runtime.sendMessage({ type: 'clear_all_cache' }).then(response => {
-            const statusMessage = document.getElementById('status-message');
             if (response && response.success) {
-                statusMessage.textContent = `✅ 已清除 ${response.clearedCount} 個圖庫的快取！`;
+                const statusMessage = document.getElementById('status-message');
+                clearTimeout(statusTimeout);
+                statusMessage.textContent = `✓ 已清除 ${response.clearedCount} 個圖庫的快取！`;
                 statusMessage.style.color = '#28a745';
-                setTimeout(() => { statusMessage.textContent = ''; }, 3000);
+                statusTimeout = setTimeout(() => { statusMessage.textContent = ''; }, 3000);
             }
         });
     });

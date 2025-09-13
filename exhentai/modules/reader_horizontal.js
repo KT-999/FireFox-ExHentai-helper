@@ -1,11 +1,13 @@
 /**
- * 水平翻頁閱讀器模組 (v1.3.0)
+ * 水平翻頁閱讀器模組 (v1.3.2)
  * - 新增：在下方的狀態列中，增加一個「返回目錄」的圖示按鈕，提供快捷鍵以外的退出方式。
  * - 修正：重構 navigateTo 函式以解決競爭條件問題，防止在快速翻頁時跳轉到錯誤的頁面。
  * - 更新：使用 try...finally 結構確保導覽鎖的可靠釋放。
  * - 移除：廢除不穩定的 setTimeout 延遲來釋放導覽鎖。
  * - 修正：替換了 `findIndex` 中不可靠的 `.includes()` 檢查，改用精準的 URL Pathname 比對，解決初始化時可能跳轉到錯誤頁面的問題。
  * - 新增：新增 `getPageNumberFromUrl` 輔助函式，統一頁碼解析邏輯。
+ * - 新增：加入設定變更監聽器，讓 popup 中的選項可以即時生效，無需重整頁面。
+ * - 優化：將預先載入的順序從線性改為由近到遠的交錯順序，以提升體驗。
  */
 import { fetchAndParsePage, reloadImageFromAPI } from './utils.js';
 
@@ -112,7 +114,12 @@ function addPreviewImageToStatus(imageUrl, pageUrl, direction, updateId) {
     img.src = imageUrl;
     img.style.cssText = `height: 40px; width: 40px; border-radius: 3px; border: 1px solid #555; object-fit: cover; display: block;`;
     link.appendChild(img);
-    previewArea.appendChild(link);
+
+    if (direction === 'prev') {
+        previewArea.appendChild(link); // For reverse-flex, append works as intended
+    } else {
+        previewArea.appendChild(link);
+    }
 }
 
 function updateStatusText() {
@@ -265,19 +272,37 @@ async function processLink(pageUrl, direction, preloadedPagesMap, galleryId, upd
 async function updatePreviewBar() {
     const { masterList, currentIndex, galleryId } = window.navigationContext;
     if (!masterList || currentIndex === -1 || !galleryId) return;
+
     const currentUpdateId = ++window.navigationContext.previewUpdateId;
     document.getElementById('exh-prev-previews').innerHTML = '';
     document.getElementById('exh-next-previews').innerHTML = '';
     updateStatusText();
+
     const { preloadedPages } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
     const preloadedPagesMap = new Map(Object.entries(preloadedPages || {}));
-    const prevLinks = masterList.slice(Math.max(0, currentIndex - window.scriptSettings.preloadCount), currentIndex).reverse();
-    const nextLinks = masterList.slice(currentIndex + 1, currentIndex + 1 + window.scriptSettings.preloadCount);
-    const linksToProcess = [...prevLinks.map(url => ({ url, direction: 'prev' })), ...nextLinks.map(url => ({ url, direction: 'next' }))];
+
+    // *** 修改重點：產生由近到遠的交錯載入順序 ***
+    const linksToProcess = [];
+    const preloadCount = window.scriptSettings.preloadCount;
+    for (let i = 1; i <= preloadCount; i++) {
+        const nextIndex = currentIndex + i;
+        const prevIndex = currentIndex - i;
+
+        // 新增下一頁的連結 (如果存在)
+        if (nextIndex < masterList.length) {
+            linksToProcess.push({ url: masterList[nextIndex], direction: 'next' });
+        }
+        // 新增上一頁的連結 (如果存在)
+        if (prevIndex >= 0) {
+            linksToProcess.push({ url: masterList[prevIndex], direction: 'prev' });
+        }
+    }
+
     for (const item of linksToProcess) {
         if (window.navigationContext.previewUpdateId !== currentUpdateId) return;
         await processLink(item.url, item.direction, preloadedPagesMap, galleryId, currentUpdateId);
     }
+
     if (window.navigationContext.previewUpdateId === currentUpdateId) updateStatusText();
 }
 
@@ -459,6 +484,37 @@ function runHorizontalSliderReader() {
     document.addEventListener('keydown', handleHorizontalKeyDown);
 }
 
+// *** 新增：監聽來自 popup 的即時設定變更 ***
+function listenForSettingsChanges() {
+    browser.storage.onChanged.addListener((changes, area) => {
+        // 確保監聽器只在本地儲存區變更，且水平閱讀器處於啟用狀態時作用
+        if (area !== 'local' || !document.getElementById('exh-viewer')) {
+            return;
+        }
+
+        // 處理「圖片適應視窗」的變更
+        if (changes.fitToWindow) {
+            const newValue = changes.fitToWindow.newValue;
+            // 更新全域設定物件，以確保與快捷鍵狀態同步
+            window.scriptSettings.fitToWindow = newValue;
+            // 即時套用視覺變更
+            applyFitStyle();
+            console.log(`[ExH] "圖片適應視窗" 設定已變更為: ${newValue}`);
+        }
+
+        // 處理「隱藏預覽列」的變更
+        if (changes.hidePreviewBar) {
+            const newValue = changes.hidePreviewBar.newValue;
+            // 更新全域設定物件
+            window.scriptSettings.hidePreviewBar = newValue;
+            // 即時套用視覺變更
+            setPreviewBarVisibility(newValue);
+            console.log(`[ExH] "隱藏預覽列" 設定已變更為: ${newValue}`);
+        }
+    });
+}
+
+
 // *** 新增：非同步啟動函式 ***
 async function setupAndRunReader() {
     try {
@@ -479,4 +535,6 @@ async function setupAndRunReader() {
 export function initHorizontalReader(ensurePagesFunc) {
     ensurePagesAreIndexed = ensurePagesFunc;
     setupAndRunReader();
+    listenForSettingsChanges(); // <<< 在此處呼叫新的監聽器
 }
+

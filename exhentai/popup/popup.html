@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
     <div class="container">
         <!-- 頁籤導覽列 -->
@@ -26,15 +28,15 @@
                     <h4 data-i18n="generalSettings"></h4>
                     <div class="setting">
                         <label for="enable-grid-view" data-i18n="enableGridView"></label>
-                        <input type="checkbox" id="enable-grid-view">
+                        <input type="checkbox" id="enable-grid-view" data-setting-key="enableGridView">
                     </div>
                     <div class="setting" id="grid-columns-setting" style="display: none;">
                         <label for="grid-columns" data-i18n="gridColumns"></label>
-                        <input type="number" id="grid-columns" min="3" max="8" value="5">
+                        <input type="number" id="grid-columns" min="3" max="8" value="5" data-setting-key="gridColumns">
                     </div>
                     <div class="setting">
                         <label for="reader-mode" data-i18n="readerMode"></label>
-                        <select id="reader-mode">
+                        <select id="reader-mode" data-setting-key="readerMode">
                             <option value="default" data-i18n="readerModeDefault"></option>
                             <option value="horizontal" data-i18n="readerModeHorizontal"></option>
                             <option value="vertical" data-i18n="readerModeVertical"></option>
@@ -42,27 +44,29 @@
                     </div>
                     <div class="setting">
                         <label for="preload-count" data-i18n="preloadCount"></label>
-                        <input type="number" id="preload-count" min="1" max="10" value="3">
+                        <input type="number" id="preload-count" min="1" max="10" value="3"
+                            data-setting-key="preloadCount">
                     </div>
                     <div class="setting">
                         <label for="cache-size" data-i18n="cacheSize"></label>
-                        <input type="number" id="cache-size" min="10" max="200" value="50">
+                        <input type="number" id="cache-size" min="10" max="200" value="50" data-setting-key="cacheSize">
                     </div>
                     <div class="setting">
                         <label for="max-history-count" data-i18n="maxHistoryCount"></label>
-                        <input type="number" id="max-history-count" min="10" max="1000" value="200">
+                        <input type="number" id="max-history-count" min="10" max="1000" value="200"
+                            data-setting-key="maxHistoryCount">
                     </div>
                     <div class="setting">
                         <label for="fit-to-window" data-i18n="fitToWindow"></label>
-                        <input type="checkbox" id="fit-to-window">
+                        <input type="checkbox" id="fit-to-window" data-setting-key="fitToWindow">
                     </div>
                     <div class="setting">
                         <label for="hide-preview-bar" data-i18n="hidePreviewBar"></label>
-                        <input type="checkbox" id="hide-preview-bar">
+                        <input type="checkbox" id="hide-preview-bar" data-setting-key="hidePreviewBar">
                     </div>
                     <div class="setting">
                         <label for="theme-mode" data-i18n="themeMode"></label>
-                        <select id="theme-mode">
+                        <select id="theme-mode" data-setting-key="themeMode">
                             <option value="system" data-i18n="themeSystem"></option>
                             <option value="light" data-i18n="themeLight"></option>
                             <option value="dark" data-i18n="themeDark"></option>
@@ -70,7 +74,7 @@
                     </div>
                     <div class="setting">
                         <label for="ui-language" data-i18n="uiLanguage"></label>
-                        <select id="ui-language">
+                        <select id="ui-language" data-setting-key="uiLanguage">
                             <option value="auto" data-i18n="langSystem"></option>
                             <option value="en" data-i18n="langEN"></option>
                             <option value="zh_TW" data-i18n="langZH_TW"></option>
@@ -87,7 +91,6 @@
 
                 <div class="button-group">
                     <button id="open-options-button" class="btn-secondary" data-i18n="openOptionsButton"></button>
-                    <button id="save-button" data-i18n="saveButton"></button>
                 </div>
                 <p id="status-message" class="status"></p>
 
