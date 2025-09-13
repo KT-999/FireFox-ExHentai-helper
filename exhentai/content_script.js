@@ -44,7 +44,7 @@ async function main() {
     // 2. 判斷頁面類型
     const isReaderPage = window.location.pathname.startsWith('/s/');
     const isSingleGalleryPage = window.location.pathname.match(/^\/g\/\d+\/[a-z0-9]+\/?$/);
-    const hasSearchBox = !!document.getElementById('searchbox');
+    const hasSearchBox = !!(document.getElementById('searchbox') || document.querySelector('input[name="f_search"]'));
     const isGalleryListPage = !!document.querySelector('table.itg.gltc');
 
     // 3. 根據頁面類型，動態載入並執行對應的模組
@@ -56,7 +56,7 @@ async function main() {
             // 在書籍詳情頁，同時啟用歷史紀錄和標籤翻譯功能
             const { initHistoryRecording } = await import(browser.runtime.getURL('modules/history.js'));
             initHistoryRecording();
-            
+
             // *** 新增 ***: 載入並執行標籤翻譯模組
             const { initTagTranslator } = await import(browser.runtime.getURL('modules/tag_translator.js'));
             initTagTranslator();

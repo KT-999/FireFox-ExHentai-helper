@@ -112,8 +112,8 @@ function normalizeTag(tagString) {
 }
 
 function handleTagClick(event) {
-    const tagText = event.currentTarget.dataset.tag; 
-    const searchInput = document.getElementById('f_search');
+    const tagText = event.currentTarget.dataset.tag;
+    const searchInput = document.getElementById('f_search') || document.querySelector('input[name="f_search"]');
     if (!tagText || !searchInput) return;
 
     const currentSearchValue = searchInput.value.trim();
@@ -123,7 +123,7 @@ function handleTagClick(event) {
 
     // 2. 解析搜尋框中的現有標籤
     const searchTerms = currentSearchValue.match(/[a-zA-Z0-9_]+:"[^"]+"\$?|"[^"]+"\$?|[^\s"]+\$?/g) || [];
-    
+
     // 3. 正規化所有現有標籤並進行比對
     const exists = searchTerms.some(term => normalizeTag(term) === normalizedTagToAdd);
 
@@ -175,7 +175,7 @@ function renderTags(allTags, filter, searchTerm, container) {
             const originalValue = getTagValue(t.original).toLowerCase();
             const displayValue = getTagValue(t.display).toLowerCase();
             return originalValue.includes(searchTerm) || displayValue.includes(searchTerm);
-          });
+        });
 
     if (finalFilteredTags.length === 0) return;
 
@@ -195,13 +195,12 @@ function renderTags(allTags, filter, searchTerm, container) {
 }
 
 async function createUI() {
-    const searchBox = document.getElementById('searchbox');
-    const searchInput = document.getElementById('f_search');
-    if (!searchBox || !searchInput || document.getElementById('exh-tags-bar')) return;
+    const searchInput = document.getElementById('f_search') || document.querySelector('input[name="f_search"]');
+    if (!searchInput || document.getElementById('exh-tags-bar')) return;
 
-    const { messages } = await browser.runtime.sendMessage({ 
-        type: 'get_i18n_messages', 
-        keys: ['toggleSavedTags', 'filterByCategory', 'filterShowAll', 'searchTagsPlaceholder'] 
+    const { messages } = await browser.runtime.sendMessage({
+        type: 'get_i18n_messages',
+        keys: ['toggleSavedTags', 'filterByCategory', 'filterShowAll', 'searchTagsPlaceholder']
     });
 
     const { tags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
@@ -224,7 +223,7 @@ async function createUI() {
 
     const header = document.createElement('div');
     header.className = 'exh-tags-bar-header';
-    
+
     const toggle = document.createElement('a');
     toggle.id = 'exh-tags-bar-toggle';
     toggle.href = '#';
@@ -232,7 +231,7 @@ async function createUI() {
 
     const filterContainer = document.createElement('div');
     filterContainer.className = 'exh-tags-filter-container';
-    
+
     const filterLabel = document.createElement('label');
     filterLabel.htmlFor = 'exh-tags-filter-select';
     filterLabel.textContent = messages.filterByCategory || 'Filter by category:';
@@ -247,7 +246,7 @@ async function createUI() {
     tagSearchInput.id = 'exh-tags-search-input';
     tagSearchInput.placeholder = messages.searchTagsPlaceholder || 'Search tags...';
     searchContainer.appendChild(tagSearchInput);
-    searchContainer.style.display = 'none'; 
+    searchContainer.style.display = 'none';
 
     const container = document.createElement('div');
     container.id = 'exh-tags-container';
@@ -291,14 +290,14 @@ async function createUI() {
 
     filterContainer.appendChild(filterLabel);
     filterContainer.appendChild(filterSelect);
-    
+
     header.appendChild(toggle);
     header.appendChild(filterContainer);
     header.appendChild(searchContainer);
 
     bar.appendChild(header);
     bar.appendChild(container);
-    
+
     searchInput.parentElement.insertAdjacentElement('afterend', bar);
 
     renderTags(tags, 'all', '', container);
