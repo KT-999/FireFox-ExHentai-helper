@@ -4,3 +4,6 @@
 
 # 忽略 Windows 系統設定檔
 desktop.ini
+
+# 忽略 MAC 系統設定檔
+.DS_Store
