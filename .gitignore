@@ -1,5 +1,6 @@
 # 忽略 Google Drive 的暫存檔
 *.tmp.drivedownload
+*.tmp.driveupload
 
 # 忽略 Windows 系統設定檔
 desktop.ini
