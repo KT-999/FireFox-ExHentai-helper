@@ -9,6 +9,24 @@ const HISTORY_STORAGE_KEY = 'viewingHistory';
 const SAVED_TAGS_KEY = 'savedTags';
 const CONTEXT_MENU_ID = "save-exh-tag";
 const MIGRATION_FLAG_KEY = 'tagsMigrated_v1_2_5'; // 用於標記新物件結構的遷移
+const settingsCache = {
+    cacheSize: 50,
+    maxHistoryCount: 200,
+    uiLanguage: 'auto',
+};
+
+async function refreshSettingsCache() {
+    try {
+        const data = await browser.storage.local.get(settingsCache);
+        Object.assign(settingsCache, data);
+    } catch (error) {
+        console.warn('[BG] 無法載入設定快取，將使用預設值。', error);
+    }
+}
+
+refreshSettingsCache().catch(error => {
+    console.warn('[BG] 初始化設定快取失敗。', error);
+});
 
 // --- 資料遷移函式 ---
 async function migrateTagsData() {
@@ -51,8 +69,7 @@ let messageCache = null;
 async function getLocalizedMessage(key) {
     if (!messageCache) {
         try {
-            const { uiLanguage = 'auto' } = await browser.storage.local.get('uiLanguage');
-            let lang = uiLanguage;
+            let lang = settingsCache.uiLanguage;
             if (lang === 'auto') {
                 lang = browser.i18n.getUILanguage();
             }
@@ -78,6 +95,7 @@ async function updateContextMenuTitle() {
 browser.runtime.onInstalled.addListener(async (details) => {
     // 在安裝或更新後，首先執行資料遷移
     await migrateTagsData();
+    await refreshSettingsCache();
 
     browser.contextMenus.create({
         id: CONTEXT_MENU_ID,
@@ -94,14 +112,22 @@ browser.runtime.onInstalled.addListener(async (details) => {
 browser.runtime.onStartup.addListener(async () => {
     // 瀏覽器啟動時也檢查一次，確保遷移成功
     await migrateTagsData();
+    await refreshSettingsCache();
     messageCache = null; 
     updateContextMenuTitle();
 });
 
 browser.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.uiLanguage) {
+        settingsCache.uiLanguage = changes.uiLanguage.newValue ?? 'auto';
         messageCache = null;
         updateContextMenuTitle();
+    }
+    if (area === 'local' && changes.cacheSize) {
+        settingsCache.cacheSize = changes.cacheSize.newValue ?? settingsCache.cacheSize;
+    }
+    if (area === 'local' && changes.maxHistoryCount) {
+        settingsCache.maxHistoryCount = changes.maxHistoryCount.newValue ?? settingsCache.maxHistoryCount;
     }
 });
 
@@ -122,9 +148,8 @@ async function handleCacheImage(message) {
     if (!galleryData) return;
 
     galleryData.preloadedPages.set(pageUrl, imageUrl);
-    
-    const { cacheSize = 50 } = await browser.storage.local.get({ cacheSize: 50 });
-    while (galleryData.preloadedPages.size > cacheSize) {
+
+    while (galleryData.preloadedPages.size > settingsCache.cacheSize) {
         const oldestPageUrl = galleryData.preloadedPages.keys().next().value;
         galleryData.preloadedPages.delete(oldestPageUrl);
     }
@@ -133,12 +158,11 @@ async function handleCacheImage(message) {
 // --- 歷史紀錄處理函式 ---
 async function addToHistory(item) {
     try {
-        const settings = await browser.storage.local.get({ 
+        const settings = await browser.storage.local.get({
             [HISTORY_STORAGE_KEY]: [],
-            maxHistoryCount: 200 
         });
         let history = settings[HISTORY_STORAGE_KEY];
-        const maxHistoryCount = settings.maxHistoryCount;
+        const maxHistoryCount = settingsCache.maxHistoryCount;
         
         history = history.filter(h => h.url !== item.url);
         history.unshift(item);

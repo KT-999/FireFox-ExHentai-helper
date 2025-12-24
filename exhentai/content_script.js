@@ -35,6 +35,21 @@ window.scriptSettings = {
     keyClear: 'w',
 };
 
+let cachedPageContext = null;
+
+function getPageContext() {
+    if (cachedPageContext) return cachedPageContext;
+
+    cachedPageContext = {
+        isReaderPage: window.location.pathname.startsWith('/s/'),
+        isSingleGalleryPage: window.location.pathname.match(/^\/g\/\d+\/[a-z0-9]+\/?$/),
+        hasSearchBox: !!(document.getElementById('searchbox') || document.querySelector('input[name="f_search"]')),
+        isGalleryListPage: !!document.querySelector('table.itg.gltc'),
+    };
+
+    return cachedPageContext;
+}
+
 // --- 路由器與初始化 ---
 async function main() {
     // 1. 載入設定
@@ -42,10 +57,7 @@ async function main() {
     Object.assign(window.scriptSettings, settings);
 
     // 2. 判斷頁面類型
-    const isReaderPage = window.location.pathname.startsWith('/s/');
-    const isSingleGalleryPage = window.location.pathname.match(/^\/g\/\d+\/[a-z0-9]+\/?$/);
-    const hasSearchBox = !!(document.getElementById('searchbox') || document.querySelector('input[name="f_search"]'));
-    const isGalleryListPage = !!document.querySelector('table.itg.gltc');
+    const { isReaderPage, isSingleGalleryPage, hasSearchBox, isGalleryListPage } = getPageContext();
 
     // 3. 根據頁面類型，動態載入並執行對應的模組
     try {
@@ -81,8 +93,7 @@ async function main() {
 // 監聽設定變更
 browser.storage.onChanged.addListener((changes, area) => {
     if (area === 'local') {
-        const isGalleryListPage = !!document.querySelector('table.itg.gltc');
-        const isReaderPage = window.location.pathname.startsWith('/s/');
+        const { isGalleryListPage, isReaderPage } = getPageContext();
 
         if ((changes.enableGridView || changes.gridColumns) && isGalleryListPage) {
             window.location.reload();
