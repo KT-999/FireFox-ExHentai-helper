@@ -13,9 +13,13 @@ import { fetchAndParsePage, reloadImageFromAPI } from './utils.js';
 
 const FIT_STYLE_ID = 'exh-helper-fit-style';
 const VIEWER_STYLE_ID = 'exh-helper-viewer-style';
+const STATUS_STYLE_ID = 'exh-helper-status-style';
 let ensurePagesAreIndexed; // 由主模組傳入
 let exitTooltipText = 'Back to Gallery (E)'; // 預設提示文字
 let hasInitializedHorizontalReader = false;
+let hiddenElements = [];
+let originalBodyOverflow = '';
+let hasBoundPreviewClick = false;
 
 // --- 新增：統一的頁碼解析函式 ---
 function getPageNumberFromUrl(url) {
@@ -84,6 +88,7 @@ function createStatusDisplay() {
     centralContainer.appendChild(exitButtonLink);
 
     const styleSheet = document.createElement("style");
+    styleSheet.id = STATUS_STYLE_ID;
     styleSheet.innerText = `
         #exh-prev-previews::-webkit-scrollbar, #exh-next-previews::-webkit-scrollbar { height: 4px; }
         #exh-prev-previews::-webkit-scrollbar-track, #exh-next-previews::-webkit-scrollbar-track { background: #333; }
@@ -418,15 +423,10 @@ function handleHorizontalKeyDown(event) {
 }
 
 function runHorizontalSliderReader() {
-    document.body.addEventListener('click', (e) => {
-        const link = e.target.closest('#exh-prev-previews a, #exh-next-previews a');
-        if (link) {
-            e.preventDefault();
-            const targetUrl = link.href;
-            const targetIndex = window.navigationContext.masterList.findIndex(url => url === targetUrl);
-            if (targetIndex !== -1) navigateTo(targetIndex);
-        }
-    }, true);
+    if (!hasBoundPreviewClick) {
+        document.body.addEventListener('click', handlePreviewClick, true);
+        hasBoundPreviewClick = true;
+    }
 
     createStatusDisplay();
     setPreviewBarVisibility(window.scriptSettings.hidePreviewBar);
@@ -435,10 +435,15 @@ function runHorizontalSliderReader() {
     viewer.id = 'exh-viewer';
     const slider = document.createElement('div');
     slider.id = 'exh-image-slider';
-    document.body.style.overflow = 'hidden';
+    originalBodyOverflow = document.body.style.overflow || '';
+    hiddenElements = [];
     Array.from(document.body.children).forEach(child => {
-        if (child.id !== 'exh-status-bar') child.style.display = 'none';
+        if (child.id !== 'exh-status-bar') {
+            hiddenElements.push({ element: child, display: child.style.display || '' });
+            child.style.display = 'none';
+        }
     });
+    document.body.style.overflow = 'hidden';
     document.body.appendChild(viewer);
     viewer.appendChild(slider);
     const viewerStyle = document.createElement('style');
@@ -483,6 +488,26 @@ function runHorizontalSliderReader() {
     setTimeout(() => { slider.style.transition = 'transform 0.3s ease-in-out;'; }, 50);
     applyFitStyle();
     document.addEventListener('keydown', handleHorizontalKeyDown);
+}
+
+function handlePreviewClick(e) {
+    const link = e.target.closest('#exh-prev-previews a, #exh-next-previews a');
+    if (link) {
+        e.preventDefault();
+        const targetUrl = link.href;
+        const targetIndex = window.navigationContext.masterList.findIndex(url => url === targetUrl);
+        if (targetIndex !== -1) navigateTo(targetIndex);
+    }
+}
+
+function restoreBodyState() {
+    hiddenElements.forEach(({ element, display }) => {
+        if (element && element.style) {
+            element.style.display = display || '';
+        }
+    });
+    hiddenElements = [];
+    document.body.style.overflow = originalBodyOverflow;
 }
 
 // *** 新增：監聽來自 popup 的即時設定變更 ***
@@ -542,4 +567,30 @@ export function initHorizontalReader(ensurePagesFunc) {
     ensurePagesAreIndexed = ensurePagesFunc;
     setupAndRunReader();
     listenForSettingsChanges(); // <<< 在此處呼叫新的監聽器
+}
+
+export function teardownHorizontalReader() {
+    const viewer = document.getElementById('exh-viewer');
+    if (viewer) viewer.remove();
+
+    const statusBar = document.getElementById('exh-status-bar');
+    if (statusBar) statusBar.remove();
+
+    const viewerStyle = document.getElementById(VIEWER_STYLE_ID);
+    if (viewerStyle) viewerStyle.remove();
+
+    const fitStyle = document.getElementById(FIT_STYLE_ID);
+    if (fitStyle) fitStyle.remove();
+
+    const statusStyle = document.getElementById(STATUS_STYLE_ID);
+    if (statusStyle) statusStyle.remove();
+
+    document.removeEventListener('keydown', handleHorizontalKeyDown);
+    if (hasBoundPreviewClick) {
+        document.body.removeEventListener('click', handlePreviewClick, true);
+        hasBoundPreviewClick = false;
+    }
+
+    restoreBodyState();
+    hasInitializedHorizontalReader = false;
 }

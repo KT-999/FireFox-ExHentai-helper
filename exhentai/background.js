@@ -237,6 +237,22 @@ async function addTag(tagString) {
 browser.runtime.onMessage.addListener(async (message) => {
     const { type, galleryId } = message;
 
+    const requiresGalleryId = new Set([
+        'get_gallery_data',
+        'set_gallery_metadata',
+        'check_indexed_pages',
+        'set_page_links',
+        'get_all_links',
+        'get_specific_page_links',
+        'cache_image',
+        'clear_gallery_cache',
+    ]);
+
+    if (requiresGalleryId.has(type) && !galleryId) {
+        console.warn(`[BG] 缺少 galleryId，無法處理訊息類型: ${type}`);
+        return { success: false, error: 'Missing galleryId' };
+    }
+
     if (galleryId && !galleryCache.has(galleryId)) {
         galleryCache.set(galleryId, {
             pages: new Map(),
@@ -248,7 +264,8 @@ browser.runtime.onMessage.addListener(async (message) => {
     const galleryData = galleryCache.get(galleryId);
 
     switch (type) {
-        case 'get_gallery_data':
+         case 'get_gallery_data':
+            if (!galleryData) return null;
             return galleryData ? {
                 pages: Object.fromEntries(galleryData.pages),
                 preloadedPages: Object.fromEntries(galleryData.preloadedPages),
@@ -257,20 +274,24 @@ browser.runtime.onMessage.addListener(async (message) => {
             } : null;
 
         case 'set_gallery_metadata':
+            if (!galleryData) return { success: false, error: 'Gallery cache missing' };
             galleryData.totalPages = message.totalPages;
             galleryData.totalImages = message.totalImages;
             return { success: true };
 
         case 'check_indexed_pages':
+            if (!galleryData) return { missingPages: message.pagesToCheck || [] };
             const indexedPages = Array.from(galleryData.pages.keys());
             const missingPages = message.pagesToCheck.filter(p => !indexedPages.includes(p));
             return { missingPages };
 
         case 'set_page_links':
+            if (!galleryData) return { success: false, error: 'Gallery cache missing' };
             galleryData.pages.set(message.pageIndex, message.links);
             return { success: true };
         
         case 'get_all_links': {
+            if (!galleryData) return { masterList: [], preloadedPages: {} };
             let allLinks = [];
             const sortedPageKeys = Array.from(galleryData.pages.keys()).sort((a, b) => a - b);
             for (const pageIndex of sortedPageKeys) {

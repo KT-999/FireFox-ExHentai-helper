@@ -6,6 +6,8 @@ import { fetchAndParsePage, reloadImageFromAPI } from './utils.js';
 let verticalObserver;
 let ensurePagesAreIndexed;
 let hasInitializedVerticalReader = false;
+let hiddenElements = [];
+let originalBodyOverflow = '';
 
 async function loadVerticalImage(placeholder) {
     if (placeholder.dataset.loading === 'true' || placeholder.querySelector('img')) return;
@@ -80,8 +82,13 @@ function handleVerticalKeyDown(event) {
 }
 
 async function runVerticalReader() {
+    originalBodyOverflow = document.body.style.overflow || '';
+    hiddenElements = [];
+    Array.from(document.body.children).forEach(child => {
+        hiddenElements.push({ element: child, display: child.style.display || '' });
+        child.style.display = 'none';
+    });
     document.body.style.overflow = 'auto';
-    Array.from(document.body.children).forEach(child => child.style.display = 'none');
     const container = document.createElement('div');
     container.id = 'exh-vertical-viewer';
     container.style.cssText = `
@@ -167,4 +174,24 @@ export function initVerticalReader(ensurePagesFunc) {
     hasInitializedVerticalReader = true;
     ensurePagesAreIndexed = ensurePagesFunc;
     runVerticalReader();
+}
+
+export function teardownVerticalReader() {
+    if (verticalObserver) {
+        verticalObserver.disconnect();
+        verticalObserver = null;
+    }
+    document.removeEventListener('keydown', handleVerticalKeyDown);
+
+    const container = document.getElementById('exh-vertical-viewer');
+    if (container) container.remove();
+
+    hiddenElements.forEach(({ element, display }) => {
+        if (element && element.style) {
+            element.style.display = display || '';
+        }
+    });
+    hiddenElements = [];
+    document.body.style.overflow = originalBodyOverflow;
+    hasInitializedVerticalReader = false;
 }

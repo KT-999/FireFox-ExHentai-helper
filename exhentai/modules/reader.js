@@ -8,6 +8,7 @@ import { fetchAndParsePage } from './utils.js';
 const THEME_STYLE_ID = 'exh-helper-theme-style';
 const SESSION_STORAGE_KEY_PREFIX = 'exh_backToGalleryUrl_';
 let hasInitializedReader = false;
+let currentReaderMode = null;
 
 /**
  * 等待指定的 DOM 元素出現。
@@ -82,6 +83,7 @@ function applyTheme(theme) {
 async function runReader() {
     if (window.scriptSettings.readerMode === 'default') {
         console.log('[ExH] 閱讀模式設定為「網頁預設」，腳本將不作用。');
+        currentReaderMode = 'default';
         return;
     }
 
@@ -162,6 +164,7 @@ async function runReader() {
             console.log('[ExH] 啟用垂直捲動模式 (漸進式載入)。');
             const { initVerticalReader } = await import(browser.runtime.getURL('modules/reader_vertical.js'));
             initVerticalReader(ensurePagesAreIndexed);
+            currentReaderMode = 'vertical';
         } else if (window.scriptSettings.readerMode === 'horizontal') {
             console.log('[ExH] 啟用水平滑動模式。');
             const indexWindowRadius = 1;
@@ -177,6 +180,7 @@ async function runReader() {
             window.navigationContext.masterList = fullMasterList;
             const { initHorizontalReader } = await import(browser.runtime.getURL('modules/reader_horizontal.js'));
             initHorizontalReader(ensurePagesAreIndexed);
+            currentReaderMode = 'horizontal';
         }
 
     } catch (error) {
@@ -191,5 +195,31 @@ export function initReader() {
     }
     hasInitializedReader = true;
     runReader();
+}
+
+export async function switchReaderMode(newMode) {
+    if (!hasInitializedReader) {
+        window.scriptSettings.readerMode = newMode;
+        return runReader();
+    }
+
+    if (newMode === currentReaderMode) return;
+
+    if (currentReaderMode === 'horizontal') {
+        const { teardownHorizontalReader } = await import(browser.runtime.getURL('modules/reader_horizontal.js'));
+        teardownHorizontalReader();
+    } else if (currentReaderMode === 'vertical') {
+        const { teardownVerticalReader } = await import(browser.runtime.getURL('modules/reader_vertical.js'));
+        teardownVerticalReader();
+    }
+
+    if (newMode === 'default') {
+        applyTheme('light');
+        currentReaderMode = 'default';
+        return;
+    }
+
+    window.scriptSettings.readerMode = newMode;
+    await runReader();
 }
 

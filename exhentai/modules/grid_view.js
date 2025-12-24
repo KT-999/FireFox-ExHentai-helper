@@ -13,12 +13,10 @@ let nextPageUrl = null;
 let intersectionObserver = null;
 const translationMap = new Map();
 let hasInitializedGridView = false;
+let isGridViewActive = false;
 
-function injectGridViewCSS() {
-    const styleId = 'exh-grid-view-style';
-    if (document.getElementById(styleId)) return;
-
-    const css = `
+function buildGridViewCSS(columns) {
+    return `
         .exh-grid-view {
             display: grid;
             grid-template-columns: repeat(${window.scriptSettings.gridColumns}, 1fr);
@@ -163,6 +161,16 @@ function injectGridViewCSS() {
             color: #888;
         }
     `;
+}
+
+function injectGridViewCSS() {
+    const styleId = 'exh-grid-view-style';
+    const css = buildGridViewCSS(window.scriptSettings.gridColumns);
+    const existingStyle = document.getElementById(styleId);
+    if (existingStyle) {
+        existingStyle.textContent = css;
+        return;
+    }
     const style = document.createElement('style');
     style.id = styleId;
     style.textContent = css;
@@ -382,21 +390,75 @@ async function transformToGridView() {
         }
     });
 
+    if (!originalTable.dataset.exhGridOriginalDisplay) {
+        originalTable.dataset.exhGridOriginalDisplay = originalTable.style.display || '';
+    }
+
     originalTable.style.display = 'none';
 
     const pagenator = document.querySelector('.ptt, .searchnav');
-    if (pagenator) pagenator.style.display = 'none';
+    if (pagenator) {
+        if (!pagenator.dataset.exhGridOriginalDisplay) {
+            pagenator.dataset.exhGridOriginalDisplay = pagenator.style.display || '';
+        }
+        pagenator.style.display = 'none';
+    }
 
     originalTable.parentElement.insertBefore(gridContainer, originalTable);
 
     setupInfiniteScroll();
+    isGridViewActive = true;
+}
+
+export function updateGridColumns(columns) {
+    window.scriptSettings.gridColumns = columns;
+    if (isGridViewActive) {
+        injectGridViewCSS();
+    }
+}
+
+export async function enableGridView() {
+    if (isGridViewActive) {
+        injectGridViewCSS();
+        return;
+    }
+    await transformToGridView();
+    if (document.querySelector('.exh-grid-view')) {
+        isGridViewActive = true;
+        hasInitializedGridView = true;
+    }
+}
+
+export function disableGridView() {
+    if (!isGridViewActive) return;
+    const gridContainer = document.querySelector('.exh-grid-view');
+    const loader = document.getElementById('exh-grid-loader');
+    const originalTable = document.querySelector('table.itg.gltc');
+    const pagenator = document.querySelector('.ptt, .searchnav');
+
+    if (intersectionObserver) {
+        intersectionObserver.disconnect();
+        intersectionObserver = null;
+    }
+    nextPageUrl = null;
+    isLoadingNextPage = false;
+
+    if (gridContainer) gridContainer.remove();
+    if (loader) loader.remove();
+    if (originalTable) {
+        originalTable.style.display = originalTable.dataset.exhGridOriginalDisplay || '';
+        delete originalTable.dataset.exhGridOriginalDisplay;
+    }
+    if (pagenator) {
+        pagenator.style.display = pagenator.dataset.exhGridOriginalDisplay || '';
+        delete pagenator.dataset.exhGridOriginalDisplay;
+    }
+    isGridViewActive = false;
 }
 
 export async function initGridView() {
     if (hasInitializedGridView) {
         console.warn('[ExH] 網格視圖模組已初始化，跳過重複執行。');
-        return;
     }
-    hasInitializedGridView = true;
-    await transformToGridView();
+    await enableGridView();
 }

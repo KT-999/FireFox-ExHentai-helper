@@ -117,10 +117,33 @@ browser.storage.onChanged.addListener((changes, area) => {
         const { isGalleryListPage, isReaderPage } = getPageContext();
 
         if ((changes.enableGridView || changes.gridColumns) && isGalleryListPage) {
-            window.location.reload();
+            const newEnableGridView = changes.enableGridView?.newValue ?? window.scriptSettings.enableGridView;
+            const newGridColumns = changes.gridColumns?.newValue ?? window.scriptSettings.gridColumns;
+            window.scriptSettings.enableGridView = newEnableGridView;
+            window.scriptSettings.gridColumns = newGridColumns;
+
+            import(browser.runtime.getURL('modules/grid_view.js'))
+                .then(({ enableGridView, disableGridView, updateGridColumns }) => {
+                    if (newEnableGridView) {
+                        updateGridColumns(newGridColumns);
+                        enableGridView();
+                    } else {
+                        disableGridView();
+                    }
+                })
+                .catch(error => {
+                    console.error('[ExH] 更新網格視圖設定時發生錯誤:', error);
+                });
         }
+
         if (changes.readerMode && isReaderPage) {
-            window.location.reload();
+            const newReaderMode = changes.readerMode.newValue ?? window.scriptSettings.readerMode;
+            window.scriptSettings.readerMode = newReaderMode;
+            import(browser.runtime.getURL('modules/reader.js'))
+                .then(({ switchReaderMode }) => switchReaderMode(newReaderMode))
+                .catch(error => {
+                    console.error('[ExH] 更新閱讀模式設定時發生錯誤:', error);
+                });
         }
     }
 });
