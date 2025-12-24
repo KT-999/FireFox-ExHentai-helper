@@ -7,6 +7,7 @@ import { fetchAndParsePage } from './utils.js';
 
 const THEME_STYLE_ID = 'exh-helper-theme-style';
 const SESSION_STORAGE_KEY_PREFIX = 'exh_backToGalleryUrl_';
+let hasInitializedReader = false;
 
 /**
  * 等待指定的 DOM 元素出現。
@@ -184,6 +185,11 @@ async function runReader() {
 }
 
 export function initReader() {
+    if (hasInitializedReader) {
+        console.warn('[ExH] 閱讀器模組已初始化，跳過重複執行。');
+        return;
+    }
+    hasInitializedReader = true;
     runReader();
 }
 

@@ -5,6 +5,7 @@ import { fetchAndParsePage, reloadImageFromAPI } from './utils.js';
 
 let verticalObserver;
 let ensurePagesAreIndexed;
+let hasInitializedVerticalReader = false;
 
 async function loadVerticalImage(placeholder) {
     if (placeholder.dataset.loading === 'true' || placeholder.querySelector('img')) return;
@@ -159,6 +160,11 @@ async function runVerticalReader() {
 }
 
 export function initVerticalReader(ensurePagesFunc) {
+    if (hasInitializedVerticalReader) {
+        console.warn('[ExH] 垂直閱讀器模組已初始化，跳過重複執行。');
+        return;
+    }
+    hasInitializedVerticalReader = true;
     ensurePagesAreIndexed = ensurePagesFunc;
     runVerticalReader();
 }

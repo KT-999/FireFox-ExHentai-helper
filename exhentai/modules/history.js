@@ -6,6 +6,7 @@
 import { parseImageUrlFromStyle } from './utils.js';
 
 let hasRecorded = false; // 新增旗標，防止重複紀錄
+let hasInitializedHistory = false;
 
 function performRecordHistory(titleEl, thumbnailSrc, language) {
     if (hasRecorded) {
@@ -96,5 +97,10 @@ function setupHistoryRecording() {
 }
 
 export function initHistoryRecording() {
+    if (hasInitializedHistory) {
+        console.warn('[ExH] 歷史紀錄模組已初始化，跳過重複執行。');
+        return;
+    }
+    hasInitializedHistory = true;
     setupHistoryRecording();
 }

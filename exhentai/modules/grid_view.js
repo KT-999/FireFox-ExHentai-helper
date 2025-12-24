@@ -12,6 +12,7 @@ let isLoadingNextPage = false;
 let nextPageUrl = null;
 let intersectionObserver = null;
 const translationMap = new Map();
+let hasInitializedGridView = false;
 
 function injectGridViewCSS() {
     const styleId = 'exh-grid-view-style';
@@ -392,6 +393,10 @@ async function transformToGridView() {
 }
 
 export async function initGridView() {
+    if (hasInitializedGridView) {
+        console.warn('[ExH] 網格視圖模組已初始化，跳過重複執行。');
+        return;
+    }
+    hasInitializedGridView = true;
     await transformToGridView();
 }
-

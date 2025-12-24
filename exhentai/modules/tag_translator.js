@@ -2,6 +2,7 @@
  * 書籍頁面標籤翻譯模組 (v1.0)
  * - 功能：將書籍詳細頁面 (#taglist) 中的標籤，替換為使用者自訂的顯示名稱。
  */
+let hasInitializedTagTranslator = false;
 
 async function runTranslation() {
     const taglist = document.getElementById('taglist');
@@ -57,5 +58,10 @@ async function runTranslation() {
 }
 
 export function initTagTranslator() {
+    if (hasInitializedTagTranslator) {
+        console.warn('[ExH] 標籤翻譯模組已初始化，跳過重複執行。');
+        return;
+    }
+    hasInitializedTagTranslator = true;
     runTranslation().catch(err => console.error('[ExH] 執行標籤翻譯時發生錯誤:', err));
 }

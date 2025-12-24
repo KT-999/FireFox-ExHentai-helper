@@ -15,6 +15,7 @@ const FIT_STYLE_ID = 'exh-helper-fit-style';
 const VIEWER_STYLE_ID = 'exh-helper-viewer-style';
 let ensurePagesAreIndexed; // 由主模組傳入
 let exitTooltipText = 'Back to Gallery (E)'; // 預設提示文字
+let hasInitializedHorizontalReader = false;
 
 // --- 新增：統一的頁碼解析函式 ---
 function getPageNumberFromUrl(url) {
@@ -533,8 +534,12 @@ async function setupAndRunReader() {
 }
 
 export function initHorizontalReader(ensurePagesFunc) {
+    if (hasInitializedHorizontalReader) {
+        console.warn('[ExH] 水平閱讀器模組已初始化，跳過重複執行。');
+        return;
+    }
+    hasInitializedHorizontalReader = true;
     ensurePagesAreIndexed = ensurePagesFunc;
     setupAndRunReader();
     listenForSettingsChanges(); // <<< 在此處呼叫新的監聽器
 }
-

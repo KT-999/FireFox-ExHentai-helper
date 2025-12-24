@@ -6,6 +6,8 @@
  * - 新增：為 reclass, male 標籤類別增加配色。
  * - 更新：將標籤搜尋框移至獨立的一行，以解決擁擠問題。
  */
+let hasInitializedSearchEnhancer = false;
+let hasBoundSearchEnhancerClick = false;
 
 function injectCSS() {
     const styleId = 'exh-search-enhancer-style';
@@ -634,9 +636,18 @@ async function createUI() {
 }
 
 export function initSearchEnhancer() {
+    if (hasInitializedSearchEnhancer) {
+        console.warn('[ExH] 搜尋增強器模組已初始化，跳過重複執行。');
+        return;
+    }
+    hasInitializedSearchEnhancer = true;
     injectCSS();
     createUI();
     injectSelectedTagCSS();
+    if (!hasBoundSearchEnhancerClick) {
+        document.addEventListener('click', handleSearchTagClick);
+        hasBoundSearchEnhancerClick = true;
+    }
 }
 
 
@@ -735,9 +746,3 @@ function handleSearchTagClick(e) {
     selectedTagsContainer.appendChild(selectedTag);
     sortSelectedTagChips(selectedTagsContainer);
 }
-
-document.addEventListener('click', handleSearchTagClick);
-
-
-
-
