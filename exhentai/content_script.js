@@ -5,8 +5,23 @@
 
 console.log("ExHentai 小幫手 v1.3.0 已啟動 (模組化)。");
 
+const moduleInitState = window.exhentaiModuleInitState || {
+    mainStarted: false,
+    initializedModules: new Set(),
+};
+window.exhentaiModuleInitState = moduleInitState;
+
+function initModuleOnce(moduleName, initFn) {
+    if (moduleInitState.initializedModules.has(moduleName)) {
+        console.warn(`[ExH] 模組 ${moduleName} 已初始化，跳過重複執行。`);
+        return null;
+    }
+    moduleInitState.initializedModules.add(moduleName);
+    return initFn();
+}
+
 // --- 全域變數 (供各模組使用) ---
-window.navigationContext = {
+window.navigationContext = window.navigationContext || {
     masterList: [],
     currentIndex: -1,
     isNavigating: false,
@@ -20,7 +35,7 @@ window.navigationContext = {
     isIndexingPage: null,
 };
 
-window.scriptSettings = {
+window.scriptSettings = window.scriptSettings || {
     enableGridView: false,
     gridColumns: 5,
     readerMode: 'horizontal',
@@ -52,6 +67,12 @@ function getPageContext() {
 
 // --- 路由器與初始化 ---
 async function main() {
+    if (moduleInitState.mainStarted) {
+        console.warn('[ExH] 主程式已初始化，跳過重複執行。');
+        return;
+    }
+    moduleInitState.mainStarted = true;
+
     // 1. 載入設定
     const settings = await browser.storage.local.get(window.scriptSettings);
     Object.assign(window.scriptSettings, settings);
@@ -63,26 +84,26 @@ async function main() {
     try {
         if (isReaderPage) {
             const { initReader } = await import(browser.runtime.getURL('modules/reader.js'));
-            initReader();
+            initModuleOnce('reader', () => initReader());
         } else if (isSingleGalleryPage) {
-            // 在書籍詳情頁，同時啟用歷史紀錄和標籤翻譯功能
+            // 在書籍詳情頁，同時啟用歷史紀錄和標籤翻譯功能␊
             const { initHistoryRecording } = await import(browser.runtime.getURL('modules/history.js'));
-            initHistoryRecording();
+            initModuleOnce('history', () => initHistoryRecording());
 
-            // *** 新增 ***: 載入並執行標籤翻譯模組
+            // *** 新增 ***: 載入並執行標籤翻譯模組␊
             const { initTagTranslator } = await import(browser.runtime.getURL('modules/tag_translator.js'));
-            initTagTranslator();
+            initModuleOnce('tag_translator', () => initTagTranslator());
         }
 
         if (isGalleryListPage && window.scriptSettings.enableGridView) {
             const { initGridView } = await import(browser.runtime.getURL('modules/grid_view.js'));
-            initGridView();
+            initModuleOnce('grid_view', () => initGridView());
         }
 
         // 在所有包含搜尋框，但不是單一圖庫頁面的地方，載入搜尋增強器
         if (hasSearchBox && !isSingleGalleryPage) {
             const { initSearchEnhancer } = await import(browser.runtime.getURL('modules/search_enhancer.js'));
-            initSearchEnhancer();
+            initModuleOnce('search_enhancer', () => initSearchEnhancer());
         }
 
     } catch (e) {
