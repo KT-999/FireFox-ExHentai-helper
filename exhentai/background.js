@@ -5,6 +5,8 @@
 console.log("ExHentai 小幫手背景腳本 v1.2.6 已啟動。");
 
 const galleryCache = new Map();
+const GALLERY_CACHE_TTL_MS = 120 * 60 * 1000;
+const GALLERY_CACHE_MAX = 1000;
 const HISTORY_STORAGE_KEY = 'viewingHistory';
 const SAVED_TAGS_KEY = 'savedTags';
 const CONTEXT_MENU_ID = "save-exh-tag";
@@ -148,12 +150,33 @@ async function handleCacheImage(message) {
     if (!galleryData) return;
 
     galleryData.preloadedPages.set(pageUrl, imageUrl);
+    galleryData.lastAccess = Date.now();
 
     while (galleryData.preloadedPages.size > settingsCache.cacheSize) {
         const oldestPageUrl = galleryData.preloadedPages.keys().next().value;
         galleryData.preloadedPages.delete(oldestPageUrl);
     }
 }
+
+function cleanupGalleryCache() {
+    const now = Date.now();
+    for (const [id, data] of galleryCache.entries()) {
+        if (data.lastAccess && now - data.lastAccess > GALLERY_CACHE_TTL_MS) {
+            galleryCache.delete(id);
+        }
+    }
+
+    if (galleryCache.size > GALLERY_CACHE_MAX) {
+        const sorted = Array.from(galleryCache.entries())
+            .sort((a, b) => (a[1].lastAccess ?? 0) - (b[1].lastAccess ?? 0));
+        const overflow = galleryCache.size - GALLERY_CACHE_MAX;
+        for (let i = 0; i < overflow; i += 1) {
+            galleryCache.delete(sorted[i][0]);
+        }
+    }
+}
+
+setInterval(cleanupGalleryCache, 5 * 60 * 1000);
 
 // --- 歷史紀錄處理函式 ---
 async function addToHistory(item) {
@@ -259,9 +282,13 @@ browser.runtime.onMessage.addListener(async (message) => {
             preloadedPages: new Map(),
             totalPages: null,
             totalImages: null,
+            lastAccess: Date.now(),
         });
     }
     const galleryData = galleryCache.get(galleryId);
+    if (galleryData) {
+        galleryData.lastAccess = Date.now();
+    }
 
     switch (type) {
          case 'get_gallery_data':

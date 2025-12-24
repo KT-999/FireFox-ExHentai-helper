@@ -6,7 +6,7 @@
 console.log("ExHentai 小幫手 v1.3.0 已啟動 (模組化)。");
 
 const moduleInitState = window.exhentaiModuleInitState || {
-    mainStarted: false,
+    mainInProgress: false,
     initializedModules: new Set(),
 };
 window.exhentaiModuleInitState = moduleInitState;
@@ -83,13 +83,13 @@ function getPageContext() {
 
 // --- 路由器與初始化 ---
 async function main() {
-    if (moduleInitState.mainStarted) {
-        console.warn('[ExH] 主程式已初始化，跳過重複執行。');
+    if (moduleInitState.mainInProgress) {
+        console.warn('[ExH] 主程式正在執行，跳過重複啟動。');
         return;
     }
-    moduleInitState.mainStarted = true;
+    moduleInitState.mainInProgress = true;
 
-    // 1. 載入設定
+    // 1. 載入設定␊
     const settings = await browser.storage.local.get(window.scriptSettings);
     Object.assign(window.scriptSettings, settings);
 
@@ -134,6 +134,8 @@ async function main() {
 
     } catch (e) {
         console.error("[ExH] 載入模組時發生錯誤:", e);
+    } finally {
+        moduleInitState.mainInProgress = false;
     }
 }
 
@@ -175,8 +177,29 @@ function initialize() {
     main().catch(err => console.error("[ExH] 主程式執行時發生未處理的錯誤:", err));
 }
 
+function handleNavigationChange() {
+    cachedPageContext = null;
+    initialize();
+}
+
+function setupNavigationListeners() {
+    window.addEventListener('popstate', handleNavigationChange);
+    const originalPushState = history.pushState;
+    history.pushState = function (...args) {
+        originalPushState.apply(this, args);
+        handleNavigationChange();
+    };
+    const originalReplaceState = history.replaceState;
+    history.replaceState = function (...args) {
+        originalReplaceState.apply(this, args);
+        handleNavigationChange();
+    };
+}
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initialize);
 } else {
     initialize();
 }
+
+setupNavigationListeners();
