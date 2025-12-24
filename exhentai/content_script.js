@@ -20,6 +20,22 @@ function initModuleOnce(moduleName, initFn) {
     return initFn();
 }
 
+async function importModuleWithRetry(moduleName, modulePath, { retries = 1, retryDelayMs = 300 } = {}) {
+    for (let attempt = 1; attempt <= retries + 1; attempt += 1) {
+        try {
+            return await import(browser.runtime.getURL(modulePath));
+        } catch (error) {
+            const isLastAttempt = attempt > retries;
+            console.error(`[ExH] 載入模組失敗: ${moduleName} (第 ${attempt} 次)`, error);
+            if (isLastAttempt) {
+                return null;
+            }
+            await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+        }
+    }
+    return null;
+}
+
 // --- 全域變數 (供各模組使用) ---
 window.navigationContext = window.navigationContext || {
     masterList: [],
@@ -83,27 +99,37 @@ async function main() {
     // 3. 根據頁面類型，動態載入並執行對應的模組
     try {
         if (isReaderPage) {
-            const { initReader } = await import(browser.runtime.getURL('modules/reader.js'));
-            initModuleOnce('reader', () => initReader());
+            const readerModule = await importModuleWithRetry('reader', 'modules/reader.js', { retries: 1 });
+            if (readerModule) {
+                initModuleOnce('reader', () => readerModule.initReader());
+            }
         } else if (isSingleGalleryPage) {
             // 在書籍詳情頁，同時啟用歷史紀錄和標籤翻譯功能␊
-            const { initHistoryRecording } = await import(browser.runtime.getURL('modules/history.js'));
-            initModuleOnce('history', () => initHistoryRecording());
+            const historyModule = await importModuleWithRetry('history', 'modules/history.js', { retries: 1 });
+            if (historyModule) {
+                initModuleOnce('history', () => historyModule.initHistoryRecording());
+            }
 
             // *** 新增 ***: 載入並執行標籤翻譯模組␊
-            const { initTagTranslator } = await import(browser.runtime.getURL('modules/tag_translator.js'));
-            initModuleOnce('tag_translator', () => initTagTranslator());
+            const tagTranslatorModule = await importModuleWithRetry('tag_translator', 'modules/tag_translator.js', { retries: 1 });
+            if (tagTranslatorModule) {
+                initModuleOnce('tag_translator', () => tagTranslatorModule.initTagTranslator());
+            }
         }
 
         if (isGalleryListPage && window.scriptSettings.enableGridView) {
-            const { initGridView } = await import(browser.runtime.getURL('modules/grid_view.js'));
-            initModuleOnce('grid_view', () => initGridView());
+            const gridViewModule = await importModuleWithRetry('grid_view', 'modules/grid_view.js', { retries: 1 });
+            if (gridViewModule) {
+                initModuleOnce('grid_view', () => gridViewModule.initGridView());
+            }
         }
 
         // 在所有包含搜尋框，但不是單一圖庫頁面的地方，載入搜尋增強器
         if (hasSearchBox && !isSingleGalleryPage) {
-            const { initSearchEnhancer } = await import(browser.runtime.getURL('modules/search_enhancer.js'));
-            initModuleOnce('search_enhancer', () => initSearchEnhancer());
+            const searchModule = await importModuleWithRetry('search_enhancer', 'modules/search_enhancer.js', { retries: 1 });
+            if (searchModule) {
+                initModuleOnce('search_enhancer', () => searchModule.initSearchEnhancer());
+            }
         }
 
     } catch (e) {
@@ -112,7 +138,7 @@ async function main() {
 }
 
 // 監聽設定變更
-browser.storage.onChanged.addListener((changes, area) => {
+browser.storage.onChanged.addListener(async (changes, area) => {
     if (area === 'local') {
         const { isGalleryListPage, isReaderPage } = getPageContext();
 
@@ -122,28 +148,24 @@ browser.storage.onChanged.addListener((changes, area) => {
             window.scriptSettings.enableGridView = newEnableGridView;
             window.scriptSettings.gridColumns = newGridColumns;
 
-            import(browser.runtime.getURL('modules/grid_view.js'))
-                .then(({ enableGridView, disableGridView, updateGridColumns }) => {
-                    if (newEnableGridView) {
-                        updateGridColumns(newGridColumns);
-                        enableGridView();
-                    } else {
-                        disableGridView();
-                    }
-                })
-                .catch(error => {
-                    console.error('[ExH] 更新網格視圖設定時發生錯誤:', error);
-                });
+            const gridViewModule = await importModuleWithRetry('grid_view', 'modules/grid_view.js', { retries: 1 });
+            if (gridViewModule) {
+                if (newEnableGridView) {
+                    gridViewModule.updateGridColumns(newGridColumns);
+                    gridViewModule.enableGridView();
+                } else {
+                    gridViewModule.disableGridView();
+                }
+            }
         }
 
         if (changes.readerMode && isReaderPage) {
             const newReaderMode = changes.readerMode.newValue ?? window.scriptSettings.readerMode;
             window.scriptSettings.readerMode = newReaderMode;
-            import(browser.runtime.getURL('modules/reader.js'))
-                .then(({ switchReaderMode }) => switchReaderMode(newReaderMode))
-                .catch(error => {
-                    console.error('[ExH] 更新閱讀模式設定時發生錯誤:', error);
-                });
+            const readerModule = await importModuleWithRetry('reader', 'modules/reader.js', { retries: 1 });
+            if (readerModule) {
+                readerModule.switchReaderMode(newReaderMode);
+            }
         }
     }
 });

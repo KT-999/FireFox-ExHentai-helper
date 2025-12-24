@@ -17,9 +17,9 @@
     "contextMenus"
   ],
   "host_permissions": [
-    "*://exhentai.org/*",
-    "*://e-hentai.org/*",
-    "*://forums.e-hentai.org/*"
+    "https://exhentai.org/*",
+    "https://e-hentai.org/*",
+    "https://forums.e-hentai.org/*"
   ],
   "action": {
     "default_icon": "icons/icon-48.png",
@@ -42,9 +42,14 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "modules/*",
-        "popup/modules/*",
-        "_locales/**/*.json"
+        "modules/grid_view.js",
+        "modules/history.js",
+        "modules/reader.js",
+        "modules/reader_horizontal.js",
+        "modules/reader_vertical.js",
+        "modules/search_enhancer.js",
+        "modules/tag_translator.js",
+        "modules/utils.js"
       ],
       "matches": ["*://exhentai.org/*", "*://e-hentai.org/*"]
     }

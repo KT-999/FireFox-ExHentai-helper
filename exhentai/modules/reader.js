@@ -10,6 +10,22 @@ const SESSION_STORAGE_KEY_PREFIX = 'exh_backToGalleryUrl_';
 let hasInitializedReader = false;
 let currentReaderMode = null;
 
+async function importReaderModuleWithRetry(moduleName, modulePath, { retries = 1, retryDelayMs = 300 } = {}) {
+    for (let attempt = 1; attempt <= retries + 1; attempt += 1) {
+        try {
+            return await import(browser.runtime.getURL(modulePath));
+        } catch (error) {
+            const isLastAttempt = attempt > retries;
+            console.error(`[ExH] 載入閱讀器模組失敗: ${moduleName} (第 ${attempt} 次)`, error);
+            if (isLastAttempt) {
+                return null;
+            }
+            await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+        }
+    }
+    return null;
+}
+
 /**
  * 等待指定的 DOM 元素出現。
  * @param {string} selector - CSS 選擇器。
@@ -162,9 +178,11 @@ async function runReader() {
 
         if (window.scriptSettings.readerMode === 'vertical') {
             console.log('[ExH] 啟用垂直捲動模式 (漸進式載入)。');
-            const { initVerticalReader } = await import(browser.runtime.getURL('modules/reader_vertical.js'));
-            initVerticalReader(ensurePagesAreIndexed);
-            currentReaderMode = 'vertical';
+            const verticalModule = await importReaderModuleWithRetry('reader_vertical', 'modules/reader_vertical.js', { retries: 1 });
+            if (verticalModule) {
+                verticalModule.initVerticalReader(ensurePagesAreIndexed);
+                currentReaderMode = 'vertical';
+            }
         } else if (window.scriptSettings.readerMode === 'horizontal') {
             console.log('[ExH] 啟用水平滑動模式。');
             const indexWindowRadius = 1;
@@ -178,9 +196,11 @@ async function runReader() {
             await ensurePagesAreIndexed(galleryId, pagesToIndex, cleanBaseGalleryUrl.href);
             const { masterList: fullMasterList } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
             window.navigationContext.masterList = fullMasterList;
-            const { initHorizontalReader } = await import(browser.runtime.getURL('modules/reader_horizontal.js'));
-            initHorizontalReader(ensurePagesAreIndexed);
-            currentReaderMode = 'horizontal';
+            const horizontalModule = await importReaderModuleWithRetry('reader_horizontal', 'modules/reader_horizontal.js', { retries: 1 });
+            if (horizontalModule) {
+                horizontalModule.initHorizontalReader(ensurePagesAreIndexed);
+                currentReaderMode = 'horizontal';
+            }
         }
 
     } catch (error) {
@@ -206,11 +226,15 @@ export async function switchReaderMode(newMode) {
     if (newMode === currentReaderMode) return;
 
     if (currentReaderMode === 'horizontal') {
-        const { teardownHorizontalReader } = await import(browser.runtime.getURL('modules/reader_horizontal.js'));
-        teardownHorizontalReader();
+        const horizontalModule = await importReaderModuleWithRetry('reader_horizontal', 'modules/reader_horizontal.js', { retries: 1 });
+        if (horizontalModule) {
+            horizontalModule.teardownHorizontalReader();
+        }
     } else if (currentReaderMode === 'vertical') {
-        const { teardownVerticalReader } = await import(browser.runtime.getURL('modules/reader_vertical.js'));
-        teardownVerticalReader();
+        const verticalModule = await importReaderModuleWithRetry('reader_vertical', 'modules/reader_vertical.js', { retries: 1 });
+        if (verticalModule) {
+            verticalModule.teardownVerticalReader();
+        }
     }
 
     if (newMode === 'default') {
