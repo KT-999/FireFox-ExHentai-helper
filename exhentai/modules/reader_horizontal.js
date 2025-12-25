@@ -377,13 +377,16 @@ async function navigateTo(targetIndex) {
             }
         }
 
-        window.navigationContext.currentIndex = targetIndex;
-        proactiveIndexCheck(targetIndex);
-        const slider = document.getElementById('exh-image-slider');
-        slider.style.transform = `translateX(-${targetIndex * 100}vw)`;
-
-        if (window.navigationContext.masterList[targetIndex]) {
-            history.pushState(null, '', window.navigationContext.masterList[targetIndex]);
+        const targetUrl = window.navigationContext.masterList[targetIndex];
+        if (targetUrl) {
+            history.pushState(null, '', targetUrl);
+            window.navigationContext.currentIndex = targetIndex;
+            window.navigationContext.lastKnownUrlIndex = targetIndex;
+            proactiveIndexCheck(targetIndex);
+            const slider = document.getElementById('exh-image-slider');
+            slider.style.transform = `translateX(-${targetIndex * 100}vw)`;
+        } else {
+            return;
         }
         loadSlot(targetIndex - 1);
         loadSlot(targetIndex);
@@ -400,6 +403,15 @@ async function navigateTo(targetIndex) {
 function handleHorizontalKeyDown(event) {
     if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
     const key = event.key.toLowerCase();
+    const pageNumber = parseInt(getPageNumberFromUrl(window.location.href) || '', 10);
+    const urlIndex = Number.isFinite(pageNumber) ? pageNumber - 1 : null;
+    const lastKnownUrlIndex = window.navigationContext.lastKnownUrlIndex ?? null;
+    const shouldUseUrlIndex = urlIndex !== null
+        && (lastKnownUrlIndex === null || urlIndex >= lastKnownUrlIndex);
+    const baseIndex = shouldUseUrlIndex ? urlIndex : window.navigationContext.currentIndex;
+    if (shouldUseUrlIndex) {
+        window.navigationContext.currentIndex = urlIndex;
+    }
     if (key === window.scriptSettings.keyFit) { toggleFitToWindow(); return; }
     if (key === window.scriptSettings.keyHide) { togglePreviewBar(); return; }
     if (key === window.scriptSettings.keyExit) {
@@ -418,8 +430,15 @@ function handleHorizontalKeyDown(event) {
         });
         return;
     }
-    if (key === 'arrowleft' || key === window.scriptSettings.keyPrev) navigateTo(window.navigationContext.currentIndex - 1);
-    else if (key === 'arrowright' || key === window.scriptSettings.keyNext) navigateTo(window.navigationContext.currentIndex + 1);
+    if (key === 'arrowleft' || key === window.scriptSettings.keyPrev || key === 'arrowright' || key === window.scriptSettings.keyNext) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (key === 'arrowleft' || key === window.scriptSettings.keyPrev) {
+            navigateTo(baseIndex - 1);
+        } else {
+            navigateTo(baseIndex + 1);
+        }
+    }
 }
 
 function runHorizontalSliderReader() {
@@ -460,15 +479,22 @@ function runHorizontalSliderReader() {
 
     const currentPath = window.location.pathname;
 
-    // --- 修改：使用更精準的 Pathname 比對來取代 includes ---
-    const currentIndex = window.navigationContext.masterList.findIndex(link => {
-        try {
-            return new URL(link).pathname === currentPath;
-        } catch (e) {
-            // 如果 URL 格式錯誤，則退回舊方法
-            return link.includes(currentPath);
-        }
-    });
+    const currentUrl = window.location.href;
+
+    const pageNumber = parseInt(getPageNumberFromUrl(currentUrl) || '', 10);
+    let currentIndex = Number.isFinite(pageNumber) ? pageNumber - 1 : -1;
+
+    if (currentIndex < 0 || currentIndex >= window.navigationContext.masterList.length) {
+        // --- 修改：使用更精準的 Pathname 比對來取代 includes ---
+        currentIndex = window.navigationContext.masterList.findIndex(link => {
+            try {
+                return new URL(link).pathname === currentPath;
+            } catch (e) {
+                // 如果 URL 格式錯誤，則退回舊方法
+                return link.includes(currentPath);
+            }
+        });
+    }
 
     if (currentIndex === -1) {
         statusText.textContent = '❌ 錯誤：在當前索引範圍中找不到此頁面。';
@@ -487,7 +513,7 @@ function runHorizontalSliderReader() {
 
     setTimeout(() => { slider.style.transition = 'transform 0.3s ease-in-out;'; }, 50);
     applyFitStyle();
-    document.addEventListener('keydown', handleHorizontalKeyDown);
+    document.addEventListener('keydown', handleHorizontalKeyDown, true);
 }
 
 function handlePreviewClick(e) {
