@@ -346,13 +346,35 @@ async function proactiveIndexCheck(currentIndex) {
 }
 
 async function navigateTo(targetIndex) {
-    if (targetIndex < 0 || window.navigationContext.isNavigating) {
+    if (window.navigationContext.isNavigating) {
         return;
     }
     window.navigationContext.isNavigating = true;
     try {
+        if (targetIndex < 0) {
+            const { galleryId, backToGalleryUrl } = window.navigationContext;
+            const galleryData = await browser.runtime.sendMessage({ type: 'get_gallery_data', galleryId });
+            const indexedPageNumbers = galleryData ? Object.keys(galleryData.pages).map(Number) : [];
+            const firstIndexedPage = indexedPageNumbers.length > 0 ? Math.min(...indexedPageNumbers) : -1;
+            if (firstIndexedPage > 0) {
+                const prevPageToIndex = firstIndexedPage - 1;
+                const previousMasterListLength = window.navigationContext.masterList.length;
+                await ensurePagesAreIndexed(galleryId, [prevPageToIndex], backToGalleryUrl);
+                const { masterList: newMasterList } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
+                if (newMasterList.length > previousMasterListLength) {
+                    const addedCount = newMasterList.length - previousMasterListLength;
+                    window.navigationContext.masterList = newMasterList;
+                    rebuildSlider(newMasterList);
+                    window.navigationContext.currentIndex += addedCount;
+                    targetIndex = window.navigationContext.currentIndex - 1;
+                } else {
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
         if (targetIndex >= window.navigationContext.masterList.length) {
-            console.log(`[ExH] 觸發邊界擴展，目標索引: ${targetIndex}`);
             const { galleryId, totalGalleryPages, backToGalleryUrl } = window.navigationContext;
             let galleryData = await browser.runtime.sendMessage({ type: 'get_gallery_data', galleryId });
 
@@ -368,11 +390,9 @@ async function navigateTo(targetIndex) {
                     window.navigationContext.masterList = newMasterList;
                     rebuildSlider(newMasterList);
                 } else {
-                    console.warn("[ExH] 索引完成後，沒有新的頁面可供導覽。");
                     return;
                 }
             } else {
-                console.log("[ExH] 已到達圖庫結尾，無法導覽至下一頁。");
                 return;
             }
         }
@@ -406,10 +426,25 @@ function handleHorizontalKeyDown(event) {
     const pageNumber = parseInt(getPageNumberFromUrl(window.location.href) || '', 10);
     const urlIndex = Number.isFinite(pageNumber) ? pageNumber - 1 : null;
     const lastKnownUrlIndex = window.navigationContext.lastKnownUrlIndex ?? null;
-    const shouldUseUrlIndex = urlIndex !== null
+    const currentPath = window.location.pathname;
+    const resolvedIndexFromPath = window.navigationContext.masterList.findIndex(link => {
+        try {
+            return new URL(link).pathname === currentPath;
+        } catch (e) {
+            return link.includes(currentPath);
+        }
+    });
+    const isUrlIndexUsable = urlIndex !== null
+        && urlIndex >= 0
+        && urlIndex < window.navigationContext.masterList.length
         && (lastKnownUrlIndex === null || urlIndex >= lastKnownUrlIndex);
-    const baseIndex = shouldUseUrlIndex ? urlIndex : window.navigationContext.currentIndex;
-    if (shouldUseUrlIndex) {
+    const shouldUseUrlIndex = resolvedIndexFromPath === -1 && isUrlIndexUsable;
+    const baseIndex = shouldUseUrlIndex
+        ? urlIndex
+        : (resolvedIndexFromPath !== -1 ? resolvedIndexFromPath : window.navigationContext.currentIndex);
+    if (resolvedIndexFromPath !== -1 && resolvedIndexFromPath !== window.navigationContext.currentIndex) {
+        window.navigationContext.currentIndex = resolvedIndexFromPath;
+    } else if (shouldUseUrlIndex) {
         window.navigationContext.currentIndex = urlIndex;
     }
     if (key === window.scriptSettings.keyFit) { toggleFitToWindow(); return; }
