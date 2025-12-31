@@ -101,9 +101,10 @@ browser.runtime.onInstalled.addListener(async (details) => {
 
     browser.contextMenus.create({
         id: CONTEXT_MENU_ID,
-        title: "Saving tag...", 
+        title: "Saving tag...",
         contexts: ["link"],
-        documentUrlPatterns: ["https://exhentai.org/g/*", "https://e-hentai.org/g/*"]
+        documentUrlPatterns: ["https://exhentai.org/*", "https://e-hentai.org/*"],
+        targetUrlPatterns: ["https://exhentai.org/tag/*", "https://e-hentai.org/tag/*"]
     }, () => {
         if (browser.runtime.lastError) console.log("右鍵選單已存在，將直接更新。");
         messageCache = null; 
