@@ -93,11 +93,14 @@ async function updateContextMenuTitle() {
     browser.contextMenus.update(CONTEXT_MENU_ID, { title: title });
 }
 
-// --- 事件監聽器 ---
-browser.runtime.onInstalled.addListener(async (details) => {
-    // 在安裝或更新後，首先執行資料遷移
-    await migrateTagsData();
-    await refreshSettingsCache();
+async function createOrUpdateContextMenu() {
+    try {
+        await browser.contextMenus.remove(CONTEXT_MENU_ID);
+    } catch (error) {
+        if (!error?.message?.includes("not found")) {
+            console.warn("[BG] 無法移除既有右鍵選單。", error);
+        }
+    }
 
     browser.contextMenus.create({
         id: CONTEXT_MENU_ID,
@@ -107,16 +110,25 @@ browser.runtime.onInstalled.addListener(async (details) => {
         targetUrlPatterns: ["https://exhentai.org/tag/*", "https://e-hentai.org/tag/*"]
     }, () => {
         if (browser.runtime.lastError) console.log("右鍵選單已存在，將直接更新。");
-        messageCache = null; 
+        messageCache = null;
         updateContextMenuTitle();
     });
+}
+
+// --- 事件監聽器 ---
+browser.runtime.onInstalled.addListener(async (details) => {
+    // 在安裝或更新後，首先執行資料遷移
+    await migrateTagsData();
+    await refreshSettingsCache();
+
+    await createOrUpdateContextMenu();
 });
 
 browser.runtime.onStartup.addListener(async () => {
     // 瀏覽器啟動時也檢查一次，確保遷移成功
     await migrateTagsData();
     await refreshSettingsCache();
-    messageCache = null; 
+    messageCache = null;
     updateContextMenuTitle();
 });
 
