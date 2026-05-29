@@ -359,5 +359,21 @@
   "keyExitWithShortcut": {
     "message": "Back to Gallery ({key})",
     "description": "Tooltip for the back-to-gallery button in the reader, showing the shortcut key."
+  },
+  "contextMenuBlockUploader": {
+    "message": "Block uploader...",
+    "description": "Context menu for blocking an uploader."
+  },
+  "blockedUploadersHeader": {
+    "message": "Hidden Uploaders",
+    "description": "Header for blocked uploaders list."
+  },
+  "blockedUploadersEmpty": {
+    "message": "No hidden uploaders.",
+    "description": "Message when blocked uploaders list is empty."
+  },
+  "unblockButton": {
+    "message": "Unblock",
+    "description": "Button to unblock an uploader."
   }
 }

@@ -63,6 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleGenerateExport = async () => {
         exportStatus.textContent = '';
         const { tags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
+        const { uploaders } = await browser.runtime.sendMessage({ type: 'get_blocked_uploaders' }).catch(() => ({ uploaders: [] }));
+        
         const exportObj = {};
         
         tags.forEach(tag => {
@@ -71,6 +73,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 exportObj[key] = { "message": tag.display };
             }
         });
+
+        if (uploaders && uploaders.length > 0) {
+            uploaders.forEach(uploader => {
+                const key = "uploader_" + uploader.replace(/[\s]/g, '_').replace(/['"]/g, '');
+                exportObj[key] = { "message": uploader };
+            });
+        }
 
         const exportText = JSON.stringify(exportObj, null, 2);
         exportTextarea.value = exportText;
@@ -107,35 +116,53 @@ document.addEventListener('DOMContentLoaded', () => {
         const { tags: existingTags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
         const existingTagsMap = new Map(existingTags.map(t => [t.original, t]));
         
+        const { uploaders: existingUploaders } = await browser.runtime.sendMessage({ type: 'get_blocked_uploaders' }).catch(() => ({ uploaders: [] }));
+        
         const tagsToAdd = [];
         const tagsToUpdate = [];
+        const uploadersToAdd = [];
 
         for (const key in parsedJson) {
-            if (Object.prototype.hasOwnProperty.call(parsedJson, key) && key.startsWith('tag_')) {
-                const keyParts = key.replace(/^tag_/, '').split('_');
-                const namespace = keyParts.shift();
-                const tagName = keyParts.join(' ').trim();
-                const originalTag = `${namespace}:${tagName}`;
-                const displayMessage = parsedJson[key].message || originalTag;
+            if (Object.prototype.hasOwnProperty.call(parsedJson, key)) {
+                if (key.startsWith('tag_')) {
+                    const keyParts = key.replace(/^tag_/, '').split('_');
+                    const namespace = keyParts.shift();
+                    const tagName = keyParts.join(' ').trim();
+                    const originalTag = `${namespace}:${tagName}`;
+                    const displayMessage = parsedJson[key].message || originalTag;
 
-                if (existingTagsMap.has(originalTag)) {
-                    if (existingTagsMap.get(originalTag).display !== displayMessage) {
-                        tagsToUpdate.push({ original: originalTag, display: displayMessage });
+                    if (existingTagsMap.has(originalTag)) {
+                        if (existingTagsMap.get(originalTag).display !== displayMessage) {
+                            tagsToUpdate.push({ original: originalTag, display: displayMessage });
+                        }
+                    } else {
+                        tagsToAdd.push({ original: originalTag, display: displayMessage });
                     }
-                } else {
-                    tagsToAdd.push({ original: originalTag, display: displayMessage });
+                } else if (key.startsWith('uploader_')) {
+                    const uploaderName = parsedJson[key].message;
+                    if (uploaderName && !existingUploaders.includes(uploaderName)) {
+                        uploadersToAdd.push(uploaderName);
+                    }
                 }
             }
         }
         
         const addedCount = tagsToAdd.length;
         const updatedCount = tagsToUpdate.length;
+        const addedUploaderCount = uploadersToAdd.length;
 
         if (addedCount > 0 || updatedCount > 0) {
             await browser.runtime.sendMessage({
                 type: 'batch_update_tags',
                 tagsToAdd,
                 tagsToUpdate
+            });
+        }
+        
+        if (addedUploaderCount > 0) {
+            await browser.runtime.sendMessage({
+                type: 'batch_update_uploaders',
+                uploadersToAdd
             });
         }
 

@@ -359,5 +359,21 @@
   "keyExitWithShortcut": {
     "message": "ギャラリーに戻る ({key})",
     "description": "Tooltip for the back-to-gallery button in the reader, showing the shortcut key."
+  },
+  "contextMenuBlockUploader": {
+    "message": "アップローダーをブロック...",
+    "description": "Context menu for blocking an uploader."
+  },
+  "blockedUploadersHeader": {
+    "message": "非表示のアップローダー",
+    "description": "Header for blocked uploaders list."
+  },
+  "blockedUploadersEmpty": {
+    "message": "非表示のアップローダーはありません。",
+    "description": "Message when blocked uploaders list is empty."
+  },
+  "unblockButton": {
+    "message": "ブロック解除",
+    "description": "Button to unblock an uploader."
   }
 }

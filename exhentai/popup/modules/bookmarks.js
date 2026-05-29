@@ -4,6 +4,7 @@ import { getMessage, clearElement, showConfirmationModal } from './ui.js';
 const tagListContainer = document.getElementById('tag-list');
 const tagFilterSelect = document.getElementById('tag-filter-select');
 const tagSearchInput = document.getElementById('tag-search-input');
+const blockedUploadersListContainer = document.getElementById('blocked-uploaders-list');
 
 
 export const renderSavedTags = async () => {
@@ -125,6 +126,46 @@ export const renderSavedTags = async () => {
     tagListContainer.appendChild(fragment);
 };
 
+export const renderBlockedUploaders = async () => {
+    const { uploaders } = await browser.runtime.sendMessage({ type: 'get_blocked_uploaders' });
+    clearElement(blockedUploadersListContainer);
+
+    if (!uploaders || uploaders.length === 0) {
+        const p = document.createElement('p');
+        p.className = 'empty-message';
+        p.textContent = getMessage("blockedUploadersEmpty") || "無被隱藏的上傳者";
+        blockedUploadersListContainer.appendChild(p);
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    for (const uploader of uploaders) {
+        const item = document.createElement('div');
+        item.className = 'tag-item tag-item--other';
+        
+        const namesWrapper = document.createElement('div');
+        namesWrapper.className = 'tag-item-names';
+        const nameText = document.createElement('span');
+        nameText.textContent = uploader;
+        nameText.style.color = '#fff';
+        namesWrapper.appendChild(nameText);
+        item.appendChild(namesWrapper);
+
+        const actionsWrapper = document.createElement('div');
+        actionsWrapper.className = 'tag-item-actions';
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'tag-item-btn';
+        deleteBtn.textContent = '×';
+        deleteBtn.title = getMessage("unblockButton") || '解除封鎖';
+        deleteBtn.dataset.uploader = uploader;
+        actionsWrapper.appendChild(deleteBtn);
+        item.appendChild(actionsWrapper);
+
+        fragment.appendChild(item);
+    }
+    blockedUploadersListContainer.appendChild(fragment);
+};
+
 const handleEditTag = (editBtn) => {
     const namesWrapper = editBtn.closest('.tag-item').querySelector('.tag-item-names');
     const displayWrapper = namesWrapper.querySelector('.tag-display-wrapper');
@@ -180,6 +221,14 @@ const handleDeleteTagItem = async (deleteBtn) => {
     }
 };
 
+const handleUnblockUploader = async (deleteBtn) => {
+    const uploader = deleteBtn.dataset.uploader;
+    if (uploader) {
+        await browser.runtime.sendMessage({ type: 'remove_blocked_uploader', uploader });
+        await renderBlockedUploaders();
+    }
+};
+
 const handleClearTags = async () => {
     const confirmed = await showConfirmationModal(
         getMessage('confirmClearBookmarksTitle'),
@@ -222,6 +271,17 @@ export const initBookmarks = () => {
         }
     });
 
+    blockedUploadersListContainer.addEventListener('click', (e) => {
+        const deleteBtn = e.target.closest('.tag-item-btn');
+        if (deleteBtn && deleteBtn.dataset.uploader) {
+            e.preventDefault(); e.stopPropagation();
+            handleUnblockUploader(deleteBtn);
+        }
+    });
+
     document.getElementById('manage-io-button').addEventListener('click', openIoPage);
+    
+    // 初始化渲染
+    renderBlockedUploaders();
 };
 

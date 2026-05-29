@@ -10,7 +10,9 @@ const GALLERY_CACHE_MAX = 1000;
 const HISTORY_STORAGE_KEY = 'viewingHistory';
 const SAVED_TAGS_KEY = 'savedTags';
 const CONTEXT_MENU_ID = "save-exh-tag";
+const CONTEXT_MENU_BLOCK_UPLOADER_ID = "block-exh-uploader";
 const MIGRATION_FLAG_KEY = 'tagsMigrated_v1_2_5'; // 用於標記新物件結構的遷移
+const BLOCKED_UPLOADERS_KEY = 'blockedUploaders';
 const settingsCache = {
     cacheSize: 50,
     maxHistoryCount: 200,
@@ -90,12 +92,15 @@ async function getLocalizedMessage(key) {
 
 async function updateContextMenuTitle() {
     const title = await getLocalizedMessage("contextMenuSaveTag");
-    browser.contextMenus.update(CONTEXT_MENU_ID, { title: title });
+    browser.contextMenus.update(CONTEXT_MENU_ID, { title: title }).catch(() => {});
+    
+    const blockTitle = await getLocalizedMessage("contextMenuBlockUploader");
+    browser.contextMenus.update(CONTEXT_MENU_BLOCK_UPLOADER_ID, { title: blockTitle }).catch(() => {});
 }
 
 async function createOrUpdateContextMenu() {
     try {
-        await browser.contextMenus.remove(CONTEXT_MENU_ID);
+        await browser.contextMenus.removeAll();
     } catch (error) {
         if (!error?.message?.includes("not found")) {
             console.warn("[BG] 無法移除既有右鍵選單。", error);
@@ -110,9 +115,20 @@ async function createOrUpdateContextMenu() {
         targetUrlPatterns: ["https://exhentai.org/tag/*", "https://e-hentai.org/tag/*"]
     }, () => {
         if (browser.runtime.lastError) console.log("右鍵選單已存在，將直接更新。");
-        messageCache = null;
-        updateContextMenuTitle();
     });
+
+    browser.contextMenus.create({
+        id: CONTEXT_MENU_BLOCK_UPLOADER_ID,
+        title: "Block uploader...",
+        contexts: ["link"],
+        documentUrlPatterns: ["https://exhentai.org/*", "https://e-hentai.org/*"],
+        targetUrlPatterns: ["https://exhentai.org/g/*", "https://e-hentai.org/g/*"]
+    }, () => {
+        if (browser.runtime.lastError) console.log("右鍵選單已存在，將直接更新。");
+    });
+    
+    messageCache = null;
+    updateContextMenuTitle();
 }
 
 // --- 事件監聽器 ---
@@ -152,6 +168,24 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
         if (url.pathname.startsWith('/tag/')) {
             const tag = decodeURIComponent(url.pathname.substring(5)).replace(/\+/g, ' ');
             await addTag(tag);
+        }
+    } else if (info.menuItemId === CONTEXT_MENU_BLOCK_UPLOADER_ID && info.linkUrl) {
+        // 向 content script 查詢該網址對應的上傳者
+        try {
+            const response = await browser.tabs.sendMessage(tab.id, { type: 'get_uploader_by_url', url: info.linkUrl });
+            if (response && response.uploader) {
+                const data = await browser.storage.local.get({ [BLOCKED_UPLOADERS_KEY]: [] });
+                let blockedUploaders = data[BLOCKED_UPLOADERS_KEY];
+                if (!blockedUploaders.includes(response.uploader)) {
+                    blockedUploaders.push(response.uploader);
+                    await browser.storage.local.set({ [BLOCKED_UPLOADERS_KEY]: blockedUploaders });
+                    console.log(`[BG] 已封鎖上傳者: ${response.uploader}`);
+                    // 通知 content script 即時隱藏該上傳者的畫廊
+                    browser.tabs.sendMessage(tab.id, { type: 'uploader_blocked', uploader: response.uploader }).catch(() => {});
+                }
+            }
+        } catch (error) {
+            console.error('[BG] 查詢上傳者失敗:', error);
         }
     }
 });
@@ -439,6 +473,41 @@ browser.runtime.onMessage.addListener(async (message) => {
                 messages[key] = await getLocalizedMessage(key);
             }
             return { messages };
+        }
+        case 'get_blocked_uploaders': {
+            const data = await browser.storage.local.get({ [BLOCKED_UPLOADERS_KEY]: [] });
+            return { uploaders: data[BLOCKED_UPLOADERS_KEY] };
+        }
+        case 'add_blocked_uploader': {
+            const data = await browser.storage.local.get({ [BLOCKED_UPLOADERS_KEY]: [] });
+            let blockedUploaders = data[BLOCKED_UPLOADERS_KEY];
+            if (!blockedUploaders.includes(message.uploader)) {
+                blockedUploaders.push(message.uploader);
+                await browser.storage.local.set({ [BLOCKED_UPLOADERS_KEY]: blockedUploaders });
+            }
+            return { success: true };
+        }
+        case 'remove_blocked_uploader': {
+            const data = await browser.storage.local.get({ [BLOCKED_UPLOADERS_KEY]: [] });
+            let blockedUploaders = data[BLOCKED_UPLOADERS_KEY];
+            blockedUploaders = blockedUploaders.filter(u => u !== message.uploader);
+            await browser.storage.local.set({ [BLOCKED_UPLOADERS_KEY]: blockedUploaders });
+            return { success: true };
+        }
+        case 'batch_update_uploaders': {
+            const data = await browser.storage.local.get({ [BLOCKED_UPLOADERS_KEY]: [] });
+            let blockedUploaders = data[BLOCKED_UPLOADERS_KEY];
+            let changed = false;
+            for (const uploader of message.uploadersToAdd) {
+                if (!blockedUploaders.includes(uploader)) {
+                    blockedUploaders.push(uploader);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                await browser.storage.local.set({ [BLOCKED_UPLOADERS_KEY]: blockedUploaders });
+            }
+            return { success: true };
         }
     }
 });

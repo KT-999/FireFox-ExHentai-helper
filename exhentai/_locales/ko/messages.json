@@ -359,5 +359,21 @@
   "keyExitWithShortcut": {
     "message": "갤러리로 돌아가기 ({key})",
     "description": "Tooltip for the back-to-gallery button in the reader, showing the shortcut key."
+  },
+  "contextMenuBlockUploader": {
+    "message": "업로더 차단...",
+    "description": "Context menu for blocking an uploader."
+  },
+  "blockedUploadersHeader": {
+    "message": "숨겨진 업로더",
+    "description": "Header for blocked uploaders list."
+  },
+  "blockedUploadersEmpty": {
+    "message": "숨겨진 업로더가 없습니다.",
+    "description": "Message when blocked uploaders list is empty."
+  },
+  "unblockButton": {
+    "message": "차단 해제",
+    "description": "Button to unblock an uploader."
   }
 }

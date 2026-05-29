@@ -359,5 +359,21 @@
   "keyExitWithShortcut": {
     "message": "返回目錄 ({key})",
     "description": "Tooltip for the back-to-gallery button in the reader, showing the shortcut key."
+  },
+  "contextMenuBlockUploader": {
+    "message": "封鎖上傳者...",
+    "description": "Context menu for blocking an uploader."
+  },
+  "blockedUploadersHeader": {
+    "message": "被隱藏的上傳者",
+    "description": "Header for blocked uploaders list."
+  },
+  "blockedUploadersEmpty": {
+    "message": "無被隱藏的上傳者。",
+    "description": "Message when blocked uploaders list is empty."
+  },
+  "unblockButton": {
+    "message": "解除封鎖",
+    "description": "Button to unblock an uploader."
   }
 }

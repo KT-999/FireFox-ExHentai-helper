@@ -357,7 +357,23 @@
         "description": "Generic cancel button text."
     },
     "keyExitWithShortcut": {
-        "message": "Назад в галерею ({key})",
+        "message": "Вернуться в галерею ({key})",
         "description": "Tooltip for the back-to-gallery button in the reader, showing the shortcut key."
+    },
+    "contextMenuBlockUploader": {
+        "message": "Заблокировать загрузчика...",
+        "description": "Context menu for blocking an uploader."
+    },
+    "blockedUploadersHeader": {
+        "message": "Скрытые загрузчики",
+        "description": "Header for blocked uploaders list."
+    },
+    "blockedUploadersEmpty": {
+        "message": "Нет скрытых загрузчиков.",
+        "description": "Message when blocked uploaders list is empty."
+    },
+    "unblockButton": {
+        "message": "Разблокировать",
+        "description": "Button to unblock an uploader."
     }
 }

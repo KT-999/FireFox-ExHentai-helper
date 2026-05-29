@@ -177,8 +177,19 @@ function injectGridViewCSS() {
     document.head.appendChild(style);
 }
 
-function createGridItemFromRow(row) {
+function createGridItemFromRow(row, blockedUploaders = []) {
     try {
+        const uploaderLink = row.querySelector('.gl4c a[href*="/uploader/"]');
+        const uploaderName = uploaderLink ? uploaderLink.textContent.trim() : '';
+
+        if (uploaderName && blockedUploaders.includes(uploaderName)) {
+            if (!row.dataset.exhGridOriginalDisplay) {
+                row.dataset.exhGridOriginalDisplay = row.style.display || '';
+            }
+            row.style.display = 'none';
+            return null; // 不建立網格項目
+        }
+
         const categoryDiv = row.querySelector('.gl1c div');
         const thumbImg = row.querySelector('.glthumb img');
         const linkA = row.querySelector('.gl3c a');
@@ -194,6 +205,9 @@ function createGridItemFromRow(row) {
         const gridItem = document.createElement('a');
         gridItem.className = 'exh-grid-item';
         gridItem.href = linkA.href;
+        if (uploaderName) {
+            gridItem.dataset.uploader = uploaderName;
+        }
 
         const imgSrc = thumbImg.getAttribute('data-src') || thumbImg.src;
         const ratingStyleAttr = ratingDiv ? ratingDiv.getAttribute('style') : '';
@@ -306,10 +320,12 @@ async function loadNextPage() {
             throw new Error('無法抓取或解析下一頁的內容。');
         }
 
+        const { uploaders: blockedUploaders } = await browser.runtime.sendMessage({ type: 'get_blocked_uploaders' }).catch(() => ({ uploaders: [] }));
+
         const gridContainer = document.querySelector('.exh-grid-view');
         const newRows = doc.querySelectorAll('table.itg.gltc tbody > tr');
         newRows.forEach(row => {
-            const gridItem = createGridItemFromRow(row);
+            const gridItem = createGridItemFromRow(row, blockedUploaders || []);
             if (gridItem) {
                 gridContainer.appendChild(gridItem);
             }
@@ -379,12 +395,14 @@ async function transformToGridView() {
         }
     }
 
+    const { uploaders: blockedUploaders } = await browser.runtime.sendMessage({ type: 'get_blocked_uploaders' }).catch(() => ({ uploaders: [] }));
+
     const gridContainer = document.createElement('div');
     gridContainer.className = 'exh-grid-view';
 
     const rows = originalTable.querySelectorAll('tbody > tr');
     rows.forEach(row => {
-        const gridItem = createGridItemFromRow(row);
+        const gridItem = createGridItemFromRow(row, blockedUploaders || []);
         if (gridItem) {
             gridContainer.appendChild(gridItem);
         }
@@ -462,3 +480,39 @@ export async function initGridView() {
     }
     await enableGridView();
 }
+
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'get_uploader_by_url') {
+        const link = document.querySelector(`.itg.gltc a[href="${message.url}"]`);
+        if (link) {
+            const row = link.closest('tr');
+            const uploaderLink = row ? row.querySelector('.gl4c a[href*="/uploader/"]') : null;
+            if (uploaderLink) {
+                sendResponse({ uploader: uploaderLink.textContent.trim() });
+                return;
+            }
+        }
+        sendResponse({ uploader: null });
+    } else if (message.type === 'uploader_blocked') {
+        const uploaderName = message.uploader;
+        if (!uploaderName) return;
+
+        // 隱藏原始列表中的 row
+        const uploaderLinks = document.querySelectorAll(`.itg.gltc .gl4c a[href*="/uploader/"]`);
+        uploaderLinks.forEach(link => {
+            if (link.textContent.trim() === uploaderName) {
+                const row = link.closest('tr');
+                if (row) {
+                    if (!row.dataset.exhGridOriginalDisplay) {
+                        row.dataset.exhGridOriginalDisplay = row.style.display || '';
+                    }
+                    row.style.display = 'none';
+                }
+            }
+        });
+
+        // 移除 grid view 中的項目
+        const gridItems = document.querySelectorAll(`.exh-grid-item[data-uploader="${uploaderName}"]`);
+        gridItems.forEach(item => item.remove());
+    }
+});
