@@ -43,6 +43,27 @@ function getPageNumberFromUrl(url) {
     }
 }
 
+// --- 新增：精準的網址比對函式 ---
+function findIndexInMasterList(masterList, urlToFind) {
+    if (!urlToFind) return -1;
+    try {
+        const path = new URL(urlToFind).pathname; // e.g. /s/hash/123-1
+        const match = path.match(/\/s\/[^\/]+\/(\d+-\d+)/);
+        const identifier = match ? match[1] : null;
+
+        return masterList.findIndex(link => {
+            if (identifier) {
+                const linkMatch = new URL(link).pathname.match(/\/s\/[^\/]+\/(\d+-\d+)/);
+                if (linkMatch && linkMatch[1] === identifier) return true;
+            }
+            // 備用比對
+            return new URL(link).pathname === path;
+        });
+    } catch (e) {
+        return masterList.findIndex(link => link.includes(urlToFind));
+    }
+}
+
 
 function createStatusDisplay() {
     if (document.getElementById('exh-status-bar')) return;
@@ -314,12 +335,12 @@ async function updatePreviewBar() {
 
 async function proactiveIndexCheck(currentIndex) {
     try {
-        const { galleryId, totalGalleryPages, backToGalleryUrl, masterList } = window.navigationContext;
+        const { galleryId, totalGalleryPages, backToGalleryUrl } = window.navigationContext;
         const galleryData = await browser.runtime.sendMessage({ type: 'get_gallery_data', galleryId });
         if (!galleryData || !galleryData.pages) return;
         const indexedPageNumbers = Object.keys(galleryData.pages).map(Number);
         const lastIndexedPage = indexedPageNumbers.length > 0 ? Math.max(...indexedPageNumbers) : -1;
-        const lastKnownImageIndex = masterList.length - 1;
+        const lastKnownImageIndex = window.navigationContext.masterList.length - 1;
         const triggerIndex = lastKnownImageIndex - window.scriptSettings.preloadCount;
         if (currentIndex >= triggerIndex && lastIndexedPage < totalGalleryPages - 1) {
             const nextPageIndex = lastIndexedPage + 1;
@@ -328,13 +349,15 @@ async function proactiveIndexCheck(currentIndex) {
             console.log(`[ExH] 預測性觸發：已到達頁面 ${currentIndex + 1}，開始索引下一個圖庫分頁 (${nextPageIndex + 1})。`);
             await ensurePagesAreIndexed(galleryId, [nextPageIndex], backToGalleryUrl);
             const { masterList: newMasterList } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
-            if (newMasterList.length > masterList.length) {
-                console.log(`[ExH] 預測性更新 masterList：從 ${masterList.length} 到 ${newMasterList.length} 個項目。`);
+            
+            if (newMasterList.length > window.navigationContext.masterList.length) {
+                console.log(`[ExH] 預測性更新 masterList：從 ${window.navigationContext.masterList.length} 到 ${newMasterList.length} 個項目。`);
                 window.navigationContext.masterList = newMasterList;
                 rebuildSlider(newMasterList);
-                loadSlot(currentIndex - 1);
-                loadSlot(currentIndex);
-                loadSlot(currentIndex + 1);
+                const actualCurrentIndex = window.navigationContext.currentIndex;
+                loadSlot(actualCurrentIndex - 1);
+                loadSlot(actualCurrentIndex);
+                loadSlot(actualCurrentIndex + 1);
                 updatePreviewBar();
             }
             window.navigationContext.isIndexingPage = null;
@@ -423,29 +446,13 @@ async function navigateTo(targetIndex) {
 function handleHorizontalKeyDown(event) {
     if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
     const key = event.key.toLowerCase();
-    const pageNumber = parseInt(getPageNumberFromUrl(window.location.href) || '', 10);
-    const urlIndex = Number.isFinite(pageNumber) ? pageNumber - 1 : null;
-    const lastKnownUrlIndex = window.navigationContext.lastKnownUrlIndex ?? null;
-    const currentPath = window.location.pathname;
-    const resolvedIndexFromPath = window.navigationContext.masterList.findIndex(link => {
-        try {
-            return new URL(link).pathname === currentPath;
-        } catch (e) {
-            return link.includes(currentPath);
-        }
-    });
-    const isUrlIndexUsable = urlIndex !== null
-        && urlIndex >= 0
-        && urlIndex < window.navigationContext.masterList.length
-        && (lastKnownUrlIndex === null || urlIndex >= lastKnownUrlIndex);
-    const shouldUseUrlIndex = resolvedIndexFromPath === -1 && isUrlIndexUsable;
-    const baseIndex = shouldUseUrlIndex
-        ? urlIndex
-        : (resolvedIndexFromPath !== -1 ? resolvedIndexFromPath : window.navigationContext.currentIndex);
+    
+    const currentUrl = window.location.href;
+    const resolvedIndexFromPath = findIndexInMasterList(window.navigationContext.masterList, currentUrl);
+    const baseIndex = resolvedIndexFromPath !== -1 ? resolvedIndexFromPath : window.navigationContext.currentIndex;
+    
     if (resolvedIndexFromPath !== -1 && resolvedIndexFromPath !== window.navigationContext.currentIndex) {
         window.navigationContext.currentIndex = resolvedIndexFromPath;
-    } else if (shouldUseUrlIndex) {
-        window.navigationContext.currentIndex = urlIndex;
     }
     if (key === window.scriptSettings.keyFit) { toggleFitToWindow(); return; }
     if (key === window.scriptSettings.keyHide) { togglePreviewBar(); return; }
@@ -512,23 +519,17 @@ function runHorizontalSliderReader() {
     const statusText = document.getElementById('exh-status-text');
     statusText.textContent = `正在初始化水平閱讀模式...`;
 
-    const currentPath = window.location.pathname;
-
     const currentUrl = window.location.href;
 
-    const pageNumber = parseInt(getPageNumberFromUrl(currentUrl) || '', 10);
-    let currentIndex = Number.isFinite(pageNumber) ? pageNumber - 1 : -1;
+    // --- 修改：完全廢除 pageNumber - 1，使用精準網址比對 ---
+    let currentIndex = findIndexInMasterList(window.navigationContext.masterList, currentUrl);
 
-    if (currentIndex < 0 || currentIndex >= window.navigationContext.masterList.length) {
-        // --- 修改：使用更精準的 Pathname 比對來取代 includes ---
-        currentIndex = window.navigationContext.masterList.findIndex(link => {
-            try {
-                return new URL(link).pathname === currentPath;
-            } catch (e) {
-                // 如果 URL 格式錯誤，則退回舊方法
-                return link.includes(currentPath);
-            }
-        });
+    if (currentIndex === -1) {
+        // 如果連精準比對都失敗，再使用原先的 pageNumber - 1 當作最後手段
+        const pageNumber = parseInt(getPageNumberFromUrl(currentUrl) || '', 10);
+        const fallbackIndex = Number.isFinite(pageNumber) ? pageNumber - 1 : -1;
+        currentIndex = (fallbackIndex >= 0 && fallbackIndex < window.navigationContext.masterList.length) ? fallbackIndex : 0;
+        console.warn(`[ExH] 無法在 masterList 找到網址，退回備用索引: ${currentIndex}`);
     }
 
     if (currentIndex === -1) {
