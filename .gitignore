@@ -10,3 +10,6 @@ desktop.ini
 
 # 忽略打包的壓縮檔
 *.zip
+
+# 忽略 AI 規則指南檔
+AI_Rules.md
