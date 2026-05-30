@@ -7,6 +7,7 @@
  * - 重構：將單一項目從列表轉換為網格的邏輯提取到獨立函式中，以供重複使用。
  */
 import { fetchAndParsePage } from './utils.js';
+import { isUploaderBlocked } from './uploader_blocker.js';
 
 let isLoadingNextPage = false;
 let nextPageUrl = null;
@@ -177,17 +178,19 @@ function injectGridViewCSS() {
     document.head.appendChild(style);
 }
 
-function createGridItemFromRow(row, blockedUploaders = []) {
+function createGridItemFromRow(row) {
     try {
-        const uploaderLink = row.querySelector('.gl4c a[href*="/uploader/"]');
+        // 如果這個 row 已經被 blocker 隱藏，直接略過
+        if (row.style.display === 'none') {
+            return null;
+        }
+
+        const uploaderLink = row.querySelector('a[href*="/uploader/"]');
         const uploaderName = uploaderLink ? uploaderLink.textContent.trim() : '';
 
-        if (uploaderName && blockedUploaders.includes(uploaderName)) {
-            if (!row.dataset.exhGridOriginalDisplay) {
-                row.dataset.exhGridOriginalDisplay = row.style.display || '';
-            }
-            row.style.display = 'none';
-            return null; // 不建立網格項目
+        // 針對無窮下拉載入的新 row，需重新判斷是否封鎖
+        if (uploaderName && isUploaderBlocked(uploaderName)) {
+            return null;
         }
 
         const categoryDiv = row.querySelector('.gl1c div');
@@ -320,12 +323,10 @@ async function loadNextPage() {
             throw new Error('無法抓取或解析下一頁的內容。');
         }
 
-        const { uploaders: blockedUploaders } = await browser.runtime.sendMessage({ type: 'get_blocked_uploaders' }).catch(() => ({ uploaders: [] }));
-
         const gridContainer = document.querySelector('.exh-grid-view');
-        const newRows = doc.querySelectorAll('table.itg.gltc tbody > tr');
+        const newRows = doc.querySelectorAll('.itg tbody > tr, .itg > div[class^="gl1"]');
         newRows.forEach(row => {
-            const gridItem = createGridItemFromRow(row, blockedUploaders || []);
+            const gridItem = createGridItemFromRow(row);
             if (gridItem) {
                 gridContainer.appendChild(gridItem);
             }
@@ -379,7 +380,7 @@ function setupInfiniteScroll() {
 }
 
 async function transformToGridView() {
-    const originalTable = document.querySelector('table.itg.gltc');
+    const originalTable = document.querySelector('.itg');
     if (!originalTable || document.querySelector('.exh-grid-view')) return;
 
     console.log('[ExH] 啟用網格視圖並設定無限滾動...');
@@ -395,14 +396,12 @@ async function transformToGridView() {
         }
     }
 
-    const { uploaders: blockedUploaders } = await browser.runtime.sendMessage({ type: 'get_blocked_uploaders' }).catch(() => ({ uploaders: [] }));
-
     const gridContainer = document.createElement('div');
     gridContainer.className = 'exh-grid-view';
 
-    const rows = originalTable.querySelectorAll('tbody > tr');
+    const rows = originalTable.querySelectorAll('tbody > tr, div[class^="gl1"]');
     rows.forEach(row => {
-        const gridItem = createGridItemFromRow(row, blockedUploaders || []);
+        const gridItem = createGridItemFromRow(row);
         if (gridItem) {
             gridContainer.appendChild(gridItem);
         }
@@ -451,7 +450,7 @@ export function disableGridView() {
     if (!isGridViewActive) return;
     const gridContainer = document.querySelector('.exh-grid-view');
     const loader = document.getElementById('exh-grid-loader');
-    const originalTable = document.querySelector('table.itg.gltc');
+    const originalTable = document.querySelector('.itg');
     const pagenator = document.querySelector('.ptt, .searchnav');
 
     if (intersectionObserver) {
@@ -482,34 +481,9 @@ export async function initGridView() {
 }
 
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === 'get_uploader_by_url') {
-        const link = document.querySelector(`.itg.gltc a[href="${message.url}"]`);
-        if (link) {
-            const row = link.closest('tr');
-            const uploaderLink = row ? row.querySelector('.gl4c a[href*="/uploader/"]') : null;
-            if (uploaderLink) {
-                sendResponse({ uploader: uploaderLink.textContent.trim() });
-                return;
-            }
-        }
-        sendResponse({ uploader: null });
-    } else if (message.type === 'uploader_blocked') {
+    if (message.type === 'uploader_blocked') {
         const uploaderName = message.uploader;
         if (!uploaderName) return;
-
-        // 隱藏原始列表中的 row
-        const uploaderLinks = document.querySelectorAll(`.itg.gltc .gl4c a[href*="/uploader/"]`);
-        uploaderLinks.forEach(link => {
-            if (link.textContent.trim() === uploaderName) {
-                const row = link.closest('tr');
-                if (row) {
-                    if (!row.dataset.exhGridOriginalDisplay) {
-                        row.dataset.exhGridOriginalDisplay = row.style.display || '';
-                    }
-                    row.style.display = 'none';
-                }
-            }
-        });
 
         // 移除 grid view 中的項目
         const gridItems = document.querySelectorAll(`.exh-grid-item[data-uploader="${uploaderName}"]`);

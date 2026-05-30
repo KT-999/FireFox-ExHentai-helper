@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "1.5.4.4",
+  "version": "1.5.5",
   "default_locale": "en",
   "developer": {
     "name": "KT-999",
@@ -49,6 +49,7 @@
         "modules/reader_vertical.js",
         "modules/search_enhancer.js",
         "modules/tag_translator.js",
+        "modules/uploader_blocker.js",
         "modules/utils.js"
       ],
       "matches": ["*://exhentai.org/*", "*://e-hentai.org/*"]

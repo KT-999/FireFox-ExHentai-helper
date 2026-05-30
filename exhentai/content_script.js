@@ -75,7 +75,7 @@ function getPageContext() {
         isReaderPage: window.location.pathname.startsWith('/s/'),
         isSingleGalleryPage: window.location.pathname.match(/^\/g\/\d+\/[a-z0-9]+\/?$/),
         hasSearchBox: !!(document.getElementById('searchbox') || document.querySelector('input[name="f_search"]')),
-        isGalleryListPage: !!document.querySelector('table.itg.gltc'),
+        isGalleryListPage: !!document.querySelector('.itg'),
     };
 
     return cachedPageContext;
@@ -117,10 +117,17 @@ async function main() {
             }
         }
 
-        if (isGalleryListPage && window.scriptSettings.enableGridView) {
-            const gridViewModule = await importModuleWithRetry('grid_view', 'modules/grid_view.js', { retries: 1 });
-            if (gridViewModule) {
-                initModuleOnce('grid_view', () => gridViewModule.initGridView());
+        if (isGalleryListPage) {
+            const blockerModule = await importModuleWithRetry('uploader_blocker', 'modules/uploader_blocker.js', { retries: 1 });
+            if (blockerModule) {
+                initModuleOnce('uploader_blocker', () => blockerModule.initUploaderBlocker());
+            }
+
+            if (window.scriptSettings.enableGridView) {
+                const gridViewModule = await importModuleWithRetry('grid_view', 'modules/grid_view.js', { retries: 1 });
+                if (gridViewModule) {
+                    initModuleOnce('grid_view', () => gridViewModule.initGridView());
+                }
             }
         }
 

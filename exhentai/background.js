@@ -122,7 +122,7 @@ async function createOrUpdateContextMenu() {
         title: "Block uploader...",
         contexts: ["link"],
         documentUrlPatterns: ["https://exhentai.org/*", "https://e-hentai.org/*"],
-        targetUrlPatterns: ["https://exhentai.org/g/*", "https://e-hentai.org/g/*"]
+        targetUrlPatterns: ["https://exhentai.org/g/*", "https://e-hentai.org/g/*", "https://exhentai.org/uploader/*", "https://e-hentai.org/uploader/*"]
     }, () => {
         if (browser.runtime.lastError) console.log("右鍵選單已存在，將直接更新。");
     });
