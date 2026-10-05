@@ -131,22 +131,126 @@ async function createOrUpdateContextMenu() {
     updateContextMenuTitle();
 }
 
+/**
+ * 將 e-hentai.org 的有效登入 Cookie 同步至 .exhentai.org，並清除無效的 '0' 佔位 Cookie
+ * @param {string} [storeId] 指定的 Cookie 儲存區 ID（支援容器分頁）
+ */
+async function syncEhAuthCookiesToExh(storeId) {
+    const authNames = ['ipb_member_id', 'ipb_pass_hash', 'igneous', 'sk'];
+    const isValidVal = (val) => Boolean(val && val !== '0' && val !== 'deleted' && val !== 'mystery');
+
+    const getAllSafe = async (details) => {
+        try {
+            return await browser.cookies.getAll(details);
+        } catch (e) {
+            try {
+                return await browser.cookies.getAll({ ...details, firstPartyDomain: null });
+            } catch (_) {
+                return [];
+            }
+        }
+    };
+
+    const queryBase = storeId ? { storeId } : {};
+    const [exCookies, ehCookies] = await Promise.all([
+        getAllSafe({ ...queryBase, domain: 'exhentai.org' }),
+        getAllSafe({ ...queryBase, domain: 'e-hentai.org' })
+    ]);
+
+    // 清除 exhentai.org 上殘留的無效 '0' Cookie
+    for (const c of exCookies) {
+        if ((c.name === 'ipb_member_id' || c.name === 'ipb_pass_hash' || c.name === 'igneous') &&
+            (c.value === '0' || c.value === 'deleted' || c.value === 'mystery')) {
+            const protocol = c.secure ? 'https://' : 'http://';
+            const cleanDomain = c.domain.startsWith('.') ? c.domain.slice(1) : c.domain;
+            const removeDetails = {
+                url: `${protocol}${cleanDomain}${c.path || '/'}`,
+                name: c.name,
+                storeId: c.storeId
+            };
+            if (c.firstPartyDomain !== undefined) {
+                removeDetails.firstPartyDomain = c.firstPartyDomain;
+            }
+            try {
+                await browser.cookies.remove(removeDetails);
+            } catch (_) {}
+        }
+    }
+
+    const ehMember = ehCookies.find(c => c.name === 'ipb_member_id' && isValidVal(c.value));
+    const ehPass = ehCookies.find(c => c.name === 'ipb_pass_hash' && isValidVal(c.value));
+    if (!ehMember || !ehPass) return;
+
+    const oneYearFromNow = Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60;
+
+    for (const name of authNames) {
+        const ehCookie = ehCookies.find(c => c.name === name && isValidVal(c.value));
+        const exCookie = exCookies.find(c => c.name === name && isValidVal(c.value));
+        if (ehCookie && (!exCookie || exCookie.value !== ehCookie.value || !exCookie.expirationDate)) {
+            const setDetails = {
+                url: 'https://exhentai.org/',
+                domain: '.exhentai.org',
+                name: ehCookie.name,
+                value: ehCookie.value,
+                path: '/',
+                secure: true,
+                httpOnly: ehCookie.httpOnly ?? false,
+                expirationDate: ehCookie.expirationDate || oneYearFromNow,
+                storeId: ehCookie.storeId
+            };
+            if (ehCookie.sameSite) {
+                setDetails.sameSite = ehCookie.sameSite;
+            }
+            if (ehCookie.firstPartyDomain !== undefined) {
+                setDetails.firstPartyDomain = ehCookie.firstPartyDomain;
+            }
+            try {
+                await browser.cookies.set(setDetails);
+            } catch (e) {
+                try {
+                    delete setDetails.sameSite;
+                    await browser.cookies.set(setDetails);
+                } catch (_) {}
+            }
+        }
+    }
+}
+
 // --- 事件監聽器 ---
 browser.runtime.onInstalled.addListener(async (details) => {
     // 在安裝或更新後，首先執行資料遷移
     await migrateTagsData();
     await refreshSettingsCache();
+    await syncEhAuthCookiesToExh();
 
     await createOrUpdateContextMenu();
 });
 
 browser.runtime.onStartup.addListener(async () => {
-    // 瀏覽器啟動時也檢查一次，確保遷移成功
+    // 瀏覽器啟動時也檢查一次，確保遷移成功並同步登入 Cookie
     await migrateTagsData();
     await refreshSettingsCache();
+    await syncEhAuthCookiesToExh();
     messageCache = null;
     updateContextMenuTitle();
 });
+
+// 當使用者在 forums.e-hentai.org 或 e-hentai.org 登入時，即時將登入 Cookie 同步至 .exhentai.org
+if (browser.cookies && browser.cookies.onChanged) {
+    let cookieSyncTimeout = null;
+    browser.cookies.onChanged.addListener((changeInfo) => {
+        if (changeInfo.removed) return;
+        const { cookie } = changeInfo;
+        if (!cookie || !cookie.domain) return;
+        const authNames = ['ipb_member_id', 'ipb_pass_hash', 'igneous', 'sk'];
+        if (cookie.domain.includes('e-hentai.org') && authNames.includes(cookie.name)) {
+            if (cookieSyncTimeout) clearTimeout(cookieSyncTimeout);
+            cookieSyncTimeout = setTimeout(() => {
+                syncEhAuthCookiesToExh(cookie.storeId);
+            }, 300);
+        }
+    });
+}
 
 browser.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.uiLanguage) {
@@ -170,22 +274,36 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
             await addTag(tag);
         }
     } else if (info.menuItemId === CONTEXT_MENU_BLOCK_UPLOADER_ID && info.linkUrl) {
-        // 向 content script 查詢該網址對應的上傳者
         try {
-            const response = await browser.tabs.sendMessage(tab.id, { type: 'get_uploader_by_url', url: info.linkUrl });
-            if (response && response.uploader) {
+            let uploaderName = null;
+            const url = new URL(info.linkUrl);
+
+            // 若右鍵點擊的是 /uploader/* 連結，直接從網址解析上傳者名稱（支援畫廊內頁與所有頁面）
+            if (url.pathname.startsWith('/uploader/')) {
+                uploaderName = decodeURIComponent(url.pathname.substring('/uploader/'.length)).replace(/\/+$/, '').trim();
+            }
+
+            // 若是畫廊連結 (/g/*)，則向 content script 查詢該網址對應的上傳者
+            if (!uploaderName && tab?.id) {
+                const response = await browser.tabs.sendMessage(tab.id, { type: 'get_uploader_by_url', url: info.linkUrl });
+                uploaderName = response?.uploader || null;
+            }
+
+            if (uploaderName) {
                 const data = await browser.storage.local.get({ [BLOCKED_UPLOADERS_KEY]: [] });
-                let blockedUploaders = data[BLOCKED_UPLOADERS_KEY];
-                if (!blockedUploaders.includes(response.uploader)) {
-                    blockedUploaders.push(response.uploader);
+                const blockedUploaders = data[BLOCKED_UPLOADERS_KEY];
+                if (!blockedUploaders.includes(uploaderName)) {
+                    blockedUploaders.push(uploaderName);
                     await browser.storage.local.set({ [BLOCKED_UPLOADERS_KEY]: blockedUploaders });
-                    console.log(`[BG] 已封鎖上傳者: ${response.uploader}`);
-                    // 通知 content script 即時隱藏該上傳者的畫廊
-                    browser.tabs.sendMessage(tab.id, { type: 'uploader_blocked', uploader: response.uploader }).catch(() => {});
+                    console.log(`[BG] 已封鎖上傳者: ${uploaderName}`);
+                }
+                // 通知 content script 即時隱藏該上傳者的畫廊
+                if (tab?.id) {
+                    browser.tabs.sendMessage(tab.id, { type: 'uploader_blocked', uploader: uploaderName }).catch(() => {});
                 }
             }
         } catch (error) {
-            console.error('[BG] 查詢上傳者失敗:', error);
+            console.error('[BG] 封鎖上傳者失敗:', error);
         }
     }
 });
@@ -324,6 +442,7 @@ browser.runtime.onMessage.addListener(async (message) => {
     }
 
     if (galleryId && !galleryCache.has(galleryId)) {
+        cleanupGalleryCache();
         galleryCache.set(galleryId, {
             pages: new Map(),
             preloadedPages: new Map(),
@@ -468,7 +587,6 @@ browser.runtime.onMessage.addListener(async (message) => {
         }
         case 'get_i18n_messages': {
             const messages = {};
-            messageCache = null; 
             for (const key of message.keys) {
                 messages[key] = await getLocalizedMessage(key);
             }
@@ -507,6 +625,10 @@ browser.runtime.onMessage.addListener(async (message) => {
             if (changed) {
                 await browser.storage.local.set({ [BLOCKED_UPLOADERS_KEY]: blockedUploaders });
             }
+            return { success: true };
+        }
+        case 'sync_auth_cookies': {
+            await syncEhAuthCookiesToExh(sender?.tab?.cookieStoreId);
             return { success: true };
         }
     }

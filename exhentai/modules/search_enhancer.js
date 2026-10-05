@@ -113,48 +113,12 @@ function normalizeTag(tagString) {
     return cleaned;
 }
 
-const __exh_orig_handleTagClick = handleTagClick;
-function handleTagClick(event) {
-    const tagText = event?.currentTarget?.dataset?.tag;
-    const searchInput =
-        document.getElementById('f_search') ||
-        document.querySelector('input[name="f_search"]');
+const VALID_TAG_TYPES = ['artist', 'group', 'parody', 'character', 'language', 'male', 'reclass'];
 
-    if (!tagText || !searchInput) return;
-
-    const currentSearchValue = (searchInput.value || '').trim();
-
-    // 1) 正規化要被加入的標籤（用你既有的 normalizeTag）
-    const normalizedTagToAdd = normalizeTag(tagText);
-
-    // 2) 解析現有 f_search（支援：type:"xxx$"、"xxx$"、一般 token）
-    const terms =
-        currentSearchValue.match(/[a-zA-Z0-9_]+:"[^"]+"\$?|"[^"]+"\$?|[^\s"]+\$?/g) || [];
-
-    // 3) 防止重複加入（用 normalizeTag 比對）
-    const exists = terms.some(t => normalizeTag(t) === normalizedTagToAdd);
-    if (exists) return;
-
-    // 4) 組出要加入的搜尋片段（確保 $ 在引號內/字尾）
-    const colonIndex = tagText.indexOf(':');
-    const type = colonIndex > -1 ? tagText.slice(0, colonIndex).trim() : null;
-    const value = colonIndex > -1 ? tagText.slice(colonIndex + 1).trim() : tagText.trim();
-
-    let searchTermToAdd;
-    if (/\s/.test(value)) {
-        // 有空白：用引號包住，$ 放在引號內最後
-        searchTermToAdd = type ? `${type}:"${value}$"` : `"${value}$"`;
-    } else {
-        // 無空白：直接加 $ 在字尾
-        searchTermToAdd = type ? `${type}:${value}$` : `${value}$`;
-    }
-
-    // 5) 寫回 f_search
-    searchInput.value = currentSearchValue ? `${currentSearchValue} ${searchTermToAdd}` : searchTermToAdd;
-
-    // 6) 觸發事件，讓頁面原生行為/其他監聽器同步
-    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-    searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+function getTagColorClass(tagKey) {
+    const type = (tagKey || '').split(':')[0];
+    const colorType = VALID_TAG_TYPES.includes(type) ? type : 'other';
+    return `exh-search-tag--${colorType}`;
 }
 
 function renderTags(allTags, filter, searchTerm, container) {
@@ -181,19 +145,15 @@ function renderTags(allTags, filter, searchTerm, container) {
 
     if (finalFilteredTags.length === 0) return;
 
+    const fragment = document.createDocumentFragment();
     finalFilteredTags.forEach(tag => {
-        const parts = tag.original.split(':');
-        const type = parts[0];
         const tagEl = document.createElement('span');
-        tagEl.className = 'exh-search-tag';
+        tagEl.className = `exh-search-tag ${getTagColorClass(tag.original)}`;
         tagEl.textContent = tag.display;
         tagEl.dataset.tag = tag.original;
-        const validTypes = ['artist', 'group', 'parody', 'character', 'language', 'male', 'reclass'];
-        const colorType = validTypes.includes(type) ? type : 'other';
-        tagEl.classList.add(`exh-search-tag--${colorType}`);
-        tagEl.addEventListener('click', handleTagClick);
-        container.appendChild(tagEl);
+        fragment.appendChild(tagEl);
     });
+    container.appendChild(fragment);
 }
 
 const selectedSearchTags = new Set();
@@ -249,7 +209,7 @@ function injectSelectedTagCSS() {
             padding-top: 2px;
         }
 
-        /* 拼圖本體（顏色由你在 JS 內 inline 套用） */
+        /* 拼圖本體 */
         .exh-selected-tag {
             position: relative;
             display: inline-flex;
@@ -262,7 +222,7 @@ function injectSelectedTagCSS() {
             user-select: none;
             line-height: 1.5;
 
-            /* 不指定主色，避免蓋掉你套用的 background/color */
+            /* 不指定主色，避免蓋掉套用的 background/color */
             border: 1px solid rgba(0, 0, 0, 0.25);
             box-shadow: 0 1px 0 rgba(0,0,0,0.25);
             transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
@@ -283,7 +243,7 @@ function injectSelectedTagCSS() {
             box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
         }
 
-        /* 右側顯示 ✕（你仍然點整塊即可移除） */
+        /* 右側顯示 ✕（點擊整塊即可移除） */
         .exh-selected-tag::after {
             content: '✕';
             margin-left: 6px;
@@ -310,19 +270,8 @@ function injectSelectedTagCSS() {
     document.head.appendChild(style);
 }
 
-
 function getFSearchInput() {
     return document.getElementById('f_search') || document.querySelector('input[name="f_search"]');
-}
-
-function getSearchEnhancerContainer() {
-    return document.querySelector('.exh-tags-search-container');
-}
-
-function isSavedTagsPanelExpanded() {
-    const c = getSearchEnhancerContainer();
-    if (!c) return false;
-    return getComputedStyle(c).display !== 'none';
 }
 
 function parseSearchTerms(value) {
@@ -366,64 +315,105 @@ function termToTagKey(term) {
     return type ? `${type}:${value}` : value;
 }
 
+function ensureSelectedTagsContainer() {
+    const searchContainer = document.querySelector('.exh-tags-search-container');
+    if (!searchContainer) return null;
+
+    let selectedTags = searchContainer.querySelector('.exh-selected-tags');
+    if (selectedTags) return selectedTags;
+
+    selectedTags = document.createElement('div');
+    selectedTags.className = 'exh-selected-tags';
+
+    // 插在 input 前面，避免影響外層結構
+    searchContainer.prepend(selectedTags);
+
+    return selectedTags;
+}
+
+function applyTagColorsFromSource(sourceEl, targetEl) {
+    if (!sourceEl || !targetEl) return;
+    try {
+        const cs = getComputedStyle(sourceEl);
+        targetEl.style.backgroundColor = cs.backgroundColor;
+        targetEl.style.color = cs.color;
+        targetEl.style.borderColor = cs.borderColor;
+        if (cs.borderStyle && cs.borderStyle !== 'none') {
+            targetEl.style.borderStyle = cs.borderStyle;
+            targetEl.style.borderWidth = cs.borderWidth;
+        }
+    } catch (_) {}
+}
+
+/**
+ * 建立並插入已選取標籤的拼圖元素
+ * @param {string} tagKey - 原始標籤鍵值
+ * @param {string} displayText - 顯示文字
+ * @param {HTMLElement|null} sourceEl - 來源標籤 DOM 元素（可選）
+ */
+function createAndAppendSelectedChip(tagKey, displayText, sourceEl = null) {
+    const selectedContainer = ensureSelectedTagsContainer();
+    if (!selectedContainer || !tagKey) return;
+
+    const normKey = normalizeTag(tagKey);
+    if (
+        selectedContainer.querySelector(`[data-tag="${cssEscapeSafe(tagKey)}"]`) ||
+        selectedSearchTags.has(normKey)
+    ) {
+        return;
+    }
+
+    const chip = document.createElement('span');
+    chip.className = `exh-selected-tag ${getTagColorClass(tagKey)}`;
+    chip.dataset.tag = tagKey;
+    chip.textContent = displayText || tagKey;
+
+    if (sourceEl) {
+        applyTagColorsFromSource(sourceEl, chip);
+    }
+
+    selectedSearchTags.add(normKey);
+
+    chip.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        selectedSearchTags.delete(normKey);
+        chip.remove();
+        removeTagFromFSearch(tagKey);
+        sortSelectedTagChips(selectedContainer);
+    });
+
+    selectedContainer.appendChild(chip);
+    sortSelectedTagChips(selectedContainer);
+}
+
 // 依 f_search 還原拼圖（只還原「已儲存標籤」中存在的 tag）
 function restoreSelectedChipsFromFSearch(savedTags) {
-    const input =
-        document.getElementById('f_search') ||
-        document.querySelector('input[name="f_search"]');
-
+    const input = getFSearchInput();
     if (!input) return;
 
     const terms = parseSearchTerms(input.value);
     if (!terms.length) return;
 
-    const savedSet = new Set(savedTags.map(t => normalizeTag(t.original)));
-
-    const selectedContainer = ensureSelectedTagsContainer();
-    if (!selectedContainer) return;
+    const savedMap = new Map(savedTags.map(t => [normalizeTag(t.original), t]));
 
     for (const term of terms) {
         const key = termToTagKey(term);
         if (!key) continue;
 
         const normKey = normalizeTag(key);
-        if (!savedSet.has(normKey)) continue;                // 只顯示「已儲存」的
-        if (selectedSearchTags.has(normKey)) continue;       // 防重複（你已有 Set）
+        const savedTagObj = savedMap.get(normKey);
+        if (!savedTagObj) continue; // 只顯示「已儲存」的
 
-        // 找到下方對應的 tag 元素，拿它的顏色
         const source = document.querySelector(
-            `.exh-search-tag[data-tag="${cssEscapeSafe(key)}"]`
+            `.exh-search-tag[data-tag="${cssEscapeSafe(savedTagObj.original)}"]`
         );
 
-        const chip = document.createElement('span');
-        chip.className = `exh-selected-tag${source ? ' ' + [...source.classList].join(' ') : ''}`;
-        chip.dataset.tag = key;
-        chip.textContent = source ? source.textContent : key;
-
-        // 套用顏色（如果找得到 source 就完全一致）
-        if (source) {
-            try {
-                const cs = getComputedStyle(source);
-                chip.style.backgroundColor = cs.backgroundColor;
-                chip.style.color = cs.color;
-            } catch (_) {}
-        }
-
-        // 點擊拼圖 → 移除 + 同步移除 f_search
-        chip.addEventListener('click', (ev) => {
-            ev.stopPropagation();
-            const parent = chip.parentElement;
-            selectedSearchTags.delete(normKey);
-            chip.remove();
-            removeTagFromFSearch(key);
-            sortSelectedTagChips(parent);
-        });
-
-        selectedSearchTags.add(normKey);
-        selectedContainer.appendChild(chip);
+        createAndAppendSelectedChip(
+            savedTagObj.original,
+            source ? source.textContent : savedTagObj.display,
+            source
+        );
     }
-
-    sortSelectedTagChips(selectedContainer);
 }
 
 function setFSearchValue(terms) {
@@ -451,7 +441,7 @@ function addTagToFSearch(tagText) {
     const value = colonIndex > -1 ? tagText.substring(colonIndex + 1).trim() : tagText.trim();
 
     let searchTermToAdd;
-    if (value.includes(' ')) {
+    if (/\s/.test(value)) {
         // $ 必須在引號內
         searchTermToAdd = type ? `${type}:"${value}$"` : `"${value}$"`;
     } else {
@@ -475,54 +465,8 @@ function removeTagFromFSearch(tagText) {
     setFSearchValue(nextTerms);
 }
 
-function applyTagColorsFromSource(sourceEl, targetEl) {
-    try {
-        const cs = getComputedStyle(sourceEl);
-        targetEl.style.backgroundColor = cs.backgroundColor;
-        targetEl.style.color = cs.color;
-        targetEl.style.borderColor = cs.borderColor;
-        if (cs.borderStyle && cs.borderStyle !== 'none') {
-            targetEl.style.borderStyle = cs.borderStyle;
-            targetEl.style.borderWidth = cs.borderWidth;
-        }
-    } catch (_) {}
-}
-
-function addSelectedTagChip(sourceTagEl) {
-    if (!sourceTagEl) return;
-    if (!isSavedTagsPanelExpanded()) return;
-
-    const tagKey = sourceTagEl.dataset.tag;
-    if (!tagKey) return;
-
-    const normKey = normalizeTag(tagKey);
-    if (selectedSearchTags.has(normKey)) return;
-
-    const selectedContainer = ensureSelectedTagsContainer();
-    if (!selectedContainer) return;
-
-    const chip = document.createElement('span');
-    chip.className = 'exh-selected-tag';
-    chip.dataset.tag = tagKey;
-    chip.textContent = sourceTagEl.textContent;
-
-    applyTagColorsFromSource(sourceTagEl, chip);
-
-    chip.addEventListener('click', (e) => {
-        e.stopPropagation();
-        selectedSearchTags.delete(normKey);
-        chip.remove();
-        removeTagFromFSearch(tagKey);
-        sortSelectedTagChips(selectedContainer);
-    });
-
-    selectedSearchTags.add(normKey);
-    selectedContainer.appendChild(chip);
-    sortSelectedTagChips(selectedContainer);
-}
-
 async function createUI() {
-    const searchInput = document.getElementById('f_search') || document.querySelector('input[name="f_search"]');
+    const searchInput = getFSearchInput();
     if (!searchInput || document.getElementById('exh-tags-bar')) return;
 
     const { messages } = await browser.runtime.sendMessage({
@@ -533,17 +477,7 @@ async function createUI() {
     const { tags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
     if (!tags || tags.length === 0) return;
 
-    const categoryOrder = ['language', 'parody', 'group', 'artist'];
-    tags.sort((a, b) => {
-        const typeA = a.original.split(':')[0];
-        const typeB = b.original.split(':')[0];
-        const indexA = categoryOrder.indexOf(typeA);
-        const indexB = categoryOrder.indexOf(typeB);
-        const orderA = indexA === -1 ? categoryOrder.length : indexA;
-        const orderB = indexB === -1 ? categoryOrder.length : indexB;
-        if (orderA !== orderB) return orderA - orderB;
-        return a.original.localeCompare(b.original);
-    });
+    tags.sort((a, b) => compareTagKeys(a.original, b.original));
 
     const bar = document.createElement('div');
     bar.id = 'exh-tags-bar';
@@ -582,7 +516,7 @@ async function createUI() {
     toggle.addEventListener('click', (e) => {
         e.preventDefault();
         const isHidden = container.style.display === 'none';
-        searchContainer.style.display = isHidden ? 'block' : 'none';
+        searchContainer.style.display = isHidden ? 'flex' : 'none';
         container.style.display = isHidden ? 'flex' : 'none';
         if (isHidden) {
             restoreSelectedChipsFromFSearch(tags);
@@ -590,14 +524,8 @@ async function createUI() {
     });
 
     const categories = [...new Set(tags.map(t => t.original.split(':')[0]))];
-    categories.sort((a, b) => {
-        const indexA = categoryOrder.indexOf(a);
-        const indexB = categoryOrder.indexOf(b);
-        const orderA = indexA === -1 ? categoryOrder.length : indexA;
-        const orderB = indexB === -1 ? categoryOrder.length : indexB;
-        if (orderA !== orderB) return orderA - orderB;
-        return a.localeCompare(b);
-    });
+    categories.sort((a, b) => compareTagKeys(a, b));
+
     const showAllOption = document.createElement('option');
     showAllOption.value = 'all';
     showAllOption.textContent = messages.filterShowAll || 'Show All';
@@ -632,7 +560,17 @@ async function createUI() {
 
     renderTags(tags, 'all', '', container);
     restoreSelectedChipsFromFSearch(tags);
-    
+}
+
+function handleSearchTagClick(e) {
+    const tagEl = e.target.closest('.exh-search-tag');
+    if (!tagEl) return;
+
+    const tagKey = tagEl.dataset.tag;
+    if (!tagKey) return;
+
+    addTagToFSearch(tagKey);
+    createAndAppendSelectedChip(tagKey, tagEl.textContent, tagEl);
 }
 
 export function initSearchEnhancer() {
@@ -642,107 +580,10 @@ export function initSearchEnhancer() {
     }
     hasInitializedSearchEnhancer = true;
     injectCSS();
-    createUI();
     injectSelectedTagCSS();
+    createUI();
     if (!hasBoundSearchEnhancerClick) {
         document.addEventListener('click', handleSearchTagClick);
         hasBoundSearchEnhancerClick = true;
     }
-}
-
-
-(function injectSelectedTagStyle() {
-    if (document.getElementById('exh-selected-tags-style')) return;
-
-    const style = document.createElement('style');
-    style.id = 'exh-selected-tags-style';
-    style.textContent += `
-        .exh-tags-search-container {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start; /* ← 關鍵：整個搜尋區塊靠左 */
-        }
-
-        .exh-selected-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            justify-content: flex-start; /* ← 拼圖列靠左 */
-            width: 100%;
-        }
-    `;
-        document.head.appendChild(style);
-    })();
-
-function ensureSelectedTagsContainer() {
-    const searchContainer = document.querySelector('.exh-tags-search-container');
-    if (!searchContainer) return null;
-
-    let selectedTags = searchContainer.querySelector('.exh-selected-tags');
-    if (selectedTags) return selectedTags;
-
-    selectedTags = document.createElement('div');
-    selectedTags.className = 'exh-selected-tags';
-
-    // 插在 input 前面，避免影響外層結構
-    searchContainer.prepend(selectedTags);
-
-    return selectedTags;
-}
-
-function handleSearchTagClick(e) {
-    const tagEl = e.target.closest('.exh-search-tag');
-    if (!tagEl) return;
-
-    const searchContainer = document.querySelector('.exh-tags-search-container');
-    if (!searchContainer || searchContainer.style.display === 'none') return;
-
-    const selectedTagsContainer = ensureSelectedTagsContainer();
-    if (!selectedTagsContainer) return;
-
-    const tagKey = tagEl.dataset.tag;
-    if (!tagKey) return;
-
-    const normKey = normalizeTag(tagKey);           // ✅ (A) 在這裡算出 normKey
-
-    // 防重複：如果拼圖已存在或 Set 已記錄，就不做
-    if (
-        selectedTagsContainer.querySelector(`[data-tag="${tagKey}"]`) ||
-        selectedSearchTags.has(normKey)
-    ) {
-        return;
-    }
-
-    addTagToFSearch(tagKey);
-
-    const selectedTag = document.createElement('span');
-    selectedTag.className = 'exh-selected-tag';
-    selectedTag.dataset.tag = tagKey;
-    selectedTag.textContent = tagEl.textContent;
-
-    // 套用顏色（略）
-    try {
-        const cs = getComputedStyle(tagEl);
-        selectedTag.style.backgroundColor = cs.backgroundColor;
-        selectedTag.style.color = cs.color;
-    } catch (_) {}
-
-    // ✅ (B) 新增拼圖成功時：寫入 Set
-    selectedSearchTags.add(normKey);
-
-    // 點擊拼圖 → 移除
-    selectedTag.addEventListener('click', (ev) => {
-        ev.stopPropagation();
-
-        // ✅ (C) 移除拼圖成功時：從 Set 移除
-        selectedSearchTags.delete(normKey);
-
-        selectedTag.remove();
-        removeTagFromFSearch(tagKey);
-
-        sortSelectedTagChips(selectedTagsContainer);
-    });
-
-    selectedTagsContainer.appendChild(selectedTag);
-    sortSelectedTagChips(selectedTagsContainer);
 }

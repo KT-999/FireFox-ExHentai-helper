@@ -54,28 +54,111 @@ function waitForElement(selector, timeout = 10000) {
     });
 }
 
-async function ensurePagesAreIndexed(galleryId, pagesToCheck, cleanBaseGalleryUrl) {
-    const { missingPages } = await browser.runtime.sendMessage({ type: 'check_indexed_pages', galleryId, pagesToCheck });
-    if (missingPages.length > 0) {
+let indexingQueuePromise = Promise.resolve();
+
+/**
+ * 從本地與背景快取重建按頁碼排序且不重複的 masterList
+ * @returns {string[]}
+ */
+export function buildOrderedMasterList() {
+    const indexedPages = window.navigationContext.indexedPages;
+    if (!indexedPages || indexedPages.size === 0) {
+        return window.navigationContext.masterList || [];
+    }
+
+    const sortedPageKeys = Array.from(indexedPages.keys()).sort((a, b) => a - b);
+    const seen = new Set();
+    const allLinks = [];
+
+    for (const pageIdx of sortedPageKeys) {
+        const links = indexedPages.get(pageIdx) || [];
+        for (const link of links) {
+            if (!seen.has(link)) {
+                seen.add(link);
+                allLinks.push(link);
+            }
+        }
+    }
+
+    // 依網址末尾的實際圖片頁碼 (-1, -2, ...) 進行排序，確保絕對不會錯位
+    allLinks.sort((a, b) => {
+        const matchA = a.match(/-(\d+)$/);
+        const matchB = b.match(/-(\d+)$/);
+        const numA = matchA ? parseInt(matchA[1], 10) : 0;
+        const numB = matchB ? parseInt(matchB[1], 10) : 0;
+        return numA - numB;
+    });
+
+    return allLinks;
+}
+
+/**
+ * 確保指定的圖庫分頁已建立索引（具備佇列鎖定與本地快取備援，防止 MV3 背景休眠或競爭條件導致跳頁）
+ * @param {string} galleryId - 圖庫 ID
+ * @param {number[]} pagesToCheck - 要檢查並索引的分頁編號陣列 (0-based)
+ * @param {string} baseGalleryUrl - 圖庫目錄網址
+ */
+async function ensurePagesAreIndexed(galleryId, pagesToCheck, baseGalleryUrl) {
+    const task = async () => {
+        if (!window.navigationContext.indexedPages) {
+            window.navigationContext.indexedPages = new Map();
+        }
+        const localIndexed = window.navigationContext.indexedPages;
+
+        // 1. 先向背景腳本同步已知的分頁資料（防止背景腳本休眠重啟後遺失已索引分頁）
+        const bgData = await browser.runtime.sendMessage({ type: 'get_gallery_data', galleryId }).catch(() => null);
+        if (bgData && bgData.pages) {
+            for (const [k, v] of Object.entries(bgData.pages)) {
+                const pageNum = Number(k);
+                if (!localIndexed.has(pageNum) && Array.isArray(v) && v.length > 0) {
+                    localIndexed.set(pageNum, v);
+                }
+            }
+            // 若背景腳本因為 MV3 休眠遺失了部分本地已有的分頁，補寫回背景腳本
+            for (const [pageNum, links] of localIndexed.entries()) {
+                if (!bgData.pages[pageNum]) {
+                    await browser.runtime.sendMessage({ type: 'set_page_links', galleryId, pageIndex: pageNum, links }).catch(() => {});
+                }
+            }
+        }
+
+        const missingPages = (pagesToCheck || []).filter(p => !localIndexed.has(p));
+        if (missingPages.length === 0) return;
+
         const statusText = document.getElementById('exh-status-text');
         for (const pageIndex of missingPages) {
+            if (localIndexed.has(pageIndex)) continue;
             if (statusText) statusText.textContent = `🔍 正在索引圖庫分頁 ${pageIndex + 1}...`;
-            const galleryPageUrl = new URL(cleanBaseGalleryUrl);
-            if (pageIndex > 0) galleryPageUrl.searchParams.set('p', pageIndex);
+
+            const galleryPageUrl = new URL(baseGalleryUrl);
+            if (pageIndex > 0) {
+                galleryPageUrl.searchParams.set('p', pageIndex);
+            } else {
+                galleryPageUrl.searchParams.delete('p');
+            }
+
             const doc = await fetchAndParsePage(galleryPageUrl.href);
             if (doc) {
                 const links = Array.from(doc.querySelectorAll('#gdt a, #gdc a')).map(a => a.href);
                 if (links.length > 0) {
-                    await browser.runtime.sendMessage({ type: 'set_page_links', galleryId, pageIndex, links });
+                    localIndexed.set(pageIndex, links);
+                    await browser.runtime.sendMessage({ type: 'set_page_links', galleryId, pageIndex, links }).catch(() => {});
                 } else {
                     console.error(`[ExH] 診斷資訊：在圖庫分頁 ${pageIndex + 1} (${galleryPageUrl.href}) 上找不到任何圖片連結。`);
                 }
             }
         }
-    }
+
+        window.navigationContext.masterList = buildOrderedMasterList();
+    };
+
+    indexingQueuePromise = indexingQueuePromise.then(task, task);
+    return indexingQueuePromise;
 }
 
-function applyTheme(theme) {
+let hasBoundUnloadListener = false;
+
+export function applyTheme(theme) {
     const existingStyle = document.getElementById(THEME_STYLE_ID);
     if (existingStyle) existingStyle.remove();
     if (theme === 'light') return;
@@ -136,10 +219,15 @@ async function runReader() {
         sessionStorage.setItem(sessionKey, backToGalleryLink.href);
 
         window.navigationContext.galleryId = galleryId;
+        if (!window.navigationContext.indexedPages) {
+            window.navigationContext.indexedPages = new Map();
+        }
+
         const currentGalleryPageIndex = parseInt(galleryUrl.searchParams.get('p') || '0', 10);
         window.navigationContext.currentGalleryPageIndex = currentGalleryPageIndex;
         const cleanBaseGalleryUrl = new URL(galleryUrl.href);
         cleanBaseGalleryUrl.searchParams.delete('p');
+        window.navigationContext.cleanBaseGalleryUrl = cleanBaseGalleryUrl.href;
 
         const galleryPageDoc = await fetchAndParsePage(galleryUrl.href);
         if (!galleryPageDoc) {
@@ -161,18 +249,31 @@ async function runReader() {
         window.navigationContext.totalGalleryPages = galleryData.totalPages;
         window.navigationContext.totalImageCount = galleryData.totalImages;
 
-        const initialLinks = galleryPageDoc.querySelectorAll('#gdt a, #gdc a');
+        const initialLinks = Array.from(galleryPageDoc.querySelectorAll('#gdt a, #gdc a')).map(a => a.href);
         window.navigationContext.imagesPerIndexPage = initialLinks.length > 0 ? initialLinks.length : 40;
 
-        await ensurePagesAreIndexed(galleryId, [currentGalleryPageIndex], cleanBaseGalleryUrl.href);
-        const { masterList } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
-        window.navigationContext.masterList = masterList || [];
+        // 直接寫入當前已抓取的圖庫分頁，避免重複網路請求
+        if (initialLinks.length > 0) {
+            window.navigationContext.indexedPages.set(currentGalleryPageIndex, initialLinks);
+            await browser.runtime.sendMessage({
+                type: 'set_page_links',
+                galleryId,
+                pageIndex: currentGalleryPageIndex,
+                links: initialLinks
+            }).catch(() => {});
+        }
 
-        window.addEventListener('beforeunload', () => {
-            if (window.navigationContext.galleryId) {
-                browser.runtime.sendMessage({ type: 'clear_gallery_cache', galleryId: window.navigationContext.galleryId });
-            }
-        });
+        await ensurePagesAreIndexed(galleryId, [currentGalleryPageIndex], cleanBaseGalleryUrl.href);
+        window.navigationContext.masterList = buildOrderedMasterList();
+
+        if (!hasBoundUnloadListener) {
+            window.addEventListener('beforeunload', () => {
+                if (window.navigationContext.galleryId) {
+                    browser.runtime.sendMessage({ type: 'clear_gallery_cache', galleryId: window.navigationContext.galleryId });
+                }
+            });
+            hasBoundUnloadListener = true;
+        }
 
         applyTheme(window.scriptSettings.themeMode);
 
@@ -194,8 +295,7 @@ async function runReader() {
                 }
             }
             await ensurePagesAreIndexed(galleryId, pagesToIndex, cleanBaseGalleryUrl.href);
-            const { masterList: fullMasterList } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
-            window.navigationContext.masterList = fullMasterList;
+            window.navigationContext.masterList = buildOrderedMasterList();
             const horizontalModule = await importReaderModuleWithRetry('reader_horizontal', 'modules/reader_horizontal.js', { retries: 1 });
             if (horizontalModule) {
                 horizontalModule.initHorizontalReader(ensurePagesAreIndexed);

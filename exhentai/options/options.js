@@ -1,41 +1,7 @@
 /**
  * 處理選項頁面的邏輯 (v1.2.6)
  */
-
-let messages = {};
-
-const getMessage = (key) => messages[key]?.message || key;
-
-const localizePage = () => {
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        el.textContent = getMessage(key);
-    });
-    document.querySelectorAll('[data-i18n-title]').forEach(el => {
-        const key = el.getAttribute('data-i18n-title');
-        el.title = getMessage(key);
-    });
-};
-
-const loadLocaleMessages = async () => {
-    const { uiLanguage = 'auto' } = await browser.storage.local.get('uiLanguage');
-    let lang = uiLanguage;
-    if (lang === 'auto') {
-        lang = browser.i18n.getUILanguage();
-    }
-    const locale = lang.replace('-', '_');
-    
-    try {
-        const response = await fetch(`/_locales/${locale}/messages.json`);
-        if (!response.ok) throw new Error('Locale not found, falling back to en');
-        messages = await response.json();
-    } catch (e) {
-        console.warn(e);
-        const response = await fetch('/_locales/en/messages.json');
-        messages = await response.json();
-    }
-    localizePage();
-};
+import { loadLocaleMessages, getMessage, applyTheme } from '../popup/modules/ui.js';
 
 const defaultKeys = {
     keyPrev: 'a',
@@ -44,11 +10,6 @@ const defaultKeys = {
     keyHide: 'q',
     keyExit: 'e',
     keyClear: 'w',
-};
-
-const applyTheme = (theme) => {
-    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    document.documentElement.classList.toggle('dark-theme', isDark);
 };
 
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {

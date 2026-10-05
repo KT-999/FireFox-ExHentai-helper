@@ -13,3 +13,7 @@ desktop.ini
 
 # 忽略 AI 規則指南檔
 AI_Rules.md
+
+# 忽略本機自動打包與上架腳本
+publish_amo.py
+

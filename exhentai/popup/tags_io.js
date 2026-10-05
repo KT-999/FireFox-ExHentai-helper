@@ -1,9 +1,9 @@
 /**
  * 處理書籤匯入/匯出頁面的邏輯
  */
-document.addEventListener('DOMContentLoaded', () => {
-    let messages = {};
+import { loadLocaleMessages, getMessage, applyTheme } from './modules/ui.js';
 
+document.addEventListener('DOMContentLoaded', () => {
     // --- UI 元素 ---
     const exportTextarea = document.getElementById('export-textarea');
     const importTextarea = document.getElementById('import-textarea');
@@ -13,66 +13,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportStatus = document.getElementById('export-status');
     const importStatus = document.getElementById('import-status');
 
-    // --- 多語系處理 ---
-    const getMessage = (key, substitutions) => {
-        let message = messages[key]?.message || key;
-        if (substitutions) {
-            for (const subKey in substitutions) {
-                message = message.replace(`{${subKey}}`, substitutions[subKey]);
-            }
-        }
-        return message;
-    };
-
-    const localizePage = () => {
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            el.textContent = getMessage(el.getAttribute('data-i18n'));
-        });
-        document.querySelectorAll('[data-i18n-title]').forEach(el => {
-            el.title = getMessage(el.getAttribute('data-i18n-title'));
-        });
-        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-            el.placeholder = getMessage(el.getAttribute('data-i18n-placeholder'));
-        });
-    };
-    
-    const loadLocaleMessages = async () => {
-        const { uiLanguage = 'auto' } = await browser.storage.local.get('uiLanguage');
-        let lang = uiLanguage === 'auto' ? browser.i18n.getUILanguage() : uiLanguage;
-        const locale = lang.replace('-', '_');
-        
-        try {
-            const response = await fetch(`/_locales/${locale}/messages.json`);
-            if (!response.ok) throw new Error('Locale not found, falling back to en');
-            messages = await response.json();
-        } catch (e) {
-            console.warn(e);
-            const response = await fetch('/_locales/en/messages.json');
-            messages = await response.json();
-        }
-        localizePage();
-    };
-
-    // --- 主題處理 ---
-    const applyTheme = (theme) => {
-        const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        document.documentElement.classList.toggle('dark-theme', isDark);
-    };
-
     // --- 功能函式 ---
     const handleGenerateExport = async () => {
         exportStatus.textContent = '';
         const { tags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
         const { uploaders } = await browser.runtime.sendMessage({ type: 'get_blocked_uploaders' }).catch(() => ({ uploaders: [] }));
-        
+
         const exportObj = {};
-        
-        tags.forEach(tag => {
-            if (tag.original !== tag.display) {
+
+        // 匯出所有已儲存標籤（包含尚未自訂翻譯名稱的收藏標籤，避免備份遺失）
+        if (tags && tags.length > 0) {
+            tags.forEach(tag => {
                 const key = "tag_" + tag.original.replace(/[:\s]/g, '_').replace(/['"]/g, '');
                 exportObj[key] = { "message": tag.display };
-            }
-        });
+            });
+        }
 
         if (uploaders && uploaders.length > 0) {
             uploaders.forEach(uploader => {
@@ -115,21 +70,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const { tags: existingTags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
         const existingTagsMap = new Map(existingTags.map(t => [t.original, t]));
-        
+
         const { uploaders: existingUploaders } = await browser.runtime.sendMessage({ type: 'get_blocked_uploaders' }).catch(() => ({ uploaders: [] }));
-        
+
         const tagsToAdd = [];
         const tagsToUpdate = [];
         const uploadersToAdd = [];
+        let hasValidEntries = false;
 
         for (const key in parsedJson) {
             if (Object.prototype.hasOwnProperty.call(parsedJson, key)) {
                 if (key.startsWith('tag_')) {
+                    hasValidEntries = true;
                     const keyParts = key.replace(/^tag_/, '').split('_');
                     const namespace = keyParts.shift();
                     const tagName = keyParts.join(' ').trim();
                     const originalTag = `${namespace}:${tagName}`;
-                    const displayMessage = parsedJson[key].message || originalTag;
+                    const displayMessage = parsedJson[key]?.message || originalTag;
 
                     if (existingTagsMap.has(originalTag)) {
                         if (existingTagsMap.get(originalTag).display !== displayMessage) {
@@ -139,27 +96,33 @@ document.addEventListener('DOMContentLoaded', () => {
                         tagsToAdd.push({ original: originalTag, display: displayMessage });
                     }
                 } else if (key.startsWith('uploader_')) {
-                    const uploaderName = parsedJson[key].message;
-                    if (uploaderName && !existingUploaders.includes(uploaderName)) {
+                    hasValidEntries = true;
+                    const uploaderName = parsedJson[key]?.message;
+                    if (uploaderName && !existingUploaders.includes(uploaderName) && !uploadersToAdd.includes(uploaderName)) {
                         uploadersToAdd.push(uploaderName);
                     }
                 }
             }
         }
-        
-        const addedCount = tagsToAdd.length;
-        const updatedCount = tagsToUpdate.length;
-        const addedUploaderCount = uploadersToAdd.length;
 
-        if (addedCount > 0 || updatedCount > 0) {
+        if (!hasValidEntries) {
+            importStatus.textContent = getMessage("importErrorNoData");
+            importStatus.style.color = '#dc3545';
+            return;
+        }
+
+        const addedCount = tagsToAdd.length + uploadersToAdd.length;
+        const updatedCount = tagsToUpdate.length;
+
+        if (tagsToAdd.length > 0 || tagsToUpdate.length > 0) {
             await browser.runtime.sendMessage({
                 type: 'batch_update_tags',
                 tagsToAdd,
                 tagsToUpdate
             });
         }
-        
-        if (addedUploaderCount > 0) {
+
+        if (uploadersToAdd.length > 0) {
             await browser.runtime.sendMessage({
                 type: 'batch_update_uploaders',
                 uploadersToAdd
@@ -177,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             importStatus.style.color = '#6c757d';
             return;
         }
-        
+
         importStatus.style.color = '#28a745';
         importTextarea.value = '';
     };
@@ -185,11 +148,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 初始化 ---
     const initialize = async () => {
         await loadLocaleMessages();
-        
+
         const { themeMode = 'system' } = await browser.storage.local.get('themeMode');
         applyTheme(themeMode);
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-             if (themeMode === 'system') applyTheme('system');
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async () => {
+            const current = await browser.storage.local.get({ themeMode: 'system' });
+            if (current.themeMode === 'system') applyTheme('system');
         });
 
         generateExportButton.addEventListener('click', handleGenerateExport);

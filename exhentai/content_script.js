@@ -58,6 +58,7 @@ window.scriptSettings = window.scriptSettings || {
     fitToWindow: true,
     hidePreviewBar: false,
     preloadCount: 3,
+    themeMode: 'system',
     keyPrev: 'a',
     keyNext: 'd',
     keyFit: 's',
@@ -88,8 +89,9 @@ async function main() {
         return;
     }
     moduleInitState.mainInProgress = true;
+    browser.runtime.sendMessage({ action: 'sync_auth_cookies' }).catch(() => {});
 
-    // 1. 載入設定␊
+    // 1. 載入設定
     const settings = await browser.storage.local.get(window.scriptSettings);
     Object.assign(window.scriptSettings, settings);
 
@@ -104,13 +106,13 @@ async function main() {
                 initModuleOnce('reader', () => readerModule.initReader());
             }
         } else if (isSingleGalleryPage) {
-            // 在書籍詳情頁，同時啟用歷史紀錄和標籤翻譯功能␊
+            // 在書籍詳情頁，同時啟用歷史紀錄和標籤翻譯功能
             const historyModule = await importModuleWithRetry('history', 'modules/history.js', { retries: 1 });
             if (historyModule) {
                 initModuleOnce('history', () => historyModule.initHistoryRecording());
             }
 
-            // *** 新增 ***: 載入並執行標籤翻譯模組␊
+            // *** 新增 ***: 載入並執行標籤翻譯模組
             const tagTranslatorModule = await importModuleWithRetry('tag_translator', 'modules/tag_translator.js', { retries: 1 });
             if (tagTranslatorModule) {
                 initModuleOnce('tag_translator', () => tagTranslatorModule.initTagTranslator());
@@ -149,13 +151,18 @@ async function main() {
 // 監聽設定變更
 browser.storage.onChanged.addListener(async (changes, area) => {
     if (area === 'local') {
+        // 即時同步一般設定與快捷鍵
+        for (const key of Object.keys(window.scriptSettings)) {
+            if (changes[key] !== undefined && changes[key].newValue !== undefined) {
+                window.scriptSettings[key] = changes[key].newValue;
+            }
+        }
+
         const { isGalleryListPage, isReaderPage } = getPageContext();
 
         if ((changes.enableGridView || changes.gridColumns) && isGalleryListPage) {
-            const newEnableGridView = changes.enableGridView?.newValue ?? window.scriptSettings.enableGridView;
-            const newGridColumns = changes.gridColumns?.newValue ?? window.scriptSettings.gridColumns;
-            window.scriptSettings.enableGridView = newEnableGridView;
-            window.scriptSettings.gridColumns = newGridColumns;
+            const newEnableGridView = window.scriptSettings.enableGridView;
+            const newGridColumns = window.scriptSettings.gridColumns;
 
             const gridViewModule = await importModuleWithRetry('grid_view', 'modules/grid_view.js', { retries: 1 });
             if (gridViewModule) {
@@ -169,11 +176,17 @@ browser.storage.onChanged.addListener(async (changes, area) => {
         }
 
         if (changes.readerMode && isReaderPage) {
-            const newReaderMode = changes.readerMode.newValue ?? window.scriptSettings.readerMode;
-            window.scriptSettings.readerMode = newReaderMode;
+            const newReaderMode = window.scriptSettings.readerMode;
             const readerModule = await importModuleWithRetry('reader', 'modules/reader.js', { retries: 1 });
             if (readerModule) {
                 readerModule.switchReaderMode(newReaderMode);
+            }
+        }
+
+        if (changes.themeMode && isReaderPage && window.scriptSettings.readerMode !== 'default') {
+            const readerModule = await importModuleWithRetry('reader', 'modules/reader.js', { retries: 1 });
+            if (readerModule && typeof readerModule.applyTheme === 'function') {
+                readerModule.applyTheme(window.scriptSettings.themeMode);
             }
         }
     }
@@ -185,6 +198,10 @@ function initialize() {
 }
 
 function handleNavigationChange() {
+    // 閱讀器內部翻頁透過 history.pushState 更新網址時，無需重新執行初始化
+    if (window.location.pathname.startsWith('/s/') && moduleInitState.initializedModules.has('reader')) {
+        return;
+    }
     cachedPageContext = null;
     initialize();
 }

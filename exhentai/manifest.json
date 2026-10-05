@@ -2,14 +2,15 @@
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "1.5.5",
+  "version": "1.6.0",
   "default_locale": "en",
   "developer": {
     "name": "KT-999",
     "url": "https://github.com/KT-999/FireFox-ExHentai-helper"
   },
   "icons": {
-    "48": "icons/icon-48.png"
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
   },
   "permissions": [
     "storage",
@@ -18,8 +19,7 @@
   ],
   "host_permissions": [
     "https://exhentai.org/*",
-    "https://e-hentai.org/*",
-    "https://forums.e-hentai.org/*"
+    "https://e-hentai.org/*"
   ],
   "action": {
     "default_icon": "icons/icon-48.png",

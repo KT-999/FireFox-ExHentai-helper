@@ -211,16 +211,51 @@ async function togglePreviewBar() {
     setPreviewBarVisibility(window.scriptSettings.hidePreviewBar);
 }
 
+/**
+ * 同步更新滑動槽位，保留已載入圖片的 DOM 節點，避免重建時畫面閃爍或跳動
+ * @param {string[]} list - 完整的圖片頁面網址陣列
+ */
 function rebuildSlider(list) {
     const slider = document.getElementById('exh-image-slider');
     if (!slider) return;
-    slider.innerHTML = '';
+
+    const existingSlotsByUrl = new Map();
+    Array.from(slider.children).forEach(child => {
+        if (child.dataset.pageUrl) {
+            existingSlotsByUrl.set(child.dataset.pageUrl, child);
+        }
+    });
+
+    const fragment = document.createDocumentFragment();
     for (let i = 0; i < list.length; i++) {
-        const slot = document.createElement('div');
-        slot.className = 'exh-image-slot';
+        const pageUrl = list[i];
+        let slot = existingSlotsByUrl.get(pageUrl);
+        if (!slot) {
+            slot = document.createElement('div');
+            slot.className = 'exh-image-slot';
+            slot.dataset.pageUrl = pageUrl;
+        }
         slot.dataset.index = i;
-        slider.appendChild(slot);
+        fragment.appendChild(slot);
     }
+
+    slider.innerHTML = '';
+    slider.appendChild(fragment);
+}
+
+/**
+ * 在不觸發滑動動畫的情況下，將 slider 定位到指定索引
+ * @param {number} index - 目標索引
+ */
+function syncSliderPositionInstant(index) {
+    const slider = document.getElementById('exh-image-slider');
+    if (!slider || index < 0) return;
+    const prevTransition = slider.style.transition;
+    slider.style.transition = 'none';
+    slider.style.transform = `translateX(-${index * 100}vw)`;
+    // 強制瀏覽器同步計算排版，確保無動畫瞬移生效
+    void slider.offsetHeight;
+    slider.style.transition = prevTransition;
 }
 
 function setSlotError(slot, message, pageIdentifier) {
@@ -246,17 +281,33 @@ async function loadSlot(index) {
     const slider = document.getElementById('exh-image-slider');
     if (!slider || !slider.children[index]) return;
     const slot = slider.children[index];
+    const pageUrl = window.navigationContext.masterList[index];
+    slot.dataset.pageUrl = pageUrl;
     if (slot.dataset.loading === 'true' || slot.children.length > 0) return;
     slot.dataset.loading = 'true';
-    const pageUrl = window.navigationContext.masterList[index];
+    const galleryId = window.navigationContext.galleryId;
     try {
-        const doc = await fetchAndParsePage(pageUrl);
-        if (!doc) throw new Error("無法解析頁面文檔。");
-        let imgUrl = doc.getElementById('img')?.src;
+        let imgUrl = null;
+        // 優先從背景腳本的快取中取得圖片連結，避免重複請求 HTML
+        const { preloadedPages } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
+        if (preloadedPages && preloadedPages[pageUrl]) {
+            imgUrl = preloadedPages[pageUrl];
+        }
+
+        if (!imgUrl) {
+            const doc = await fetchAndParsePage(pageUrl);
+            if (!doc) throw new Error("無法解析頁面文檔。");
+            imgUrl = doc.getElementById('img')?.src;
+            if (imgUrl) {
+                 await browser.runtime.sendMessage({ type: 'cache_image', galleryId, pageUrl, imageUrl: imgUrl });
+            }
+        }
+
         if (!imgUrl) {
             setSlotError(slot, '找不到圖片連結', pageUrl.split('/').pop());
             return;
         }
+
         while (slot.firstChild) slot.removeChild(slot.firstChild);
         const img = document.createElement('img');
         img.onerror = async () => {
@@ -265,6 +316,9 @@ async function loadSlot(index) {
             const success = await reloadImageFromAPI(pageUrl, img);
             if (!success) {
                 setSlotError(slot, '圖片重載失敗', pageUrl.split('/').pop());
+            } else {
+                // 重載成功後更新快取，避免其他地方再次讀取到壞掉的網址
+                await browser.runtime.sendMessage({ type: 'cache_image', galleryId, pageUrl, imageUrl: img.src });
             }
         };
         img.src = imgUrl;
@@ -308,57 +362,84 @@ async function updatePreviewBar() {
     const { preloadedPages } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
     const preloadedPagesMap = new Map(Object.entries(preloadedPages || {}));
 
-    // *** 修改重點：產生由近到遠的交錯載入順序 ***
-    const linksToProcess = [];
+    // *** 修改重點：產生由近到遠的交錯載入順序，並將同一距離的頁面並行載入以提升速度 ***
     const preloadCount = window.scriptSettings.preloadCount;
     for (let i = 1; i <= preloadCount; i++) {
+        if (window.navigationContext.previewUpdateId !== currentUpdateId) return;
+        
         const nextIndex = currentIndex + i;
         const prevIndex = currentIndex - i;
+        const batch = [];
 
         // 新增下一頁的連結 (如果存在)
         if (nextIndex < masterList.length) {
-            linksToProcess.push({ url: masterList[nextIndex], direction: 'next' });
+            batch.push({ url: masterList[nextIndex], direction: 'next' });
         }
         // 新增上一頁的連結 (如果存在)
         if (prevIndex >= 0) {
-            linksToProcess.push({ url: masterList[prevIndex], direction: 'prev' });
+            batch.push({ url: masterList[prevIndex], direction: 'prev' });
         }
-    }
 
-    for (const item of linksToProcess) {
-        if (window.navigationContext.previewUpdateId !== currentUpdateId) return;
-        await processLink(item.url, item.direction, preloadedPagesMap, galleryId, currentUpdateId);
+        // 並行處理同一個距離的 next 和 prev 頁面，大幅加快整體載入速度
+        if (batch.length > 0) {
+            await Promise.all(batch.map(item => 
+                processLink(item.url, item.direction, preloadedPagesMap, galleryId, currentUpdateId)
+            ));
+        }
     }
 
     if (window.navigationContext.previewUpdateId === currentUpdateId) updateStatusText();
 }
 
+/**
+ * 取得目前已索引的圖庫分頁編號陣列（優先使用本地 Map，防止 MV3 背景腳本休眠遺失）
+ * @returns {Promise<number[]>}
+ */
+async function getIndexedPageNumbers() {
+    const { galleryId, indexedPages } = window.navigationContext;
+    if (indexedPages && indexedPages.size > 0) {
+        return Array.from(indexedPages.keys()).map(Number);
+    }
+    const galleryData = await browser.runtime.sendMessage({ type: 'get_gallery_data', galleryId }).catch(() => null);
+    return galleryData && galleryData.pages ? Object.keys(galleryData.pages).map(Number) : [];
+}
+
 async function proactiveIndexCheck(currentIndex) {
     try {
-        const { galleryId, totalGalleryPages, backToGalleryUrl } = window.navigationContext;
-        const galleryData = await browser.runtime.sendMessage({ type: 'get_gallery_data', galleryId });
-        if (!galleryData || !galleryData.pages) return;
-        const indexedPageNumbers = Object.keys(galleryData.pages).map(Number);
+        const { galleryId, totalGalleryPages, cleanBaseGalleryUrl, backToGalleryUrl } = window.navigationContext;
+        const baseUrl = cleanBaseGalleryUrl || backToGalleryUrl;
+        const indexedPageNumbers = await getIndexedPageNumbers();
         const lastIndexedPage = indexedPageNumbers.length > 0 ? Math.max(...indexedPageNumbers) : -1;
         const lastKnownImageIndex = window.navigationContext.masterList.length - 1;
         const triggerIndex = lastKnownImageIndex - window.scriptSettings.preloadCount;
+
         if (currentIndex >= triggerIndex && lastIndexedPage < totalGalleryPages - 1) {
             const nextPageIndex = lastIndexedPage + 1;
             if (window.navigationContext.isIndexingPage === nextPageIndex) return;
             window.navigationContext.isIndexingPage = nextPageIndex;
+
+            const previousLength = window.navigationContext.masterList.length;
             console.log(`[ExH] 預測性觸發：已到達頁面 ${currentIndex + 1}，開始索引下一個圖庫分頁 (${nextPageIndex + 1})。`);
-            await ensurePagesAreIndexed(galleryId, [nextPageIndex], backToGalleryUrl);
-            const { masterList: newMasterList } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
-            
-            if (newMasterList.length > window.navigationContext.masterList.length) {
-                console.log(`[ExH] 預測性更新 masterList：從 ${window.navigationContext.masterList.length} 到 ${newMasterList.length} 個項目。`);
-                window.navigationContext.masterList = newMasterList;
+            await ensurePagesAreIndexed(galleryId, [nextPageIndex], baseUrl);
+
+            const newMasterList = window.navigationContext.masterList;
+            if (newMasterList.length > previousLength) {
+                console.log(`[ExH] 預測性更新 masterList：從 ${previousLength} 到 ${newMasterList.length} 個項目。`);
                 rebuildSlider(newMasterList);
-                const actualCurrentIndex = window.navigationContext.currentIndex;
-                loadSlot(actualCurrentIndex - 1);
-                loadSlot(actualCurrentIndex);
-                loadSlot(actualCurrentIndex + 1);
-                updatePreviewBar();
+
+                // 若目前不在翻頁動畫中，根據當前網址重新校準索引與位置
+                if (!window.navigationContext.isNavigating) {
+                    const resolvedIdx = findIndexInMasterList(newMasterList, window.location.href);
+                    if (resolvedIdx !== -1 && resolvedIdx !== window.navigationContext.currentIndex) {
+                        window.navigationContext.currentIndex = resolvedIdx;
+                        syncSliderPositionInstant(resolvedIdx);
+                    }
+                    const actualCurrentIndex = window.navigationContext.currentIndex;
+                    loadSlot(actualCurrentIndex - 1);
+                    loadSlot(actualCurrentIndex);
+                    loadSlot(actualCurrentIndex + 1);
+                    updatePreviewBar();
+                }
             }
             window.navigationContext.isIndexingPage = null;
         }
@@ -368,28 +449,52 @@ async function proactiveIndexCheck(currentIndex) {
     }
 }
 
-async function navigateTo(targetIndex) {
+async function navigateTo(targetIndex, targetUrlOverride = null) {
     if (window.navigationContext.isNavigating) {
         return;
     }
     window.navigationContext.isNavigating = true;
     try {
+        const { galleryId, totalGalleryPages, cleanBaseGalleryUrl, backToGalleryUrl } = window.navigationContext;
+        const baseUrl = cleanBaseGalleryUrl || backToGalleryUrl;
+        const currentUrlBeforeWait = window.navigationContext.masterList[window.navigationContext.currentIndex] || window.location.href;
+        const relativeStep = targetIndex - window.navigationContext.currentIndex;
+
+        // 若預測性索引 (proactiveIndexCheck) 正在進行中，先等待佇列完成，避免重複抓頁或跳頁
+        if (window.navigationContext.isIndexingPage !== null) {
+            await ensurePagesAreIndexed(galleryId, [], baseUrl);
+            rebuildSlider(window.navigationContext.masterList);
+            const anchoredIdx = findIndexInMasterList(window.navigationContext.masterList, currentUrlBeforeWait);
+            if (anchoredIdx !== -1) {
+                window.navigationContext.currentIndex = anchoredIdx;
+                syncSliderPositionInstant(anchoredIdx);
+                targetIndex = targetUrlOverride
+                    ? findIndexInMasterList(window.navigationContext.masterList, targetUrlOverride)
+                    : anchoredIdx + relativeStep;
+            }
+        }
+
         if (targetIndex < 0) {
-            const { galleryId, backToGalleryUrl } = window.navigationContext;
-            const galleryData = await browser.runtime.sendMessage({ type: 'get_gallery_data', galleryId });
-            const indexedPageNumbers = galleryData ? Object.keys(galleryData.pages).map(Number) : [];
+            const indexedPageNumbers = await getIndexedPageNumbers();
             const firstIndexedPage = indexedPageNumbers.length > 0 ? Math.min(...indexedPageNumbers) : -1;
             if (firstIndexedPage > 0) {
                 const prevPageToIndex = firstIndexedPage - 1;
                 const previousMasterListLength = window.navigationContext.masterList.length;
-                await ensurePagesAreIndexed(galleryId, [prevPageToIndex], backToGalleryUrl);
-                const { masterList: newMasterList } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
+                await ensurePagesAreIndexed(galleryId, [prevPageToIndex], baseUrl);
+                const newMasterList = window.navigationContext.masterList;
                 if (newMasterList.length > previousMasterListLength) {
-                    const addedCount = newMasterList.length - previousMasterListLength;
-                    window.navigationContext.masterList = newMasterList;
                     rebuildSlider(newMasterList);
-                    window.navigationContext.currentIndex += addedCount;
-                    targetIndex = window.navigationContext.currentIndex - 1;
+                    const newCurrentIdx = findIndexInMasterList(newMasterList, currentUrlBeforeWait);
+                    if (newCurrentIdx !== -1) {
+                        window.navigationContext.currentIndex = newCurrentIdx;
+                        syncSliderPositionInstant(newCurrentIdx);
+                        targetIndex = newCurrentIdx + relativeStep;
+                    } else {
+                        const addedCount = newMasterList.length - previousMasterListLength;
+                        window.navigationContext.currentIndex += addedCount;
+                        syncSliderPositionInstant(window.navigationContext.currentIndex);
+                        targetIndex = window.navigationContext.currentIndex - 1;
+                    }
                 } else {
                     return;
                 }
@@ -397,21 +502,27 @@ async function navigateTo(targetIndex) {
                 return;
             }
         }
-        if (targetIndex >= window.navigationContext.masterList.length) {
-            const { galleryId, totalGalleryPages, backToGalleryUrl } = window.navigationContext;
-            let galleryData = await browser.runtime.sendMessage({ type: 'get_gallery_data', galleryId });
 
-            const indexedPageNumbers = galleryData ? Object.keys(galleryData.pages).map(Number) : [];
+        if (targetIndex >= window.navigationContext.masterList.length) {
+            const indexedPageNumbers = await getIndexedPageNumbers();
             const lastIndexedPage = indexedPageNumbers.length > 0 ? Math.max(...indexedPageNumbers) : -1;
 
             if (lastIndexedPage < totalGalleryPages - 1) {
                 const nextPageToIndex = lastIndexedPage + 1;
-                await ensurePagesAreIndexed(galleryId, [nextPageToIndex], backToGalleryUrl);
+                const previousMasterListLength = window.navigationContext.masterList.length;
+                await ensurePagesAreIndexed(galleryId, [nextPageToIndex], baseUrl);
 
-                const { masterList: newMasterList } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
-                if (newMasterList.length > window.navigationContext.masterList.length) {
-                    window.navigationContext.masterList = newMasterList;
+                const newMasterList = window.navigationContext.masterList;
+                if (newMasterList.length > previousMasterListLength) {
                     rebuildSlider(newMasterList);
+                    const newCurrentIdx = findIndexInMasterList(newMasterList, currentUrlBeforeWait);
+                    if (newCurrentIdx !== -1) {
+                        window.navigationContext.currentIndex = newCurrentIdx;
+                        syncSliderPositionInstant(newCurrentIdx);
+                        targetIndex = targetUrlOverride
+                            ? findIndexInMasterList(newMasterList, targetUrlOverride)
+                            : newCurrentIdx + relativeStep;
+                    }
                 } else {
                     return;
                 }
@@ -425,9 +536,9 @@ async function navigateTo(targetIndex) {
             history.pushState(null, '', targetUrl);
             window.navigationContext.currentIndex = targetIndex;
             window.navigationContext.lastKnownUrlIndex = targetIndex;
-            proactiveIndexCheck(targetIndex);
             const slider = document.getElementById('exh-image-slider');
             slider.style.transform = `translateX(-${targetIndex * 100}vw)`;
+            proactiveIndexCheck(targetIndex);
         } else {
             return;
         }
@@ -547,7 +658,7 @@ function runHorizontalSliderReader() {
     loadSlot(currentIndex + 1);
     updatePreviewBar();
 
-    setTimeout(() => { slider.style.transition = 'transform 0.3s ease-in-out;'; }, 50);
+    setTimeout(() => { slider.style.transition = ''; }, 50);
     applyFitStyle();
     document.addEventListener('keydown', handleHorizontalKeyDown, true);
 }
@@ -557,8 +668,8 @@ function handlePreviewClick(e) {
     if (link) {
         e.preventDefault();
         const targetUrl = link.href;
-        const targetIndex = window.navigationContext.masterList.findIndex(url => url === targetUrl);
-        if (targetIndex !== -1) navigateTo(targetIndex);
+        const targetIndex = findIndexInMasterList(window.navigationContext.masterList, targetUrl);
+        if (targetIndex !== -1) navigateTo(targetIndex, targetUrl);
     }
 }
 
@@ -572,8 +683,13 @@ function restoreBodyState() {
     document.body.style.overflow = originalBodyOverflow;
 }
 
+let hasBoundStorageListener = false;
+
 // *** 新增：監聽來自 popup 的即時設定變更 ***
 function listenForSettingsChanges() {
+    if (hasBoundStorageListener) return;
+    hasBoundStorageListener = true;
+
     browser.storage.onChanged.addListener((changes, area) => {
         // 確保監聽器只在本地儲存區變更，且水平閱讀器處於啟用狀態時作用
         if (area !== 'local' || !document.getElementById('exh-viewer')) {
@@ -598,6 +714,12 @@ function listenForSettingsChanges() {
             // 即時套用視覺變更
             setPreviewBarVisibility(newValue);
             console.log(`[ExH] "隱藏預覽列" 設定已變更為: ${newValue}`);
+        }
+
+        // 處理「預先載入數量」的變更
+        if (changes.preloadCount) {
+            window.scriptSettings.preloadCount = changes.preloadCount.newValue;
+            updatePreviewBar();
         }
     });
 }
@@ -647,7 +769,7 @@ export function teardownHorizontalReader() {
     const statusStyle = document.getElementById(STATUS_STYLE_ID);
     if (statusStyle) statusStyle.remove();
 
-    document.removeEventListener('keydown', handleHorizontalKeyDown);
+    document.removeEventListener('keydown', handleHorizontalKeyDown, true);
     if (hasBoundPreviewClick) {
         document.body.removeEventListener('click', handlePreviewClick, true);
         hasBoundPreviewClick = false;

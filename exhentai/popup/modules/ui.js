@@ -19,7 +19,11 @@ export const localizePage = () => {
     });
     document.querySelectorAll('[data-i18n-title]').forEach(el => {
         const key = el.getAttribute('data-i18n-title');
-        el.title = getMessage(key);
+        if (el.tagName === 'TITLE') {
+            document.title = getMessage(key);
+        } else {
+            el.title = getMessage(key);
+        }
     });
     // For placeholders specifically
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {

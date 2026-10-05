@@ -17,10 +17,11 @@ let hasInitializedGridView = false;
 let isGridViewActive = false;
 
 function buildGridViewCSS(columns) {
+    const colCount = columns || window.scriptSettings.gridColumns || 5;
     return `
         .exh-grid-view {
             display: grid;
-            grid-template-columns: repeat(${window.scriptSettings.gridColumns}, 1fr);
+            grid-template-columns: repeat(${colCount}, 1fr);
             gap: 24px 18px;
         }
         .exh-grid-item {
@@ -193,15 +194,17 @@ function createGridItemFromRow(row) {
             return null;
         }
 
-        const categoryDiv = row.querySelector('.gl1c div');
-        const thumbImg = row.querySelector('.glthumb img');
-        const linkA = row.querySelector('.gl3c a');
+        // 相容 Compact (gl*c)、Minimal (gl*m)、Extended (gl*e) 與 Thumbnail (gl*t) 四種模式
+        const categoryDiv = row.querySelector('.gl1c div, .gl1m div, .cn, .cs');
+        const thumbImg = row.querySelector('.glthumb img, .gl1e img, .gl3t img');
         const titleDiv = row.querySelector('.glink');
+        const linkA = (titleDiv && titleDiv.closest('a')) || row.querySelector('.gl3c a, .gl3m a, .gl2e a, .gl4t a, a[href*="/g/"]');
         const ratingDiv = row.querySelector('.ir');
-        const pagesDiv = row.querySelector('.gl4c div:last-child');
-        const tagsContainer = row.querySelector('.gl3c > a > div:last-child');
+        const pagesDiv = row.querySelector('.gl4c div:last-child') ||
+            Array.from(row.querySelectorAll('.gl3e div, .gl5t div, .glhide div')).find(d => /\d+\s*pages/i.test(d.textContent));
+        const tagElements = row.querySelectorAll('.gt, .gtl');
         const dateDiv = row.querySelector('div[id^="posted_"]');
-        const langTagDiv = row.querySelector('.gt[title^="language:"]');
+        const langTagDiv = row.querySelector('[title^="language:"]');
 
         if (!linkA || !titleDiv || !thumbImg) return null;
 
@@ -214,9 +217,9 @@ function createGridItemFromRow(row) {
 
         const imgSrc = thumbImg.getAttribute('data-src') || thumbImg.src;
         const ratingStyleAttr = ratingDiv ? ratingDiv.getAttribute('style') : '';
-        const pagesText = pagesDiv ? pagesDiv.textContent : '';
-        const dateText = dateDiv ? dateDiv.textContent : '';
-        const langText = langTagDiv ? langTagDiv.textContent : '';
+        const pagesText = pagesDiv ? pagesDiv.textContent.trim() : '';
+        const dateText = dateDiv ? dateDiv.textContent.trim() : '';
+        const langText = langTagDiv ? langTagDiv.textContent.trim() : '';
 
         const thumbnailLink = document.createElement('div');
         thumbnailLink.className = 'exh-grid-thumbnail-link';
@@ -239,7 +242,9 @@ function createGridItemFromRow(row) {
         const categoryRow = document.createElement('div');
         categoryRow.className = 'exh-grid-category-row';
         if (categoryDiv) {
-            categoryRow.appendChild(categoryDiv.cloneNode(true));
+            const clonedCategory = categoryDiv.cloneNode(true);
+            clonedCategory.classList.add('cn');
+            categoryRow.appendChild(clonedCategory);
         }
         infoTopDiv.appendChild(categoryRow);
         infoDiv.appendChild(infoTopDiv);
@@ -266,9 +271,11 @@ function createGridItemFromRow(row) {
             footerDiv.appendChild(langSpan);
         }
 
-        const pagesSpan = document.createElement('span');
-        pagesSpan.textContent = `${pagesText.replace(' pages', '')}p`;
-        footerDiv.appendChild(pagesSpan);
+        if (pagesText) {
+            const pagesSpan = document.createElement('span');
+            pagesSpan.textContent = `${pagesText.replace(/\s*pages/i, '')}p`;
+            footerDiv.appendChild(pagesSpan);
+        }
 
         infoDiv.appendChild(footerDiv);
         gridItem.appendChild(infoDiv);
@@ -283,15 +290,16 @@ function createGridItemFromRow(row) {
             overlayDiv.appendChild(overlayTitle);
         }
 
-        if (tagsContainer) {
+        if (tagElements.length > 0) {
             const overlayTags = document.createElement('div');
             overlayTags.className = 'exh-overlay-tags';
 
-            Array.from(tagsContainer.children).forEach(child => {
-                const clonedTag = child.cloneNode(true);
+            tagElements.forEach(tagNode => {
+                const clonedTag = tagNode.cloneNode(true);
+                clonedTag.classList.add('gt');
                 const originalTag = clonedTag.getAttribute('title');
 
-                if (translationMap.has(originalTag)) {
+                if (originalTag && translationMap.has(originalTag)) {
                     const displayTag = translationMap.get(originalTag);
                     const displayValue = displayTag.substring(displayTag.indexOf(':') + 1).trim();
                     if (displayValue) {
@@ -480,13 +488,17 @@ export async function initGridView() {
     await enableGridView();
 }
 
-browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((message) => {
     if (message.type === 'uploader_blocked') {
         const uploaderName = message.uploader;
         if (!uploaderName) return;
 
-        // 移除 grid view 中的項目
-        const gridItems = document.querySelectorAll(`.exh-grid-item[data-uploader="${uploaderName}"]`);
-        gridItems.forEach(item => item.remove());
+        // 移除 grid view 中的項目（避免特殊字元造成 CSS 選擇器語法錯誤）
+        const gridItems = document.querySelectorAll('.exh-grid-item[data-uploader]');
+        gridItems.forEach(item => {
+            if (item.dataset.uploader === uploaderName) {
+                item.remove();
+            }
+        });
     }
 });

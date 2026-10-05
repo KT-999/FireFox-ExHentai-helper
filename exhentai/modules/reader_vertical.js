@@ -16,12 +16,26 @@ async function loadVerticalImage(placeholder) {
 
     const pageUrl = placeholder.dataset.pageUrl;
     const index = parseInt(placeholder.dataset.index, 10);
+    const galleryId = window.navigationContext.galleryId;
 
     try {
-        const doc = await fetchAndParsePage(pageUrl);
-        if (!doc) throw new Error("無法解析頁面文檔。");
+        let imgUrl = null;
+        // 優先從背景腳本的快取中取得圖片連結
+        const { preloadedPages } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
+        if (preloadedPages && preloadedPages[pageUrl]) {
+            imgUrl = preloadedPages[pageUrl];
+        }
 
-        let imgUrl = doc.getElementById('img')?.src;
+        if (!imgUrl) {
+            const doc = await fetchAndParsePage(pageUrl);
+            if (!doc) throw new Error("無法解析頁面文檔。");
+
+            imgUrl = doc.getElementById('img')?.src;
+            if (imgUrl) {
+                await browser.runtime.sendMessage({ type: 'cache_image', galleryId, pageUrl, imageUrl: imgUrl });
+            }
+        }
+
         if (!imgUrl) {
             placeholder.textContent = `找不到圖片連結 (頁 ${index + 1})`;
             placeholder.classList.add('error');
@@ -44,7 +58,8 @@ async function loadVerticalImage(placeholder) {
                 placeholder.textContent = `圖片重載失敗 (頁 ${index + 1})`;
                 placeholder.classList.add('error');
             } else {
-                 placeholder.replaceWith(img);
+                await browser.runtime.sendMessage({ type: 'cache_image', galleryId, pageUrl, imageUrl: img.src });
+                placeholder.replaceWith(img);
             }
         };
         img.onload = () => {
@@ -134,17 +149,21 @@ async function runVerticalReader() {
             await ensurePagesAreIndexed(
                 window.navigationContext.galleryId,
                 [neededPageIndex],
-                window.navigationContext.backToGalleryUrl
+                window.navigationContext.cleanBaseGalleryUrl || window.navigationContext.backToGalleryUrl
             );
 
-            const pageData = await browser.runtime.sendMessage({
-                type: 'get_specific_page_links',
-                galleryId: window.navigationContext.galleryId,
-                pageIndex: neededPageIndex
-            });
+            let links = window.navigationContext.indexedPages?.get(neededPageIndex) || null;
+            if (!links) {
+                const pageData = await browser.runtime.sendMessage({
+                    type: 'get_specific_page_links',
+                    galleryId: window.navigationContext.galleryId,
+                    pageIndex: neededPageIndex
+                }).catch(() => null);
+                links = pageData?.links || null;
+            }
 
-            if (pageData && pageData.links && pageData.links[indexOnPage]) {
-                const pageUrl = pageData.links[indexOnPage];
+            if (links && links[indexOnPage]) {
+                const pageUrl = links[indexOnPage];
                 placeholder.dataset.pageUrl = pageUrl;
                 loadVerticalImage(placeholder);
             } else {
