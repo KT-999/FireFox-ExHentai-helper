@@ -375,5 +375,37 @@
     "unblockButton": {
         "message": "Разблокировать",
         "description": "Button to unblock an uploader."
+    },
+    "doublePageMode": {
+        "message": "Двухстраничный режим (Горизонтальный):",
+        "description": "Label for double-page spread mode."
+    },
+    "doublePageCoverSingle": {
+        "message": "Обложка отдельной страницей:",
+        "description": "Label for showing the first page as a single cover."
+    },
+    "reverseReadingDirection": {
+        "message": "Чтение справа налево (RTL):",
+        "description": "Label for right-to-left reading direction."
+    },
+    "contextMenuBlockTag": {
+        "message": "Заблокировать этот тег",
+        "description": "Context menu option to block a tag."
+    },
+    "blockedTagsHeader": {
+        "message": "Заблокированные теги",
+        "description": "Header for blocked tags list."
+    },
+    "blockedTagsEmpty": {
+        "message": "Нет заблокированных тегов.",
+        "description": "Message when blocked tags list is empty."
+    },
+    "downloadBackupButton": {
+        "message": "Скачать резервную копию (.json)",
+        "description": "Button to download backup as a JSON file."
+    },
+    "selectBackupFileButton": {
+        "message": "Выбрать файл копии (.json)",
+        "description": "Button to select a JSON backup file to import."
     }
 }

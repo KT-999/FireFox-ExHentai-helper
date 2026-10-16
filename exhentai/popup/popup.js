@@ -50,14 +50,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 監聽語言變更以重新本地化頁面
         document.addEventListener('languageChanged', async () => {
             await loadLocaleMessages();
-            // 如果不是設定頁籤，則重新渲染當前頁籤
-            const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+            initAuth();
+            document.getElementById('tag-search-input').placeholder = getMessage('searchTagsPlaceholder');
+            renderBlockedUploaders();
+            renderBlockedTags();
+            const activeTab = document.querySelector('.tab-btn.active')?.dataset?.tab;
             if (activeTab === 'history') renderHistory();
             if (activeTab === 'bookmarks') {
-                document.getElementById('tag-search-input').placeholder = getMessage('searchTagsPlaceholder');
                 renderSavedTags();
-                renderBlockedUploaders();
-                renderBlockedTags();
             }
         });
 

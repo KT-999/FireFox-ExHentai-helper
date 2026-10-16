@@ -375,5 +375,37 @@
   "unblockButton": {
     "message": "차단 해제",
     "description": "Button to unblock an uploader."
+  },
+  "doublePageMode": {
+    "message": "두 페이지 보기 (가로 모드 전용):",
+    "description": "Label for double-page spread mode."
+  },
+  "doublePageCoverSingle": {
+    "message": "표지(첫 페이지) 단독 표시:",
+    "description": "Label for showing the first page as a single cover."
+  },
+  "reverseReadingDirection": {
+    "message": "만화 읽기 방향 (오른쪽에서 왼쪽):",
+    "description": "Label for right-to-left reading direction."
+  },
+  "contextMenuBlockTag": {
+    "message": "이 태그 차단",
+    "description": "Context menu option to block a tag."
+  },
+  "blockedTagsHeader": {
+    "message": "차단된 태그",
+    "description": "Header for blocked tags list."
+  },
+  "blockedTagsEmpty": {
+    "message": "차단된 태그가 없습니다.",
+    "description": "Message when blocked tags list is empty."
+  },
+  "downloadBackupButton": {
+    "message": "백업 파일 다운로드 (.json)",
+    "description": "Button to download backup as a JSON file."
+  },
+  "selectBackupFileButton": {
+    "message": "백업 파일 선택 (.json)",
+    "description": "Button to select a JSON backup file to import."
   }
 }

@@ -375,5 +375,37 @@
   "unblockButton": {
     "message": "ブロック解除",
     "description": "Button to unblock an uploader."
+  },
+  "doublePageMode": {
+    "message": "見開き（2ページ）モード（横型のみ）：",
+    "description": "Label for double-page spread mode."
+  },
+  "doublePageCoverSingle": {
+    "message": "表紙（1ページ目）を単ページ表示：",
+    "description": "Label for showing the first page as a single cover."
+  },
+  "reverseReadingDirection": {
+    "message": "右綴じ（右から左へ読む）：",
+    "description": "Label for right-to-left reading direction."
+  },
+  "contextMenuBlockTag": {
+    "message": "このタグをブロック",
+    "description": "Context menu option to block a tag."
+  },
+  "blockedTagsHeader": {
+    "message": "ブロックしたタグ",
+    "description": "Header for blocked tags list."
+  },
+  "blockedTagsEmpty": {
+    "message": "ブロックしたタグはありません。",
+    "description": "Message when blocked tags list is empty."
+  },
+  "downloadBackupButton": {
+    "message": "バックアップを保存 (.json)",
+    "description": "Button to download backup as a JSON file."
+  },
+  "selectBackupFileButton": {
+    "message": "ファイルを選択 (.json)",
+    "description": "Button to select a JSON backup file to import."
   }
 }

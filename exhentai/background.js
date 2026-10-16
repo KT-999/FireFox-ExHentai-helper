@@ -17,6 +17,19 @@ const BLOCKED_UPLOADERS_KEY = 'blockedUploaders';
 const BLOCKED_TAGS_KEY = 'blockedTags';
 const READING_PROGRESS_KEY = 'readingProgress';
 const MAX_READING_PROGRESS_ITEMS = 500;
+const VALID_UI_LANGUAGES = new Set([
+    'auto', 'zh_TW', 'zh_CN', 'en', 'ja', 'ko', 'es', 'de', 'fr', 'pt_BR', 'ru'
+]);
+
+/**
+ * 驗證並正規化介面語言設定值，防止空白或損毀值導致語系載入失敗
+ * @param {string} lang - 語言設定值
+ * @returns {string}
+ */
+function normalizeUiLanguage(lang) {
+    return (typeof lang === 'string' && VALID_UI_LANGUAGES.has(lang)) ? lang : 'auto';
+}
+
 const settingsCache = {
     cacheSize: 50,
     maxHistoryCount: 200,
@@ -27,14 +40,15 @@ async function refreshSettingsCache() {
     try {
         const data = await browser.storage.local.get(settingsCache);
         Object.assign(settingsCache, data);
+        const validLang = normalizeUiLanguage(settingsCache.uiLanguage);
+        if (settingsCache.uiLanguage !== validLang) {
+            settingsCache.uiLanguage = validLang;
+            await browser.storage.local.set({ uiLanguage: 'auto' });
+        }
     } catch (error) {
         console.warn('[BG] 無法載入設定快取，將使用預設值。', error);
     }
 }
-
-refreshSettingsCache().catch(error => {
-    console.warn('[BG] 初始化設定快取失敗。', error);
-});
 
 // --- 資料遷移函式 ---
 async function migrateTagsData() {
@@ -73,82 +87,123 @@ async function migrateTagsData() {
 
 // --- 多語系處理 ---
 let messageCache = null;
+let fallbackMessageCache = null;
 
 async function getLocalizedMessage(key) {
+    if (!fallbackMessageCache) {
+        try {
+            const enResponse = await fetch(browser.runtime.getURL('_locales/en/messages.json'));
+            if (enResponse.ok) {
+                fallbackMessageCache = await enResponse.json();
+            }
+        } catch (e) {
+            console.warn('[BG] 無法載入預設英文語言檔案。', e);
+        }
+    }
+
     if (!messageCache) {
         try {
-            let lang = settingsCache.uiLanguage;
+            let lang = normalizeUiLanguage(settingsCache.uiLanguage);
             if (lang === 'auto') {
-                lang = browser.i18n.getUILanguage();
+                lang = browser.i18n.getUILanguage() || 'en';
             }
             const locale = lang.replace('-', '_');
-            const response = await fetch(`/_locales/${locale}/messages.json`);
-            if (!response.ok) throw new Error(`找不到語言檔案: ${locale}`);
+            let response = await fetch(browser.runtime.getURL(`_locales/${locale}/messages.json`)).catch(() => null);
+            if (!response || !response.ok) {
+                const baseLocale = locale.split('_')[0];
+                if (baseLocale && baseLocale !== locale) {
+                    response = await fetch(browser.runtime.getURL(`_locales/${baseLocale}/messages.json`)).catch(() => null);
+                }
+            }
+            if (!response || !response.ok) {
+                throw new Error(`找不到語言檔案: ${locale}`);
+            }
             messageCache = await response.json();
         } catch (e) {
             console.warn(`[BG] 無法載入指定的語言檔案，將使用預設英文。`, e);
-            const response = await fetch('/_locales/en/messages.json');
-            messageCache = await response.json();
+            messageCache = fallbackMessageCache || {};
         }
     }
-    return messageCache[key]?.message || key;
+    return messageCache?.[key]?.message || fallbackMessageCache?.[key]?.message || key;
 }
 
 async function updateContextMenuTitle() {
-    const title = await getLocalizedMessage("contextMenuSaveTag");
-    browser.contextMenus.update(CONTEXT_MENU_ID, { title: title }).catch(() => {});
+    try {
+        const title = await getLocalizedMessage("contextMenuSaveTag");
+        browser.contextMenus.update(CONTEXT_MENU_ID, {
+            title: title !== "contextMenuSaveTag" ? title : "儲存此標籤"
+        }).catch(() => {});
 
-    const blockTagTitle = await getLocalizedMessage("contextMenuBlockTag");
-    browser.contextMenus.update(CONTEXT_MENU_BLOCK_TAG_ID, {
-        title: blockTagTitle !== "contextMenuBlockTag" ? blockTagTitle : "封鎖此標籤..."
-    }).catch(() => {});
-    
-    const blockTitle = await getLocalizedMessage("contextMenuBlockUploader");
-    browser.contextMenus.update(CONTEXT_MENU_BLOCK_UPLOADER_ID, { title: blockTitle }).catch(() => {});
+        const blockTagTitle = await getLocalizedMessage("contextMenuBlockTag");
+        browser.contextMenus.update(CONTEXT_MENU_BLOCK_TAG_ID, {
+            title: blockTagTitle !== "contextMenuBlockTag" ? blockTagTitle : "封鎖此標籤"
+        }).catch(() => {});
+        
+        const blockTitle = await getLocalizedMessage("contextMenuBlockUploader");
+        browser.contextMenus.update(CONTEXT_MENU_BLOCK_UPLOADER_ID, {
+            title: blockTitle !== "contextMenuBlockUploader" ? blockTitle : "封鎖上傳者..."
+        }).catch(() => {});
+    } catch (error) {
+        console.warn('[BG] 更新右鍵選單標題時發生錯誤:', error);
+    }
 }
 
-async function createOrUpdateContextMenu() {
-    try {
-        await browser.contextMenus.removeAll();
-    } catch (error) {
-        if (!error?.message?.includes("not found")) {
-            console.warn("[BG] 無法移除既有右鍵選單。", error);
-        }
-    }
+/**
+ * 確保右鍵選單項目已建立（支援 MV3 Event Page 喚醒、瀏覽器重啟與擴充功能更新，具備冪等性）
+ */
+function ensureContextMenus() {
+    if (!browser.contextMenus) return;
+
+    const docPatterns = ["*://*.exhentai.org/*", "*://*.e-hentai.org/*"];
+    const tagPatterns = ["*://*.exhentai.org/tag/*", "*://*.e-hentai.org/tag/*"];
+    const uploaderPatterns = [
+        "*://*.exhentai.org/g/*",
+        "*://*.e-hentai.org/g/*",
+        "*://*.exhentai.org/uploader/*",
+        "*://*.e-hentai.org/uploader/*"
+    ];
 
     browser.contextMenus.create({
         id: CONTEXT_MENU_ID,
-        title: "Saving tag...",
+        title: "儲存此標籤",
         contexts: ["link"],
-        documentUrlPatterns: ["https://exhentai.org/*", "https://e-hentai.org/*"],
-        targetUrlPatterns: ["https://exhentai.org/tag/*", "https://e-hentai.org/tag/*"]
+        documentUrlPatterns: docPatterns,
+        targetUrlPatterns: tagPatterns
     }, () => {
-        if (browser.runtime.lastError) console.log("右鍵選單已存在，將直接更新。");
+        void browser.runtime.lastError;
     });
 
     browser.contextMenus.create({
         id: CONTEXT_MENU_BLOCK_TAG_ID,
-        title: "Block tag...",
+        title: "封鎖此標籤",
         contexts: ["link"],
-        documentUrlPatterns: ["https://exhentai.org/*", "https://e-hentai.org/*"],
-        targetUrlPatterns: ["https://exhentai.org/tag/*", "https://e-hentai.org/tag/*"]
+        documentUrlPatterns: docPatterns,
+        targetUrlPatterns: tagPatterns
     }, () => {
-        if (browser.runtime.lastError) console.log("右鍵選單已存在，將直接更新。");
+        void browser.runtime.lastError;
     });
 
     browser.contextMenus.create({
         id: CONTEXT_MENU_BLOCK_UPLOADER_ID,
-        title: "Block uploader...",
+        title: "封鎖上傳者...",
         contexts: ["link"],
-        documentUrlPatterns: ["https://exhentai.org/*", "https://e-hentai.org/*"],
-        targetUrlPatterns: ["https://exhentai.org/g/*", "https://e-hentai.org/g/*", "https://exhentai.org/uploader/*", "https://e-hentai.org/uploader/*"]
+        documentUrlPatterns: docPatterns,
+        targetUrlPatterns: uploaderPatterns
     }, () => {
-        if (browser.runtime.lastError) console.log("右鍵選單已存在，將直接更新。");
+        void browser.runtime.lastError;
     });
-    
-    messageCache = null;
-    updateContextMenuTitle();
 }
+
+// 背景腳本載入時立即同步註冊右鍵選單，並在讀取設定後更新多語系標題
+ensureContextMenus();
+refreshSettingsCache()
+    .then(() => {
+        messageCache = null;
+        return updateContextMenuTitle();
+    })
+    .catch(error => {
+        console.warn('[BG] 初始化設定快取失敗。', error);
+    });
 
 /**
  * 將 e-hentai.org 的有效登入 Cookie 同步至 .exhentai.org，並清除無效的 '0' 佔位 Cookie
@@ -247,21 +302,23 @@ async function syncEhAuthCookiesToExh(storeId) {
 
 // --- 事件監聽器 ---
 browser.runtime.onInstalled.addListener(async (details) => {
+    ensureContextMenus();
     // 在安裝或更新後，首先執行資料遷移
     await migrateTagsData();
     await refreshSettingsCache();
+    messageCache = null;
+    await updateContextMenuTitle();
     await syncEhAuthCookiesToExh();
-
-    await createOrUpdateContextMenu();
 });
 
 browser.runtime.onStartup.addListener(async () => {
+    ensureContextMenus();
     // 瀏覽器啟動時也檢查一次，確保遷移成功並同步登入 Cookie
     await migrateTagsData();
     await refreshSettingsCache();
-    await syncEhAuthCookiesToExh();
     messageCache = null;
-    updateContextMenuTitle();
+    await updateContextMenuTitle();
+    await syncEhAuthCookiesToExh();
 });
 
 // 當使用者在 forums.e-hentai.org 或 e-hentai.org 登入時，即時將登入 Cookie 同步至 .exhentai.org
@@ -283,8 +340,9 @@ if (browser.cookies && browser.cookies.onChanged) {
 
 browser.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.uiLanguage) {
-        settingsCache.uiLanguage = changes.uiLanguage.newValue ?? 'auto';
+        settingsCache.uiLanguage = normalizeUiLanguage(changes.uiLanguage.newValue);
         messageCache = null;
+        ensureContextMenus();
         updateContextMenuTitle();
     }
     if (area === 'local' && changes.cacheSize) {

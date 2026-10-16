@@ -1,9 +1,12 @@
 // popup/modules/ui.js
 
 let messages = {};
+let fallbackMessages = {};
+
+const VALID_UI_LANGUAGES = new Set(['auto', 'en', 'zh_TW', 'es', 'ja', 'ko', 'de', 'fr', 'pt_BR', 'ru']);
 
 export const getMessage = (key, substitutions) => {
-    let message = messages[key]?.message || key;
+    let message = messages[key]?.message || fallbackMessages[key]?.message || key;
     if (substitutions) {
         for (const subKey in substitutions) {
             message = message.replace(`{${subKey}}`, substitutions[subKey]);
@@ -14,6 +17,9 @@ export const getMessage = (key, substitutions) => {
 
 export const localizePage = () => {
     document.querySelectorAll('[data-i18n]').forEach(el => {
+        if (el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            return;
+        }
         const key = el.getAttribute('data-i18n');
         el.textContent = getMessage(key);
     });
@@ -33,21 +39,52 @@ export const localizePage = () => {
 };
 
 export const loadLocaleMessages = async () => {
-    const { uiLanguage = 'auto' } = await browser.storage.local.get('uiLanguage');
+    const stored = await browser.storage.local.get('uiLanguage');
+    let uiLanguage = stored.uiLanguage;
+    if (!uiLanguage || !VALID_UI_LANGUAGES.has(uiLanguage)) {
+        uiLanguage = 'auto';
+        if (stored.uiLanguage !== undefined && stored.uiLanguage !== 'auto') {
+            browser.storage.local.set({ uiLanguage: 'auto' }).catch(() => {});
+        }
+    }
+
     let lang = uiLanguage;
     if (lang === 'auto') {
-        lang = browser.i18n.getUILanguage();
+        lang = browser.i18n.getUILanguage() || 'en';
     }
     const locale = lang.replace('-', '_');
 
     try {
-        const response = await fetch(`/_locales/${locale}/messages.json`);
-        if (!response.ok) throw new Error('Locale not found, falling back to en');
+        const enUrl = browser.runtime.getURL('_locales/en/messages.json');
+        const enRes = await fetch(enUrl);
+        if (enRes.ok) {
+            fallbackMessages = await enRes.json();
+        }
+    } catch (e) {
+        console.warn('[UI] Failed to load fallback en messages:', e);
+    }
+
+    try {
+        const localeUrl = browser.runtime.getURL(`_locales/${locale}/messages.json`);
+        const response = await fetch(localeUrl);
+        if (!response.ok) throw new Error(`Locale ${locale} not found, falling back to base language or en`);
         messages = await response.json();
     } catch (e) {
-        console.warn(e);
-        const response = await fetch('/_locales/en/messages.json');
-        messages = await response.json();
+        const baseLang = locale.split('_')[0];
+        let loadedBase = false;
+        if (baseLang && baseLang !== locale) {
+            try {
+                const baseUrl = browser.runtime.getURL(`_locales/${baseLang}/messages.json`);
+                const baseRes = await fetch(baseUrl);
+                if (baseRes.ok) {
+                    messages = await baseRes.json();
+                    loadedBase = true;
+                }
+            } catch (_) {}
+        }
+        if (!loadedBase) {
+            messages = fallbackMessages;
+        }
     }
     localizePage();
     return messages;

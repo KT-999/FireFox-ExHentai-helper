@@ -1,7 +1,8 @@
 // popup/modules/settings.js
-import { applyTheme, getMessage } from './ui.js';
+import { applyTheme, getMessage, loadLocaleMessages } from './ui.js';
 
 let statusTimeout;
+const VALID_UI_LANGUAGES = new Set(['auto', 'en', 'zh_TW', 'es', 'ja', 'ko', 'de', 'fr', 'pt_BR', 'ru']);
 
 const toggleReaderModeSettings = (mode) => {
     const isHorizontal = mode === 'horizontal';
@@ -64,6 +65,10 @@ const handleSettingChange = async (event) => {
             break;
     }
 
+    if (key === 'uiLanguage' && (!value || !VALID_UI_LANGUAGES.has(value))) {
+        value = 'auto';
+    }
+
     // 處理有連動關係的 UI
     if (key === 'enableGridView') {
         document.getElementById('grid-columns-setting').style.display = value ? 'flex' : 'none';
@@ -79,12 +84,12 @@ const handleSettingChange = async (event) => {
     try {
         await browser.storage.local.set({ [key]: value });
         const isLanguageChange = key === 'uiLanguage';
-        showSaveFeedback(isLanguageChange);
 
         if (isLanguageChange) {
-            // 觸發事件，讓主腳本 popup.js 重新載入多語系檔案
+            await loadLocaleMessages();
             document.dispatchEvent(new CustomEvent('languageChanged'));
         }
+        showSaveFeedback(isLanguageChange);
     } catch (error) {
         console.error(`儲存設定 ${key} 時發生錯誤:`, error);
         const statusMessage = document.getElementById('status-message');
@@ -109,6 +114,11 @@ const loadSettings = async () => {
         themeMode: 'system',
         uiLanguage: 'auto'
     });
+
+    if (!result.uiLanguage || !VALID_UI_LANGUAGES.has(result.uiLanguage)) {
+        result.uiLanguage = 'auto';
+        await browser.storage.local.set({ uiLanguage: 'auto' }).catch(() => {});
+    }
 
     // 遍歷所有設定並填入 UI
     for (const key in result) {

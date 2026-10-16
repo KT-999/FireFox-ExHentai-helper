@@ -375,5 +375,37 @@
     "unblockButton": {
         "message": "Desbloquear",
         "description": "Button to unblock an uploader."
+    },
+    "doublePageMode": {
+        "message": "Modo de Página Dupla (Horizontal):",
+        "description": "Label for double-page spread mode."
+    },
+    "doublePageCoverSingle": {
+        "message": "Capa em Página Única:",
+        "description": "Label for showing the first page as a single cover."
+    },
+    "reverseReadingDirection": {
+        "message": "Leitura da Direita para a Esquerda (RTL):",
+        "description": "Label for right-to-left reading direction."
+    },
+    "contextMenuBlockTag": {
+        "message": "Bloquear esta tag",
+        "description": "Context menu option to block a tag."
+    },
+    "blockedTagsHeader": {
+        "message": "Tags Bloqueadas",
+        "description": "Header for blocked tags list."
+    },
+    "blockedTagsEmpty": {
+        "message": "Nenhuma tag bloqueada.",
+        "description": "Message when blocked tags list is empty."
+    },
+    "downloadBackupButton": {
+        "message": "Baixar Backup (.json)",
+        "description": "Button to download backup as a JSON file."
+    },
+    "selectBackupFileButton": {
+        "message": "Selecionar Backup (.json)",
+        "description": "Button to select a JSON backup file to import."
     }
 }
