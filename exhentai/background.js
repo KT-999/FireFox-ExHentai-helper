@@ -10,9 +10,13 @@ const GALLERY_CACHE_MAX = 1000;
 const HISTORY_STORAGE_KEY = 'viewingHistory';
 const SAVED_TAGS_KEY = 'savedTags';
 const CONTEXT_MENU_ID = "save-exh-tag";
+const CONTEXT_MENU_BLOCK_TAG_ID = "block-exh-tag";
 const CONTEXT_MENU_BLOCK_UPLOADER_ID = "block-exh-uploader";
 const MIGRATION_FLAG_KEY = 'tagsMigrated_v1_2_5'; // 用於標記新物件結構的遷移
 const BLOCKED_UPLOADERS_KEY = 'blockedUploaders';
+const BLOCKED_TAGS_KEY = 'blockedTags';
+const READING_PROGRESS_KEY = 'readingProgress';
+const MAX_READING_PROGRESS_ITEMS = 500;
 const settingsCache = {
     cacheSize: 50,
     maxHistoryCount: 200,
@@ -93,6 +97,11 @@ async function getLocalizedMessage(key) {
 async function updateContextMenuTitle() {
     const title = await getLocalizedMessage("contextMenuSaveTag");
     browser.contextMenus.update(CONTEXT_MENU_ID, { title: title }).catch(() => {});
+
+    const blockTagTitle = await getLocalizedMessage("contextMenuBlockTag");
+    browser.contextMenus.update(CONTEXT_MENU_BLOCK_TAG_ID, {
+        title: blockTagTitle !== "contextMenuBlockTag" ? blockTagTitle : "封鎖此標籤..."
+    }).catch(() => {});
     
     const blockTitle = await getLocalizedMessage("contextMenuBlockUploader");
     browser.contextMenus.update(CONTEXT_MENU_BLOCK_UPLOADER_ID, { title: blockTitle }).catch(() => {});
@@ -118,6 +127,16 @@ async function createOrUpdateContextMenu() {
     });
 
     browser.contextMenus.create({
+        id: CONTEXT_MENU_BLOCK_TAG_ID,
+        title: "Block tag...",
+        contexts: ["link"],
+        documentUrlPatterns: ["https://exhentai.org/*", "https://e-hentai.org/*"],
+        targetUrlPatterns: ["https://exhentai.org/tag/*", "https://e-hentai.org/tag/*"]
+    }, () => {
+        if (browser.runtime.lastError) console.log("右鍵選單已存在，將直接更新。");
+    });
+
+    browser.contextMenus.create({
         id: CONTEXT_MENU_BLOCK_UPLOADER_ID,
         title: "Block uploader...",
         contexts: ["link"],
@@ -134,6 +153,7 @@ async function createOrUpdateContextMenu() {
 /**
  * 將 e-hentai.org 的有效登入 Cookie 同步至 .exhentai.org，並清除無效的 '0' 佔位 Cookie
  * @param {string} [storeId] 指定的 Cookie 儲存區 ID（支援容器分頁）
+ * @returns {Promise<{isLoggedIn: boolean, hasEhLogin: boolean, hasExhLogin: boolean}>}
  */
 async function syncEhAuthCookiesToExh(storeId) {
     const authNames = ['ipb_member_id', 'ipb_pass_hash', 'igneous', 'sk'];
@@ -179,7 +199,14 @@ async function syncEhAuthCookiesToExh(storeId) {
 
     const ehMember = ehCookies.find(c => c.name === 'ipb_member_id' && isValidVal(c.value));
     const ehPass = ehCookies.find(c => c.name === 'ipb_pass_hash' && isValidVal(c.value));
-    if (!ehMember || !ehPass) return;
+    const exMember = exCookies.find(c => c.name === 'ipb_member_id' && isValidVal(c.value));
+    const exPass = exCookies.find(c => c.name === 'ipb_pass_hash' && isValidVal(c.value));
+    const hasEhLogin = Boolean(ehMember && ehPass);
+    const hasExhLogin = Boolean(exMember && exPass);
+
+    if (!hasEhLogin) {
+        return { isLoggedIn: hasExhLogin, hasEhLogin, hasExhLogin };
+    }
 
     const oneYearFromNow = Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60;
 
@@ -214,6 +241,8 @@ async function syncEhAuthCookiesToExh(storeId) {
             }
         }
     }
+
+    return { isLoggedIn: true, hasEhLogin: true, hasExhLogin: true };
 }
 
 // --- 事件監聽器 ---
@@ -272,6 +301,27 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
         if (url.pathname.startsWith('/tag/')) {
             const tag = decodeURIComponent(url.pathname.substring(5)).replace(/\+/g, ' ');
             await addTag(tag);
+        }
+    } else if (info.menuItemId === CONTEXT_MENU_BLOCK_TAG_ID && info.linkUrl) {
+        try {
+            const url = new URL(info.linkUrl);
+            if (url.pathname.startsWith('/tag/')) {
+                const tag = decodeURIComponent(url.pathname.substring(5)).replace(/\+/g, ' ').trim();
+                if (tag) {
+                    const data = await browser.storage.local.get({ [BLOCKED_TAGS_KEY]: [] });
+                    const blockedTags = data[BLOCKED_TAGS_KEY];
+                    if (!blockedTags.includes(tag)) {
+                        blockedTags.push(tag);
+                        await browser.storage.local.set({ [BLOCKED_TAGS_KEY]: blockedTags });
+                        console.log(`[BG] 已封鎖標籤: ${tag}`);
+                    }
+                    if (tab?.id) {
+                        browser.tabs.sendMessage(tab.id, { type: 'tag_blocked', tag }).catch(() => {});
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('[BG] 封鎖標籤失敗:', error);
         }
     } else if (info.menuItemId === CONTEXT_MENU_BLOCK_UPLOADER_ID && info.linkUrl) {
         try {
@@ -343,17 +393,43 @@ function cleanupGalleryCache() {
 
 setInterval(cleanupGalleryCache, 5 * 60 * 1000);
 
-// --- 歷史紀錄處理函式 ---
+/**
+ * 從畫廊網址中提取圖庫 ID (gid)
+ * @param {string} url - 畫廊網址
+ * @returns {string|null}
+ */
+function extractGalleryIdFromUrl(url) {
+    if (!url) return null;
+    const match = String(url).match(/\/g\/(\d+)\//);
+    return match ? match[1] : null;
+}
+
+// --- 歷史紀錄與閱讀進度處理函式 ---
 async function addToHistory(item) {
     try {
         const settings = await browser.storage.local.get({
             [HISTORY_STORAGE_KEY]: [],
+            [READING_PROGRESS_KEY]: {},
         });
         let history = settings[HISTORY_STORAGE_KEY];
+        const progressMap = settings[READING_PROGRESS_KEY] || {};
         const maxHistoryCount = settingsCache.maxHistoryCount;
+
+        const existingItem = history.find(h => h.url === item.url);
+        const gid = extractGalleryIdFromUrl(item.url);
+        const savedProgress = gid ? progressMap[gid] : null;
+
+        const mergedItem = {
+            ...existingItem,
+            ...item,
+            galleryId: gid || existingItem?.galleryId || null,
+            lastReadPage: item.lastReadPage ?? savedProgress?.currentPage ?? existingItem?.lastReadPage ?? null,
+            totalPages: item.totalPages ?? savedProgress?.totalPages ?? existingItem?.totalPages ?? null,
+            lastPageUrl: item.lastPageUrl ?? savedProgress?.lastPageUrl ?? existingItem?.lastPageUrl ?? null,
+        };
         
         history = history.filter(h => h.url !== item.url);
-        history.unshift(item);
+        history.unshift(mergedItem);
         
         if (history.length > maxHistoryCount) {
             history = history.slice(0, maxHistoryCount);
@@ -367,10 +443,84 @@ async function addToHistory(item) {
     }
 }
 
+/**
+ * 更新指定圖庫的閱讀進度，並同步更新歷史紀錄中的進度資訊
+ * @param {object} progress - 包含 galleryId, currentPage, totalPages, lastPageUrl, galleryUrl
+ */
+async function updateReadingProgress(progress) {
+    try {
+        const { galleryId, currentPage, totalPages, lastPageUrl, galleryUrl } = progress || {};
+        if (!galleryId || !currentPage) return { success: false };
+
+        const data = await browser.storage.local.get({
+            [READING_PROGRESS_KEY]: {},
+            [HISTORY_STORAGE_KEY]: [],
+        });
+        const progressMap = data[READING_PROGRESS_KEY] || {};
+        const history = data[HISTORY_STORAGE_KEY] || [];
+
+        progressMap[galleryId] = {
+            currentPage: Number(currentPage),
+            totalPages: Number(totalPages) || progressMap[galleryId]?.totalPages || null,
+            lastPageUrl: lastPageUrl || progressMap[galleryId]?.lastPageUrl || null,
+            galleryUrl: galleryUrl || progressMap[galleryId]?.galleryUrl || null,
+            updatedAt: Date.now(),
+        };
+
+        // 限制儲存上限，避免無限膨脹
+        const keys = Object.keys(progressMap);
+        if (keys.length > MAX_READING_PROGRESS_ITEMS) {
+            keys.sort((a, b) => (progressMap[a]?.updatedAt || 0) - (progressMap[b]?.updatedAt || 0));
+            const excess = keys.length - MAX_READING_PROGRESS_ITEMS;
+            for (let i = 0; i < excess; i++) {
+                delete progressMap[keys[i]];
+            }
+        }
+
+        let historyUpdated = false;
+        for (const item of history) {
+            const itemGid = item.galleryId || extractGalleryIdFromUrl(item.url);
+            if (String(itemGid) === String(galleryId)) {
+                item.galleryId = String(galleryId);
+                item.lastReadPage = Number(currentPage);
+                if (totalPages) item.totalPages = Number(totalPages);
+                if (lastPageUrl) item.lastPageUrl = lastPageUrl;
+                historyUpdated = true;
+                break;
+            }
+        }
+
+        const toSave = { [READING_PROGRESS_KEY]: progressMap };
+        if (historyUpdated) {
+            toSave[HISTORY_STORAGE_KEY] = history;
+        }
+        await browser.storage.local.set(toSave);
+        return { success: true };
+    } catch (error) {
+        console.error('[BG] 更新閱讀進度時發生錯誤:', error);
+        return { success: false };
+    }
+}
+
 async function getHistory() {
     try {
-        const data = await browser.storage.local.get({ [HISTORY_STORAGE_KEY]: [] });
-        return { history: data[HISTORY_STORAGE_KEY] };
+        const data = await browser.storage.local.get({
+            [HISTORY_STORAGE_KEY]: [],
+            [READING_PROGRESS_KEY]: {},
+        });
+        const history = data[HISTORY_STORAGE_KEY] || [];
+        const progressMap = data[READING_PROGRESS_KEY] || {};
+
+        // 附加最新閱讀進度
+        for (const item of history) {
+            const gid = item.galleryId || extractGalleryIdFromUrl(item.url);
+            if (gid && progressMap[gid]) {
+                item.lastReadPage = progressMap[gid].currentPage ?? item.lastReadPage;
+                item.totalPages = progressMap[gid].totalPages ?? item.totalPages;
+                item.lastPageUrl = progressMap[gid].lastPageUrl ?? item.lastPageUrl;
+            }
+        }
+        return { history };
     } catch (error) {
         console.error('[BG] 讀取歷史紀錄時發生錯誤:', error);
         return { history: [] };
@@ -379,8 +529,8 @@ async function getHistory() {
 
 async function clearHistory() {
     try {
-        await browser.storage.local.remove(HISTORY_STORAGE_KEY);
-        console.log('[BG] 已清除所有歷史紀錄。');
+        await browser.storage.local.remove([HISTORY_STORAGE_KEY, READING_PROGRESS_KEY]);
+        console.log('[BG] 已清除所有歷史紀錄與閱讀進度。');
         return { success: true };
     } catch (error) {
         console.error('[BG] 清除歷史紀錄時發生錯誤:', error);
@@ -524,6 +674,27 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
         case 'add_to_history':
             return await addToHistory(message.item);
 
+        case 'update_reading_progress':
+            return await updateReadingProgress(message.progress || message);
+
+        case 'get_reading_progress': {
+            const data = await browser.storage.local.get({ [READING_PROGRESS_KEY]: {} });
+            const progressMap = data[READING_PROGRESS_KEY] || {};
+            if (message.targetGalleryId) {
+                return { progress: progressMap[message.targetGalleryId] || null };
+            }
+            return { progressMap };
+        }
+
+        case 'batch_update_reading_progress': {
+            const incoming = message.progressMap || {};
+            const data = await browser.storage.local.get({ [READING_PROGRESS_KEY]: {} });
+            const progressMap = data[READING_PROGRESS_KEY] || {};
+            Object.assign(progressMap, incoming);
+            await browser.storage.local.set({ [READING_PROGRESS_KEY]: progressMap });
+            return { success: true };
+        }
+
         case 'get_history':
             return await getHistory();
 
@@ -628,9 +799,45 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
             }
             return { success: true };
         }
-        case 'sync_auth_cookies': {
-            await syncEhAuthCookiesToExh(sender?.tab?.cookieStoreId);
+        case 'get_blocked_tags': {
+            const data = await browser.storage.local.get({ [BLOCKED_TAGS_KEY]: [] });
+            return { blockedTags: data[BLOCKED_TAGS_KEY] };
+        }
+        case 'add_blocked_tag': {
+            const data = await browser.storage.local.get({ [BLOCKED_TAGS_KEY]: [] });
+            let blockedTags = data[BLOCKED_TAGS_KEY];
+            if (message.tag && !blockedTags.includes(message.tag)) {
+                blockedTags.push(message.tag);
+                await browser.storage.local.set({ [BLOCKED_TAGS_KEY]: blockedTags });
+            }
             return { success: true };
+        }
+        case 'remove_blocked_tag': {
+            const data = await browser.storage.local.get({ [BLOCKED_TAGS_KEY]: [] });
+            let blockedTags = data[BLOCKED_TAGS_KEY];
+            blockedTags = blockedTags.filter(t => t !== message.tag);
+            await browser.storage.local.set({ [BLOCKED_TAGS_KEY]: blockedTags });
+            return { success: true };
+        }
+        case 'batch_update_blocked_tags': {
+            const data = await browser.storage.local.get({ [BLOCKED_TAGS_KEY]: [] });
+            let blockedTags = data[BLOCKED_TAGS_KEY];
+            let changed = false;
+            for (const tag of (message.tagsToAdd || [])) {
+                if (tag && !blockedTags.includes(tag)) {
+                    blockedTags.push(tag);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                await browser.storage.local.set({ [BLOCKED_TAGS_KEY]: blockedTags });
+            }
+            return { success: true };
+        }
+        case 'sync_auth_cookies': {
+            const targetStoreId = message.storeId || sender?.tab?.cookieStoreId;
+            const authStatus = await syncEhAuthCookiesToExh(targetStoreId);
+            return { success: true, ...authStatus };
         }
     }
 });

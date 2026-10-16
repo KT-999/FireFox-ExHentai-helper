@@ -46,12 +46,26 @@ export const renderHistory = async () => {
         timeDiv.textContent = formatTimestamp24h(item.timestamp);
         bottomRow.appendChild(timeDiv);
 
+        const badgesWrapper = document.createElement('div');
+        badgesWrapper.className = 'history-item-badges';
+
+        if (item.lastReadPage) {
+            const progBadge = document.createElement('span');
+            progBadge.className = 'history-item-progress';
+            const totalText = item.totalPages ? `/${item.totalPages}` : '';
+            progBadge.textContent = `📖 ${item.lastReadPage}${totalText}p`;
+            progBadge.title = `上次閱讀至第 ${item.lastReadPage} 頁`;
+            badgesWrapper.appendChild(progBadge);
+        }
+
         if (item.language) {
             const langDiv = document.createElement('div');
             langDiv.className = 'history-item-language';
             langDiv.textContent = item.language;
-            bottomRow.appendChild(langDiv);
+            badgesWrapper.appendChild(langDiv);
         }
+
+        bottomRow.appendChild(badgesWrapper);
 
         infoDiv.appendChild(titleDiv);
         infoDiv.appendChild(bottomRow);
@@ -59,13 +73,24 @@ export const renderHistory = async () => {
         a.appendChild(img);
         a.appendChild(infoDiv);
 
+        itemWrapper.appendChild(a);
+
+        if (item.lastPageUrl) {
+            const resumeBtn = document.createElement('a');
+            resumeBtn.className = 'history-item-resume-btn';
+            resumeBtn.href = item.lastPageUrl;
+            resumeBtn.target = '_blank';
+            resumeBtn.textContent = '續讀';
+            resumeBtn.title = `繼續閱讀 (第 ${item.lastReadPage || 1} 頁)`;
+            itemWrapper.appendChild(resumeBtn);
+        }
+
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'history-item-delete-btn';
         deleteBtn.textContent = '×';
         deleteBtn.title = '刪除此筆紀錄';
         deleteBtn.dataset.url = item.url;
 
-        itemWrapper.appendChild(a);
         itemWrapper.appendChild(deleteBtn);
         fragment.appendChild(itemWrapper);
     }

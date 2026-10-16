@@ -7,12 +7,15 @@
  * - 重構：將單一項目從列表轉換為網格的邏輯提取到獨立函式中，以供重複使用。
  */
 import { fetchAndParsePage } from './utils.js';
-import { isUploaderBlocked } from './uploader_blocker.js';
+import { isUploaderBlocked, isTagBlocked } from './uploader_blocker.js';
 
 let isLoadingNextPage = false;
 let nextPageUrl = null;
 let intersectionObserver = null;
 const translationMap = new Map();
+const savedTagSet = new Set();
+const readingProgressMap = new Map();
+let currentLoadedPageNumber = 1;
 let hasInitializedGridView = false;
 let isGridViewActive = false;
 
@@ -40,6 +43,7 @@ function buildGridViewCSS(columns) {
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
         }
         .exh-grid-thumbnail-link {
+            position: relative;
             display: block;
             aspect-ratio: 3 / 4;
             overflow: hidden;
@@ -53,6 +57,25 @@ function buildGridViewCSS(columns) {
         }
         .exh-grid-item:hover .exh-grid-thumbnail-link img {
             transform: scale(1.05);
+        }
+        .exh-grid-progress-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(20, 20, 20, 0.85);
+            color: #ffd700;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 7px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 215, 0, 0.45);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            z-index: 2;
+            pointer-events: none;
+        }
+        .exh-grid-progress-badge.exh-completed {
+            color: #67c23a;
+            border-color: rgba(103, 194, 58, 0.5);
         }
         .exh-grid-info {
             padding: 10px;
@@ -148,12 +171,36 @@ function buildGridViewCSS(columns) {
             border-radius: 3px;
             margin: 2px;
         }
+        .exh-overlay-tags .gt.exh-saved-tag {
+            background-color: #5c4b1b;
+            border: 1px solid #ffd700;
+            color: #fff8dc;
+            font-weight: bold;
+        }
         .ir {
             display: inline-block;
             width: 80px;
             height: 16px;
             vertical-align: middle;
             background: url(https://s.exhentai.org/img/ir.png) no-repeat;
+        }
+        .exh-grid-page-divider {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 8px 0;
+            color: #aaa;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .exh-grid-page-divider::before,
+        .exh-grid-page-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.15);
         }
         .exh-grid-loader {
             grid-column: 1 / -1; /* Span all columns */
@@ -189,9 +236,21 @@ function createGridItemFromRow(row) {
         const uploaderLink = row.querySelector('a[href*="/uploader/"]');
         const uploaderName = uploaderLink ? uploaderLink.textContent.trim() : '';
 
-        // 針對無窮下拉載入的新 row，需重新判斷是否封鎖
+        // 針對無窮下拉載入的新 row，需重新判斷是否封鎖上傳者
         if (uploaderName && isUploaderBlocked(uploaderName)) {
             return null;
+        }
+
+        const tagElements = row.querySelectorAll('.gt, .gtl');
+        const rowTags = [];
+        for (const tagNode of tagElements) {
+            const tagTitle = tagNode.getAttribute('title');
+            if (tagTitle) {
+                rowTags.push(tagTitle);
+                if (isTagBlocked(tagTitle)) {
+                    return null;
+                }
+            }
         }
 
         // 相容 Compact (gl*c)、Minimal (gl*m)、Extended (gl*e) 與 Thumbnail (gl*t) 四種模式
@@ -202,7 +261,6 @@ function createGridItemFromRow(row) {
         const ratingDiv = row.querySelector('.ir');
         const pagesDiv = row.querySelector('.gl4c div:last-child') ||
             Array.from(row.querySelectorAll('.gl3e div, .gl5t div, .glhide div')).find(d => /\d+\s*pages/i.test(d.textContent));
-        const tagElements = row.querySelectorAll('.gt, .gtl');
         const dateDiv = row.querySelector('div[id^="posted_"]');
         const langTagDiv = row.querySelector('[title^="language:"]');
 
@@ -213,6 +271,9 @@ function createGridItemFromRow(row) {
         gridItem.href = linkA.href;
         if (uploaderName) {
             gridItem.dataset.uploader = uploaderName;
+        }
+        if (rowTags.length > 0) {
+            gridItem.dataset.tags = JSON.stringify(rowTags);
         }
 
         const imgSrc = thumbImg.getAttribute('data-src') || thumbImg.src;
@@ -228,6 +289,27 @@ function createGridItemFromRow(row) {
         img.alt = titleDiv.textContent;
         img.loading = 'lazy';
         thumbnailLink.appendChild(img);
+
+        // 若該畫廊有閱讀進度紀錄，於縮圖右上角顯示進度徽章
+        const gidMatch = linkA.href.match(/\/g\/(\d+)\//);
+        const galleryId = gidMatch ? gidMatch[1] : null;
+        if (galleryId && readingProgressMap.has(galleryId)) {
+            const prog = readingProgressMap.get(galleryId);
+            if (prog && prog.lastReadPage) {
+                const badge = document.createElement('div');
+                badge.className = 'exh-grid-progress-badge';
+                if (prog.totalPages > 0 && prog.lastReadPage >= prog.totalPages) {
+                    badge.classList.add('exh-completed');
+                    badge.textContent = `✓ 已讀 (${prog.totalPages}p)`;
+                } else {
+                    badge.textContent = prog.totalPages
+                        ? `📖 ${prog.lastReadPage}/${prog.totalPages}`
+                        : `📖 P.${prog.lastReadPage}`;
+                }
+                thumbnailLink.appendChild(badge);
+            }
+        }
+
         gridItem.appendChild(thumbnailLink);
 
         const infoDiv = document.createElement('div');
@@ -306,6 +388,10 @@ function createGridItemFromRow(row) {
                         clonedTag.textContent = displayValue;
                     }
                 }
+                if (originalTag && savedTagSet.has(originalTag)) {
+                    clonedTag.classList.add('exh-saved-tag');
+                    clonedTag.textContent = `★ ${clonedTag.textContent}`;
+                }
                 overlayTags.appendChild(clonedTag);
             });
             overlayDiv.appendChild(overlayTags);
@@ -333,6 +419,14 @@ async function loadNextPage() {
 
         const gridContainer = document.querySelector('.exh-grid-view');
         const newRows = doc.querySelectorAll('.itg tbody > tr, .itg > div[class^="gl1"]');
+        if (newRows.length > 0 && gridContainer) {
+            currentLoadedPageNumber += 1;
+            const divider = document.createElement('div');
+            divider.className = 'exh-grid-page-divider';
+            divider.textContent = `第 ${currentLoadedPageNumber} 頁`;
+            gridContainer.appendChild(divider);
+        }
+
         newRows.forEach(row => {
             const gridItem = createGridItemFromRow(row);
             if (gridItem) {
@@ -387,6 +481,20 @@ function setupInfiniteScroll() {
     intersectionObserver.observe(loader);
 }
 
+/**
+ * 取得底部分頁列元素（保留頂部分頁列方便跳頁）
+ * @returns {HTMLElement|null}
+ */
+function getBottomPaginator() {
+    const ptb = document.querySelector('.ptb');
+    if (ptb) return ptb;
+    const searchNavs = document.querySelectorAll('.searchnav');
+    if (searchNavs.length > 1) {
+        return searchNavs[searchNavs.length - 1];
+    }
+    return null;
+}
+
 async function transformToGridView() {
     const originalTable = document.querySelector('.itg');
     if (!originalTable || document.querySelector('.exh-grid-view')) return;
@@ -395,13 +503,26 @@ async function transformToGridView() {
     injectGridViewCSS();
 
     translationMap.clear();
-    const { tags: savedTags } = await browser.runtime.sendMessage({ type: 'get_saved_tags' });
-    if (savedTags && savedTags.length > 0) {
-        for (const tag of savedTags) {
-            if (tag.original !== tag.display) {
-                translationMap.set(tag.original, tag.display);
-            }
+    savedTagSet.clear();
+    readingProgressMap.clear();
+    currentLoadedPageNumber = 1;
+
+    const [savedTagsRes, progressRes] = await Promise.all([
+        browser.runtime.sendMessage({ type: 'get_saved_tags' }).catch(() => ({ tags: [] })),
+        browser.runtime.sendMessage({ type: 'get_reading_progress' }).catch(() => ({ progressMap: {} }))
+    ]);
+
+    const savedTags = savedTagsRes?.tags || [];
+    for (const tag of savedTags) {
+        savedTagSet.add(tag.original);
+        if (tag.original !== tag.display) {
+            translationMap.set(tag.original, tag.display);
         }
+    }
+
+    const progressObj = progressRes?.progressMap || {};
+    for (const [gid, prog] of Object.entries(progressObj)) {
+        readingProgressMap.set(gid, prog);
     }
 
     const gridContainer = document.createElement('div');
@@ -421,12 +542,12 @@ async function transformToGridView() {
 
     originalTable.style.display = 'none';
 
-    const pagenator = document.querySelector('.ptt, .searchnav');
-    if (pagenator) {
-        if (!pagenator.dataset.exhGridOriginalDisplay) {
-            pagenator.dataset.exhGridOriginalDisplay = pagenator.style.display || '';
+    const bottomPagenator = getBottomPaginator();
+    if (bottomPagenator) {
+        if (!bottomPagenator.dataset.exhGridOriginalDisplay) {
+            bottomPagenator.dataset.exhGridOriginalDisplay = bottomPagenator.style.display || '';
         }
-        pagenator.style.display = 'none';
+        bottomPagenator.style.display = 'none';
     }
 
     originalTable.parentElement.insertBefore(gridContainer, originalTable);
@@ -459,7 +580,7 @@ export function disableGridView() {
     const gridContainer = document.querySelector('.exh-grid-view');
     const loader = document.getElementById('exh-grid-loader');
     const originalTable = document.querySelector('.itg');
-    const pagenator = document.querySelector('.ptt, .searchnav');
+    const bottomPagenator = getBottomPaginator();
 
     if (intersectionObserver) {
         intersectionObserver.disconnect();
@@ -474,9 +595,9 @@ export function disableGridView() {
         originalTable.style.display = originalTable.dataset.exhGridOriginalDisplay || '';
         delete originalTable.dataset.exhGridOriginalDisplay;
     }
-    if (pagenator) {
-        pagenator.style.display = pagenator.dataset.exhGridOriginalDisplay || '';
-        delete pagenator.dataset.exhGridOriginalDisplay;
+    if (bottomPagenator) {
+        bottomPagenator.style.display = bottomPagenator.dataset.exhGridOriginalDisplay || '';
+        delete bottomPagenator.dataset.exhGridOriginalDisplay;
     }
     isGridViewActive = false;
 }
@@ -498,6 +619,21 @@ browser.runtime.onMessage.addListener((message) => {
         gridItems.forEach(item => {
             if (item.dataset.uploader === uploaderName) {
                 item.remove();
+            }
+        });
+    } else if (message.type === 'tag_blocked') {
+        const blockedTag = message.tag;
+        if (!blockedTag) return;
+
+        const gridItems = document.querySelectorAll('.exh-grid-item[data-tags]');
+        gridItems.forEach(item => {
+            try {
+                const tags = JSON.parse(item.dataset.tags || '[]');
+                if (tags.includes(blockedTag)) {
+                    item.remove();
+                }
+            } catch (e) {
+                // ignore JSON parse error
             }
         });
     }

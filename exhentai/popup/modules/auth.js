@@ -72,23 +72,27 @@ const isValidAuthCookieValue = (name, value) => {
 };
 
 /**
- * 檢查指定 cookieStoreId 的登入狀態，並自動將 e-hentai.org 的登入憑證同步至 exhentai.org
+ * 檢查指定 cookieStoreId 的登入狀態，並委派背景腳本將 e-hentai.org 的登入憑證同步至 exhentai.org
  * @param {string|null} storeId - Cookie 儲存區 ID
  * @returns {Promise<boolean>} 是否已登入
  */
 const checkAndSyncStoreAuth = async (storeId) => {
+    try {
+        const res = await browser.runtime.sendMessage({
+            type: 'sync_auth_cookies',
+            storeId: storeId || undefined
+        });
+        if (res && typeof res.isLoggedIn === 'boolean') {
+            return res.isLoggedIn;
+        }
+    } catch (_) {
+        // 背景訊息失敗時退回本地檢查
+    }
+
     const queryBase = storeId ? { storeId } : {};
     const ehCookies = await getCookiesSafe({ ...queryBase, domain: 'e-hentai.org' });
     const exhCookies = await getCookiesSafe({ ...queryBase, domain: 'exhentai.org' });
 
-    // 1. 清理 exhentai.org 上殘留的無效 Cookie (例如未登入造訪時產生的 ipb_member_id=0 或 igneous=mystery)
-    for (const c of exhCookies) {
-        if ((c.name === 'ipb_member_id' || c.name === 'ipb_pass_hash' || c.name === 'igneous') && !isValidAuthCookieValue(c.name, c.value)) {
-            await removeCookieSafe(c);
-        }
-    }
-
-    // 2. 從兩個網域中找出有效的認證 Cookie（優先採用有效值）
     const validEhMap = new Map();
     for (const c of ehCookies) {
         if (SYNC_COOKIE_NAMES.includes(c.name) && isValidAuthCookieValue(c.name, c.value)) {
@@ -105,45 +109,6 @@ const checkAndSyncStoreAuth = async (storeId) => {
 
     const hasEhLogin = validEhMap.has('ipb_member_id') && validEhMap.has('ipb_pass_hash');
     const hasExhLogin = validExhMap.has('ipb_member_id') && validExhMap.has('ipb_pass_hash');
-
-    // 3. 若已在 e-hentai.org (或 forums.e-hentai.org) 登入，自動同步缺失或過期的 Cookie 到 .exhentai.org
-    if (hasEhLogin) {
-        for (const name of SYNC_COOKIE_NAMES) {
-            const ehCookie = validEhMap.get(name);
-            const exhCookie = validExhMap.get(name);
-            if (ehCookie && (!exhCookie || exhCookie.value !== ehCookie.value)) {
-                const setDetails = {
-                    url: EXHENTAI_URL,
-                    name: ehCookie.name,
-                    value: ehCookie.value,
-                    domain: '.exhentai.org',
-                    path: '/',
-                    secure: true,
-                    sameSite: ehCookie.sameSite || 'lax',
-                };
-                if (ehCookie.expirationDate) {
-                    setDetails.expirationDate = ehCookie.expirationDate;
-                } else {
-                    // 若原 Cookie 為 Session Cookie，給予 1 年有效期避免重開瀏覽器即掉登入
-                    setDetails.expirationDate = Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60;
-                }
-                if (storeId) {
-                    setDetails.storeId = storeId;
-                }
-                if (ehCookie.firstPartyDomain) {
-                    setDetails.firstPartyDomain = ehCookie.firstPartyDomain;
-                }
-                try {
-                    await browser.cookies.set(setDetails);
-                } catch (_) {
-                    // 若因 firstPartyDomain 失敗，移除該屬性後重試
-                    delete setDetails.firstPartyDomain;
-                    await browser.cookies.set(setDetails).catch(() => {});
-                }
-            }
-        }
-    }
-
     return hasExhLogin || hasEhLogin;
 };
 

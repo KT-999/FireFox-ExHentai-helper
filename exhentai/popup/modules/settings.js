@@ -4,15 +4,30 @@ import { applyTheme, getMessage } from './ui.js';
 let statusTimeout;
 
 const toggleReaderModeSettings = (mode) => {
+    const isHorizontal = mode === 'horizontal';
+    const isCustomReader = mode === 'horizontal' || mode === 'vertical';
+    const doublePageCheckbox = document.getElementById('double-page-mode');
+    const isDoublePage = doublePageCheckbox ? doublePageCheckbox.checked : false;
+
+    const fitRow = document.getElementById('fit-to-window')?.parentElement;
+    if (fitRow) {
+        fitRow.style.display = isCustomReader ? 'flex' : 'none';
+    }
+
     const horizontalSettings = [
-        document.getElementById('preload-count').parentElement,
-        document.getElementById('fit-to-window').parentElement,
-        document.getElementById('hide-preview-bar').parentElement,
-    ];
-    if (mode === 'horizontal') {
-        horizontalSettings.forEach(el => el.style.display = 'flex');
-    } else {
-        horizontalSettings.forEach(el => el.style.display = 'none');
+        document.getElementById('preload-count')?.parentElement,
+        document.getElementById('hide-preview-bar')?.parentElement,
+        document.getElementById('double-page-mode')?.parentElement,
+        document.getElementById('reverse-reading-direction')?.parentElement,
+    ].filter(Boolean);
+
+    horizontalSettings.forEach(el => {
+        el.style.display = isHorizontal ? 'flex' : 'none';
+    });
+
+    const coverSingleSetting = document.getElementById('double-page-cover-setting');
+    if (coverSingleSetting) {
+        coverSingleSetting.style.display = (isHorizontal && isDoublePage) ? 'flex' : 'none';
     }
 };
 
@@ -53,8 +68,9 @@ const handleSettingChange = async (event) => {
     if (key === 'enableGridView') {
         document.getElementById('grid-columns-setting').style.display = value ? 'flex' : 'none';
     }
-    if (key === 'readerMode') {
-        toggleReaderModeSettings(value);
+    if (key === 'readerMode' || key === 'doublePageMode') {
+        const currentMode = document.getElementById('reader-mode')?.value || 'horizontal';
+        toggleReaderModeSettings(currentMode);
     }
     if (key === 'themeMode') {
         applyTheme(value);
@@ -87,6 +103,9 @@ const loadSettings = async () => {
         maxHistoryCount: 200,
         fitToWindow: true,
         hidePreviewBar: false,
+        doublePageMode: false,
+        doublePageCoverSingle: true,
+        reverseReadingDirection: false,
         themeMode: 'system',
         uiLanguage: 'auto'
     });

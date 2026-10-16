@@ -3,7 +3,7 @@ import { loadLocaleMessages, applyTheme, getMessage } from './modules/ui.js';
 import { initAuth } from './modules/auth.js';
 import { initSettings } from './modules/settings.js';
 import { initHistory, renderHistory } from './modules/history.js';
-import { initBookmarks, renderSavedTags } from './modules/bookmarks.js';
+import { initBookmarks, renderSavedTags, renderBlockedUploaders, renderBlockedTags } from './modules/bookmarks.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -41,6 +41,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // 更新可能尚未設定的提示文字
                     document.getElementById('tag-search-input').placeholder = getMessage('searchTagsPlaceholder');
                     renderSavedTags();
+                    renderBlockedUploaders();
+                    renderBlockedTags();
                 }
             });
         });
@@ -54,6 +56,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (activeTab === 'bookmarks') {
                 document.getElementById('tag-search-input').placeholder = getMessage('searchTagsPlaceholder');
                 renderSavedTags();
+                renderBlockedUploaders();
+                renderBlockedTags();
             }
         });
 

@@ -375,5 +375,37 @@
   "unblockButton": {
     "message": "解除封鎖",
     "description": "Button to unblock an uploader."
+  },
+  "doublePageMode": {
+    "message": "雙頁併排模式 (翻頁模式)：",
+    "description": "雙頁併排閱讀模式的設定標籤。"
+  },
+  "doublePageCoverSingle": {
+    "message": "首頁單頁顯示 (封面模式)：",
+    "description": "雙頁模式下第一頁單頁顯示的設定標籤。"
+  },
+  "reverseReadingDirection": {
+    "message": "日漫右開模式 (由右至左)：",
+    "description": "日漫右開翻頁與排列方向的設定標籤。"
+  },
+  "contextMenuBlockTag": {
+    "message": "封鎖此標籤",
+    "description": "右鍵選單封鎖標籤的選項。"
+  },
+  "blockedTagsHeader": {
+    "message": "被封鎖的標籤",
+    "description": "被封鎖標籤清單的標題。"
+  },
+  "blockedTagsEmpty": {
+    "message": "無被封鎖的標籤。",
+    "description": "被封鎖標籤清單為空時的提示。"
+  },
+  "downloadBackupButton": {
+    "message": "下載備份檔 (.json)",
+    "description": "下載 JSON 備份檔案的按鈕。"
+  },
+  "selectBackupFileButton": {
+    "message": "選擇備份檔 (.json)",
+    "description": "選擇本地 JSON 備份檔案進行匯入的按鈕。"
   }
 }

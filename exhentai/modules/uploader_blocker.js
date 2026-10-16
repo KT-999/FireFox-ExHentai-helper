@@ -1,29 +1,56 @@
 /**
- * 獨立的上傳者封鎖模組
+ * 獨立的上傳者與標籤封鎖模組
  * - 在所有的列表視圖 (Compact, Extended, Minimal, Thumbnail) 中生效
- * - 透過 `a[href*="/uploader/"]` 尋找上傳者並隱藏該項目
+ * - 透過 `a[href*="/uploader/"]` 尋找上傳者，或透過 `.gt[title], .gtl[title]` 比對封鎖標籤並隱藏該項目
  */
 
 let currentBlockedUploaders = [];
+let currentBlockedTags = [];
 let hasInitializedBlocker = false;
+
+/**
+ * 檢查列表項目是否包含被封鎖的上傳者或被封鎖的標籤
+ * @param {Element} itemContainer - 列表項目容器 (tr 或 div.gl1*)
+ * @param {Set<string>} blockedUploadersSet - 封鎖的上傳者集合
+ * @param {Set<string>} blockedTagsSet - 封鎖的標籤集合
+ * @returns {boolean}
+ */
+function shouldBlockContainer(itemContainer, blockedUploadersSet, blockedTagsSet) {
+    if (!itemContainer) return false;
+
+    if (blockedUploadersSet.size > 0) {
+        const uploaderLink = itemContainer.querySelector('a[href*="/uploader/"]');
+        const uploaderName = uploaderLink ? uploaderLink.textContent.trim() : '';
+        if (uploaderName && blockedUploadersSet.has(uploaderName)) {
+            return true;
+        }
+    }
+
+    if (blockedTagsSet.size > 0) {
+        const tagNodes = itemContainer.querySelectorAll('.gt[title], .gtl[title]');
+        for (const tagNode of tagNodes) {
+            const rawTitle = (tagNode.getAttribute('title') || '').trim();
+            if (rawTitle && blockedTagsSet.has(rawTitle)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 /**
  * 根據封鎖清單隱藏或還原列表項目
  * @param {string[]} uploaders - 完整封鎖上傳者名單
+ * @param {string[]} [tags] - 完整封鎖標籤名單
  */
-function syncBlockingState(uploaders) {
-    if (!uploaders || !Array.isArray(uploaders)) return;
-    const blockedSet = new Set(uploaders);
+function syncBlockingState(uploaders = currentBlockedUploaders, tags = currentBlockedTags) {
+    const blockedUploadersSet = new Set(Array.isArray(uploaders) ? uploaders : []);
+    const blockedTagsSet = new Set(Array.isArray(tags) ? tags : []);
 
-    const uploaderLinks = document.querySelectorAll('.itg a[href*="/uploader/"]');
-    uploaderLinks.forEach(link => {
-        const uploaderName = link.textContent.trim();
-        if (!uploaderName) return;
-
-        const itemContainer = link.closest('tr') || link.closest('div[class^="gl1"]');
-        if (!itemContainer) return;
-
-        if (blockedSet.has(uploaderName)) {
+    const rows = document.querySelectorAll('.itg tbody > tr, .itg > div[class^="gl1"]');
+    rows.forEach(itemContainer => {
+        if (shouldBlockContainer(itemContainer, blockedUploadersSet, blockedTagsSet)) {
             if (itemContainer.dataset.exhBlockerOriginalDisplay === undefined) {
                 itemContainer.dataset.exhBlockerOriginalDisplay = itemContainer.style.display || '';
             }
@@ -35,23 +62,17 @@ function syncBlockingState(uploaders) {
     });
 }
 
-function applyBlocking(uploaders) {
-    if (!uploaders || !Array.isArray(uploaders)) return;
-    const blockedSet = new Set(uploaders);
+function applyBlocking(uploaders = currentBlockedUploaders, tags = currentBlockedTags) {
+    const blockedUploadersSet = new Set(Array.isArray(uploaders) ? uploaders : []);
+    const blockedTagsSet = new Set(Array.isArray(tags) ? tags : []);
 
-    // 尋找所有的列表項目，.itg 是最外層的表格或容器
-    const uploaderLinks = document.querySelectorAll('.itg a[href*="/uploader/"]');
-    uploaderLinks.forEach(link => {
-        const uploaderName = link.textContent.trim();
-        if (uploaderName && blockedSet.has(uploaderName)) {
-            // 找出最接近的項目容器 (如果是表格則為 tr，如果是縮圖則可能是 div.gl1t 或其他包含 gl1 的 div)
-            const itemContainer = link.closest('tr') || link.closest('div[class^="gl1"]');
-            if (itemContainer) {
-                if (itemContainer.dataset.exhBlockerOriginalDisplay === undefined) {
-                    itemContainer.dataset.exhBlockerOriginalDisplay = itemContainer.style.display || '';
-                }
-                itemContainer.style.display = 'none';
+    const rows = document.querySelectorAll('.itg tbody > tr, .itg > div[class^="gl1"]');
+    rows.forEach(itemContainer => {
+        if (shouldBlockContainer(itemContainer, blockedUploadersSet, blockedTagsSet)) {
+            if (itemContainer.dataset.exhBlockerOriginalDisplay === undefined) {
+                itemContainer.dataset.exhBlockerOriginalDisplay = itemContainer.style.display || '';
             }
+            itemContainer.style.display = 'none';
         }
     });
 }
@@ -75,7 +96,17 @@ function handleUploaderBlockedMessage(message) {
         }
 
         // 即時隱藏
-        applyBlocking([uploaderName]);
+        applyBlocking(currentBlockedUploaders, currentBlockedTags);
+    } else if (message.type === 'tag_blocked') {
+        const tagName = message.tag;
+        if (!tagName) return;
+
+        if (!currentBlockedTags.includes(tagName)) {
+            currentBlockedTags.push(tagName);
+        }
+
+        // 即時隱藏
+        applyBlocking(currentBlockedUploaders, currentBlockedTags);
     } else if (message.type === 'get_uploader_by_url') {
         let link = null;
         try {
@@ -138,20 +169,29 @@ function handleUploaderBlockedMessage(message) {
 export async function initUploaderBlocker() {
     if (hasInitializedBlocker) return;
 
-    console.log('[ExH] 啟動獨立的上傳者封鎖模組...');
+    console.log('[ExH] 啟動上傳者與標籤封鎖模組...');
 
     try {
-        const { uploaders } = await browser.runtime.sendMessage({ type: 'get_blocked_uploaders' }).catch(() => ({ uploaders: [] }));
+        const [{ uploaders }, { blockedTags }] = await Promise.all([
+            browser.runtime.sendMessage({ type: 'get_blocked_uploaders' }).catch(() => ({ uploaders: [] })),
+            browser.runtime.sendMessage({ type: 'get_blocked_tags' }).catch(() => ({ blockedTags: [] })),
+        ]);
         currentBlockedUploaders = uploaders || [];
+        currentBlockedTags = blockedTags || [];
 
-        applyBlocking(currentBlockedUploaders);
+        applyBlocking(currentBlockedUploaders, currentBlockedTags);
 
         // 監聽即時封鎖事件與儲存區變更（例如在 Popup 解除封鎖時同步還原）
         browser.runtime.onMessage.addListener(handleUploaderBlockedMessage);
         browser.storage.onChanged.addListener((changes, area) => {
-            if (area === 'local' && changes.blockedUploaders) {
-                currentBlockedUploaders = changes.blockedUploaders.newValue || [];
-                syncBlockingState(currentBlockedUploaders);
+            if (area === 'local' && (changes.blockedUploaders || changes.blockedTags)) {
+                if (changes.blockedUploaders) {
+                    currentBlockedUploaders = changes.blockedUploaders.newValue || [];
+                }
+                if (changes.blockedTags) {
+                    currentBlockedTags = changes.blockedTags.newValue || [];
+                }
+                syncBlockingState(currentBlockedUploaders, currentBlockedTags);
             }
         });
 
@@ -163,9 +203,18 @@ export async function initUploaderBlocker() {
 
 // 暴露出一個重新套用的方法，以便於 AJAX 翻頁後呼叫 (例如搭配無限滾動)
 export function reapplyBlocking() {
-    applyBlocking(currentBlockedUploaders);
+    applyBlocking(currentBlockedUploaders, currentBlockedTags);
 }
 
 export function isUploaderBlocked(uploaderName) {
     return currentBlockedUploaders.includes(uploaderName);
+}
+
+/**
+ * 檢查單一標籤是否位於封鎖清單中
+ * @param {string} tagName - 原始標籤名稱 (例如 "female:ntr")
+ * @returns {boolean}
+ */
+export function isTagBlocked(tagName) {
+    return currentBlockedTags.includes(tagName);
 }

@@ -14,22 +14,27 @@
         <div class="io-grid">
             <!-- 匯出區塊 -->
             <div class="io-card">
-                <h4 data-i18n="exportHeader">匯出書籤</h4>
-                <p class="description" data-i18n="exportDescription">點擊下方按鈕以產生所有已儲存的書籤資料。您可以將其備份，或在其他裝置上匯入。</p>
+                <h4 data-i18n="exportHeader">匯出書籤與設定</h4>
+                <p class="description" data-i18n="exportDescription">點擊下方按鈕以產生所有已儲存的書籤、封鎖清單、閱讀進度與擴充功能設定。您可以複製 JSON 或直接下載備份檔案。</p>
                 <textarea id="export-textarea" readonly placeholder="點擊「產生匯出資料」..."></textarea>
                 <div class="button-group">
                     <button id="generate-export-button" class="btn-secondary" data-i18n="generateExportButton">產生匯出資料</button>
                     <button id="copy-clipboard-button" data-i18n="copyToClipboardButton">複製到剪貼簿</button>
+                    <button id="download-export-button" data-i18n="downloadBackupButton">下載備份檔 (.json)</button>
                 </div>
                 <p id="export-status" class="status"></p>
             </div>
 
             <!-- 匯入區塊 -->
             <div class="io-card">
-                <h4 data-i18n="importHeader">匯入書籤</h4>
-                <p class="description" data-i18n="importDescription">將先前匯出的 JSON 資料貼到下方欄位中，然後點擊「匯入」按鈕。這將會新增不存在的書籤，並更新已存在的書籤名稱。</p>
+                <h4 data-i18n="importHeader">匯入書籤與設定</h4>
+                <p class="description" data-i18n="importDescription">將先前匯出的 JSON 資料貼到下方欄位中點擊「匯入」，或直接選擇備份的 .json 檔案匯入。</p>
                 <textarea id="import-textarea" data-i18n-placeholder="importPlaceholder"></textarea>
-                <button id="import-submit-button" data-i18n="importSubmitButton">匯入</button>
+                <div class="button-group">
+                    <button id="import-file-button" class="btn-secondary" data-i18n="selectBackupFileButton">選擇備份檔 (.json)</button>
+                    <button id="import-submit-button" data-i18n="importSubmitButton">匯入</button>
+                </div>
+                <input type="file" id="import-file-input" accept=".json,application/json" style="display: none;">
                 <p id="import-status" class="status"></p>
             </div>
         </div>

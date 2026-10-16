@@ -325,6 +325,13 @@ hr {
     padding-right: 5px;
 }
 
+#blocked-uploaders-list, #blocked-tags-list {
+    max-height: 160px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 5px;
+}
+
 .history-item {
     display: flex;
     align-items: center;
@@ -379,6 +386,30 @@ hr {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 6px;
+}
+
+.history-item-badges {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.history-item-progress {
+    font-size: 10px;
+    font-weight: bold;
+    color: #92400e;
+    background-color: #fef3c7;
+    border: 1px solid #f59e0b;
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+html.dark-theme .history-item-progress {
+    color: #fcd34d;
+    background-color: #78350f;
+    border-color: #d97706;
 }
 
 .history-item-language {
@@ -397,9 +428,28 @@ hr {
     text-align: left;
 }
 
-#history-list .empty-message, #tag-list .empty-message {
+.history-item-resume-btn {
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #4a90e2;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+}
+
+.history-item-resume-btn:hover {
+    background-color: #357abd;
+}
+
+#history-list .empty-message,
+#tag-list .empty-message,
+#blocked-uploaders-list .empty-message,
+#blocked-tags-list .empty-message {
     color: var(--label-color);
-    padding: 40px 0;
+    padding: 20px 0;
     text-align: center;
 }
 

@@ -103,21 +103,34 @@ async function ensurePagesAreIndexed(galleryId, pagesToCheck, baseGalleryUrl) {
         if (!window.navigationContext.indexedPages) {
             window.navigationContext.indexedPages = new Map();
         }
+        if (!window.navigationContext.preloadedPages) {
+            window.navigationContext.preloadedPages = new Map();
+        }
         const localIndexed = window.navigationContext.indexedPages;
+        const localPreloaded = window.navigationContext.preloadedPages;
 
-        // 1. 先向背景腳本同步已知的分頁資料（防止背景腳本休眠重啟後遺失已索引分頁）
+        // 1. 先向背景腳本同步已知的分頁資料与圖片快取（防止背景腳本休眠重啟後遺失已索引分頁）
         const bgData = await browser.runtime.sendMessage({ type: 'get_gallery_data', galleryId }).catch(() => null);
-        if (bgData && bgData.pages) {
-            for (const [k, v] of Object.entries(bgData.pages)) {
-                const pageNum = Number(k);
-                if (!localIndexed.has(pageNum) && Array.isArray(v) && v.length > 0) {
-                    localIndexed.set(pageNum, v);
+        if (bgData) {
+            if (bgData.pages) {
+                for (const [k, v] of Object.entries(bgData.pages)) {
+                    const pageNum = Number(k);
+                    if (!localIndexed.has(pageNum) && Array.isArray(v) && v.length > 0) {
+                        localIndexed.set(pageNum, v);
+                    }
+                }
+                // 若背景腳本因為 MV3 休眠遺失了部分本地已有的分頁，補寫回背景腳本
+                for (const [pageNum, links] of localIndexed.entries()) {
+                    if (!bgData.pages[pageNum]) {
+                        await browser.runtime.sendMessage({ type: 'set_page_links', galleryId, pageIndex: pageNum, links }).catch(() => {});
+                    }
                 }
             }
-            // 若背景腳本因為 MV3 休眠遺失了部分本地已有的分頁，補寫回背景腳本
-            for (const [pageNum, links] of localIndexed.entries()) {
-                if (!bgData.pages[pageNum]) {
-                    await browser.runtime.sendMessage({ type: 'set_page_links', galleryId, pageIndex: pageNum, links }).catch(() => {});
+            if (bgData.preloadedPages) {
+                for (const [pageUrl, imgUrl] of Object.entries(bgData.preloadedPages)) {
+                    if (!localPreloaded.has(pageUrl) && imgUrl) {
+                        localPreloaded.set(pageUrl, imgUrl);
+                    }
                 }
             }
         }
@@ -169,7 +182,7 @@ export function applyTheme(theme) {
         style.textContent = `
             html, body { background-color: #1a1a1a !important; color: #e0e0e0 !important; }
             #exh-viewer { background-color: #1a1a1a !important; }
-            #exh-status-bar { background-color: rgba(10, 10, 10, 0.9) !important; border-top-color: #333 !important; color: #e0e0e0 !important; }
+            #exh-status-bar, #exh-vertical-bar { background-color: rgba(10, 10, 10, 0.9) !important; border-color: #333 !important; color: #e0e0e0 !important; }
             #exh-status-previews img { border-color: #555 !important; }
             a { color: #8cb4ff !important; }
             .exh-vertical-placeholder { background-color: #2a2a2a; border: 1px dashed #444; color: #888; }
@@ -201,7 +214,7 @@ async function runReader() {
         }
 
         // 等待關鍵元素載入
-        await waitForElement('#img', 5000);
+        const initialImgEl = await waitForElement('#img', 5000);
         const backToGalleryLink = await waitForElement('.sb a[href*="/g/"]', 10000);
 
         // *** 修改重點 2：權威性寫入 ***
@@ -221,6 +234,21 @@ async function runReader() {
         window.navigationContext.galleryId = galleryId;
         if (!window.navigationContext.indexedPages) {
             window.navigationContext.indexedPages = new Map();
+        }
+        if (!window.navigationContext.preloadedPages) {
+            window.navigationContext.preloadedPages = new Map();
+        }
+
+        // 將當前頁面已載入的 #img 直接寫入本地與背景快取，省去第一次載入當前頁的重抓請求
+        if (initialImgEl && initialImgEl.src) {
+            const cleanCurrentUrl = window.location.origin + window.location.pathname;
+            window.navigationContext.preloadedPages.set(cleanCurrentUrl, initialImgEl.src);
+            browser.runtime.sendMessage({
+                type: 'cache_image',
+                galleryId,
+                pageUrl: cleanCurrentUrl,
+                imageUrl: initialImgEl.src
+            }).catch(() => {});
         }
 
         const currentGalleryPageIndex = parseInt(galleryUrl.searchParams.get('p') || '0', 10);

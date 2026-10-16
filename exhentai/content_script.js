@@ -49,6 +49,7 @@ window.navigationContext = window.navigationContext || {
     totalImageCount: 0,
     imagesPerIndexPage: 40,
     isIndexingPage: null,
+    preloadedPages: new Map(),
 };
 
 window.scriptSettings = window.scriptSettings || {
@@ -57,6 +58,9 @@ window.scriptSettings = window.scriptSettings || {
     readerMode: 'horizontal',
     fitToWindow: true,
     hidePreviewBar: false,
+    doublePageMode: false,
+    doublePageCoverSingle: true,
+    reverseReadingDirection: false,
     preloadCount: 3,
     themeMode: 'system',
     keyPrev: 'a',

@@ -65,6 +65,129 @@ function findIndexInMasterList(masterList, urlToFind) {
 }
 
 
+/**
+ * 判斷指定索引在雙頁模式下是否應以單頁顯示（例如首頁封面或最後一頁落單）
+ * @param {number} index - 目標槽位索引
+ * @returns {boolean}
+ */
+function isSinglePageSlot(index) {
+    if (!window.scriptSettings.doublePageMode) return true;
+    if (window.scriptSettings.doublePageCoverSingle && index === 0) return true;
+    if (index >= window.navigationContext.masterList.length - 1) return true;
+    return false;
+}
+
+/**
+ * 從本地或背景快取取得指定頁面的圖片網址，若未快取則抓取並寫入快取
+ * @param {string} galleryId - 圖庫 ID
+ * @param {string} pageUrl - 頁面網址
+ * @returns {Promise<string|null>}
+ */
+async function resolvePageImageUrl(galleryId, pageUrl) {
+    if (!pageUrl) return null;
+    if (!window.navigationContext.preloadedPages) {
+        window.navigationContext.preloadedPages = new Map();
+    }
+    if (window.navigationContext.preloadedPages.has(pageUrl)) {
+        return window.navigationContext.preloadedPages.get(pageUrl);
+    }
+
+    const bgResp = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId }).catch(() => null);
+    if (bgResp?.preloadedPages) {
+        for (const [k, v] of Object.entries(bgResp.preloadedPages)) {
+            window.navigationContext.preloadedPages.set(k, v);
+        }
+        if (bgResp.preloadedPages[pageUrl]) {
+            return bgResp.preloadedPages[pageUrl];
+        }
+    }
+
+    const doc = await fetchAndParsePage(pageUrl);
+    const imgUrl = doc?.getElementById('img')?.src || null;
+    if (imgUrl) {
+        window.navigationContext.preloadedPages.set(pageUrl, imgUrl);
+        browser.runtime.sendMessage({ type: 'cache_image', galleryId, pageUrl, imageUrl: imgUrl }).catch(() => {});
+    }
+    return imgUrl;
+}
+
+/**
+ * 將當前閱讀頁碼記錄至背景儲存區，供歷史紀錄與繼續閱讀功能使用
+ * @param {number} index - 當前圖片索引
+ */
+function recordCurrentProgress(index) {
+    const { masterList, galleryId, totalImageCount, cleanBaseGalleryUrl, backToGalleryUrl } = window.navigationContext;
+    if (!galleryId || !masterList || index < 0 || index >= masterList.length) return;
+    let effectiveIndex = index;
+    if (window.scriptSettings.doublePageMode && !isSinglePageSlot(index) && index + 1 < masterList.length) {
+        effectiveIndex = index + 1;
+    }
+    const pageUrl = masterList[effectiveIndex] || masterList[index];
+    const pageNum = parseInt(getPageNumberFromUrl(pageUrl) || '', 10);
+    if (!Number.isFinite(pageNum)) return;
+    browser.runtime.sendMessage({
+        type: 'update_reading_progress',
+        galleryId,
+        currentPage: pageNum,
+        totalPages: totalImageCount || masterList.length,
+        lastPageUrl: masterList[index],
+        galleryUrl: cleanBaseGalleryUrl || backToGalleryUrl,
+    }).catch(() => {});
+}
+
+/**
+ * 同步狀態列上的雙頁模式與閱讀方向切換按鈕狀態
+ */
+function updateControlButtonsUI() {
+    const doubleBtn = document.getElementById('exh-double-page-btn');
+    const coverBtn = document.getElementById('exh-cover-single-btn');
+    const dirBtn = document.getElementById('exh-direction-btn');
+
+    const isDouble = Boolean(window.scriptSettings.doublePageMode);
+    const isCoverSingle = Boolean(window.scriptSettings.doublePageCoverSingle);
+    const isRtl = Boolean(window.scriptSettings.reverseReadingDirection);
+
+    if (doubleBtn) {
+        doubleBtn.textContent = isDouble ? '2P 雙頁' : '1P 單頁';
+        doubleBtn.classList.toggle('active', isDouble);
+    }
+    if (coverBtn) {
+        coverBtn.style.display = isDouble ? 'inline-flex' : 'none';
+        coverBtn.textContent = isCoverSingle ? '封面單頁:開' : '封面單頁:關';
+        coverBtn.classList.toggle('active', isCoverSingle);
+    }
+    if (dirBtn) {
+        dirBtn.textContent = isRtl ? '⬅ 右開 (RTL)' : '左開 (LTR) ➡';
+        dirBtn.classList.toggle('active', isRtl);
+    }
+}
+
+/**
+ * 當雙頁模式或閱讀方向變更時，重新渲染目前與鄰近槽位
+ */
+function refreshCurrentSlotsLayout() {
+    updateControlButtonsUI();
+    const { currentIndex, masterList } = window.navigationContext;
+    if (currentIndex < 0 || !masterList.length) return;
+
+    const slider = document.getElementById('exh-image-slider');
+    if (slider) {
+        const indicesToRefresh = [currentIndex - 2, currentIndex - 1, currentIndex, currentIndex + 1, currentIndex + 2];
+        for (const idx of indicesToRefresh) {
+            if (idx >= 0 && idx < slider.children.length) {
+                const slot = slider.children[idx];
+                delete slot.dataset.loading;
+                delete slot.dataset.renderedMode;
+                slot.innerHTML = '';
+            }
+        }
+    }
+    loadSlot(currentIndex - 1);
+    loadSlot(currentIndex);
+    loadSlot(currentIndex + 1);
+    updateStatusText();
+}
+
 function createStatusDisplay() {
     if (document.getElementById('exh-status-bar')) return;
     const statusBar = document.createElement('div');
@@ -89,6 +212,39 @@ function createStatusDisplay() {
     nextPreviewArea.id = 'exh-next-previews';
     nextPreviewArea.style.cssText = `display: flex; gap: 8px; align-items: center; overflow-x: auto; flex: 1; justify-content: flex-start;`;
 
+    // 雙頁併排切換按鈕
+    const doublePageBtn = document.createElement('button');
+    doublePageBtn.id = 'exh-double-page-btn';
+    doublePageBtn.className = 'exh-status-ctrl-btn';
+    doublePageBtn.title = '切換單頁 / 雙頁併排模式';
+    doublePageBtn.addEventListener('click', async () => {
+        window.scriptSettings.doublePageMode = !window.scriptSettings.doublePageMode;
+        await browser.storage.local.set({ doublePageMode: window.scriptSettings.doublePageMode });
+        refreshCurrentSlotsLayout();
+    });
+
+    // 首頁封面單頁切換按鈕
+    const coverSingleBtn = document.createElement('button');
+    coverSingleBtn.id = 'exh-cover-single-btn';
+    coverSingleBtn.className = 'exh-status-ctrl-btn';
+    coverSingleBtn.title = '切換雙頁模式下第 1 頁是否單獨顯示為封面';
+    coverSingleBtn.addEventListener('click', async () => {
+        window.scriptSettings.doublePageCoverSingle = !window.scriptSettings.doublePageCoverSingle;
+        await browser.storage.local.set({ doublePageCoverSingle: window.scriptSettings.doublePageCoverSingle });
+        refreshCurrentSlotsLayout();
+    });
+
+    // 閱讀方向 (LTR / RTL) 切換按鈕
+    const directionBtn = document.createElement('button');
+    directionBtn.id = 'exh-direction-btn';
+    directionBtn.className = 'exh-status-ctrl-btn';
+    directionBtn.title = '切換翻頁與雙頁排列方向（左開 LTR / 日漫右開 RTL）';
+    directionBtn.addEventListener('click', async () => {
+        window.scriptSettings.reverseReadingDirection = !window.scriptSettings.reverseReadingDirection;
+        await browser.storage.local.set({ reverseReadingDirection: window.scriptSettings.reverseReadingDirection });
+        refreshCurrentSlotsLayout();
+    });
+
     // *** 新增：建立返回目錄按鈕 ***
     const exitButtonLink = document.createElement('a');
     exitButtonLink.id = 'exh-exit-btn';
@@ -106,6 +262,9 @@ function createStatusDisplay() {
     const centralContainer = document.createElement('div');
     centralContainer.id = 'exh-central-container';
     centralContainer.appendChild(statusText);
+    centralContainer.appendChild(doublePageBtn);
+    centralContainer.appendChild(coverSingleBtn);
+    centralContainer.appendChild(directionBtn);
     centralContainer.appendChild(exitButtonLink);
 
     const styleSheet = document.createElement("style");
@@ -116,7 +275,20 @@ function createStatusDisplay() {
         #exh-prev-previews::-webkit-scrollbar-thumb, #exh-next-previews::-webkit-scrollbar-thumb { background: #666; border-radius: 2px; }
         .exh-bar-hidden { display: none !important; }
         /* *** 新增：中央容器與按鈕的樣式 *** */
-        #exh-central-container { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
+        #exh-central-container { display: flex; align-items: center; gap: 8px; flex-shrink: 0; padding: 0 10px; }
+        .exh-status-ctrl-btn {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ccc;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .exh-status-ctrl-btn:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+        .exh-status-ctrl-btn.active { background: #2563eb; border-color: #3b82f6; color: #fff; }
         #exh-exit-btn { display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: 5px; transition: background-color 0.2s; }
         #exh-exit-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
     `;
@@ -126,6 +298,7 @@ function createStatusDisplay() {
     statusBar.appendChild(centralContainer);
     statusBar.appendChild(nextPreviewArea);
     document.body.appendChild(statusBar);
+    updateControlButtonsUI();
 }
 
 function addPreviewImageToStatus(imageUrl, pageUrl, direction, updateId) {
@@ -153,14 +326,22 @@ function updateStatusText() {
     const statusText = document.getElementById('exh-status-text');
     if (!statusText) return;
 
-    // --- 修改：使用新的輔助函式 ---
-    const currentUrl = window.navigationContext.masterList[window.navigationContext.currentIndex];
+    const { masterList, currentIndex, totalImageCount } = window.navigationContext;
+    const currentUrl = masterList[currentIndex];
     const currentPage = getPageNumberFromUrl(currentUrl) || '?';
 
-    const totalPages = window.navigationContext.totalImageCount || '?';
-    const pageInfo = `${currentPage} / ${totalPages}`;
-    const prevCount = document.getElementById('exh-prev-previews').children.length;
-    const nextCount = document.getElementById('exh-next-previews').children.length;
+    let pageLabel = `${currentPage}`;
+    if (window.scriptSettings.doublePageMode && !isSinglePageSlot(currentIndex) && currentIndex + 1 < masterList.length) {
+        const secondPage = getPageNumberFromUrl(masterList[currentIndex + 1]);
+        if (secondPage) {
+            pageLabel = `${currentPage}-${secondPage}`;
+        }
+    }
+
+    const totalPages = totalImageCount || '?';
+    const pageInfo = `${pageLabel} / ${totalPages}`;
+    const prevCount = document.getElementById('exh-prev-previews')?.children.length || 0;
+    const nextCount = document.getElementById('exh-next-previews')?.children.length || 0;
     let preloadInfo = '';
     if (prevCount > 0 || nextCount > 0) {
         const loadedParts = [];
@@ -182,11 +363,12 @@ function applyFitStyle() {
     if (window.scriptSettings.fitToWindow) {
         style.textContent = `
             #exh-viewer { height: calc(100vh - ${barHeight}px) !important; }
-            .exh-image-slot { align-items: flex-start !important; }`;
+            .exh-image-slot { align-items: center !important; }`;
     } else {
         style.textContent = `
-            #exh-viewer { height: 100vh !important; }
-            .exh-image-slot { align-items: center !important; }`;
+            #exh-viewer { height: 100vh !important; overflow-y: auto !important; }
+            .exh-image-slot { align-items: flex-start !important; }
+            .exh-image-slot img { max-height: none !important; }`;
     }
     document.head.appendChild(style);
 }
@@ -276,32 +458,60 @@ function setSlotError(slot, message, pageIdentifier) {
     slot.appendChild(errorDiv);
 }
 
+/**
+ * 建立具備破圖智慧重載能力的圖片元素
+ * @param {string} galleryId - 圖庫 ID
+ * @param {string} pageUrl - 圖片頁面網址
+ * @param {string} imgUrl - 圖片網址
+ * @param {HTMLElement} slot - 所屬槽位
+ * @returns {HTMLImageElement}
+ */
+function createReaderImageElement(galleryId, pageUrl, imgUrl, slot) {
+    const img = document.createElement('img');
+    img.onerror = async () => {
+        console.warn(`[ExH] 圖片 ${imgUrl} 載入失敗。正在嘗試智慧重載...`);
+        img.onerror = null;
+        const success = await reloadImageFromAPI(pageUrl, img);
+        if (!success) {
+            if (slot.children.length <= 1) {
+                setSlotError(slot, '圖片重載失敗', pageUrl.split('/').pop());
+            }
+        } else {
+            window.navigationContext.preloadedPages?.set(pageUrl, img.src);
+            await browser.runtime.sendMessage({ type: 'cache_image', galleryId, pageUrl, imageUrl: img.src }).catch(() => {});
+        }
+    };
+    img.src = imgUrl;
+    return img;
+}
+
 async function loadSlot(index) {
-    if (index < 0 || index >= window.navigationContext.masterList.length) return;
+    const { masterList, galleryId } = window.navigationContext;
+    if (index < 0 || index >= masterList.length) return;
     const slider = document.getElementById('exh-image-slider');
     if (!slider || !slider.children[index]) return;
     const slot = slider.children[index];
-    const pageUrl = window.navigationContext.masterList[index];
+    const pageUrl = masterList[index];
     slot.dataset.pageUrl = pageUrl;
-    if (slot.dataset.loading === 'true' || slot.children.length > 0) return;
-    slot.dataset.loading = 'true';
-    const galleryId = window.navigationContext.galleryId;
-    try {
-        let imgUrl = null;
-        // 優先從背景腳本的快取中取得圖片連結，避免重複請求 HTML
-        const { preloadedPages } = await browser.runtime.sendMessage({ type: 'get_all_links', galleryId });
-        if (preloadedPages && preloadedPages[pageUrl]) {
-            imgUrl = preloadedPages[pageUrl];
-        }
 
-        if (!imgUrl) {
-            const doc = await fetchAndParsePage(pageUrl);
-            if (!doc) throw new Error("無法解析頁面文檔。");
-            imgUrl = doc.getElementById('img')?.src;
-            if (imgUrl) {
-                 await browser.runtime.sendMessage({ type: 'cache_image', galleryId, pageUrl, imageUrl: imgUrl });
-            }
-        }
+    const shouldDouble = window.scriptSettings.doublePageMode && !isSinglePageSlot(index) && (index + 1 < masterList.length);
+    const isRtl = Boolean(window.scriptSettings.reverseReadingDirection);
+    const targetModeKey = `${shouldDouble ? '2P' : '1P'}_${isRtl ? 'RTL' : 'LTR'}`;
+
+    slot.classList.toggle('exh-double-slot', shouldDouble);
+    slot.classList.toggle('exh-rtl-slot', shouldDouble && isRtl);
+
+    if (slot.dataset.loading === 'true' || (slot.children.length > 0 && slot.dataset.renderedMode === targetModeKey)) {
+        return;
+    }
+    slot.dataset.loading = 'true';
+
+    try {
+        const primaryUrlPromise = resolvePageImageUrl(galleryId, pageUrl);
+        const secondaryPageUrl = shouldDouble ? masterList[index + 1] : null;
+        const secondaryUrlPromise = secondaryPageUrl ? resolvePageImageUrl(galleryId, secondaryPageUrl) : Promise.resolve(null);
+
+        const [imgUrl, secondImgUrl] = await Promise.all([primaryUrlPromise, secondaryUrlPromise]);
 
         if (!imgUrl) {
             setSlotError(slot, '找不到圖片連結', pageUrl.split('/').pop());
@@ -309,20 +519,16 @@ async function loadSlot(index) {
         }
 
         while (slot.firstChild) slot.removeChild(slot.firstChild);
-        const img = document.createElement('img');
-        img.onerror = async () => {
-            console.warn(`[ExH] 圖片 ${imgUrl} 載入失敗。正在嘗試 API 智慧重載...`);
-            img.onerror = null;
-            const success = await reloadImageFromAPI(pageUrl, img);
-            if (!success) {
-                setSlotError(slot, '圖片重載失敗', pageUrl.split('/').pop());
-            } else {
-                // 重載成功後更新快取，避免其他地方再次讀取到壞掉的網址
-                await browser.runtime.sendMessage({ type: 'cache_image', galleryId, pageUrl, imageUrl: img.src });
-            }
-        };
-        img.src = imgUrl;
-        slot.appendChild(img);
+
+        const primaryImg = createReaderImageElement(galleryId, pageUrl, imgUrl, slot);
+        slot.appendChild(primaryImg);
+
+        if (shouldDouble && secondImgUrl && secondaryPageUrl) {
+            const secondaryImg = createReaderImageElement(galleryId, secondaryPageUrl, secondImgUrl, slot);
+            slot.appendChild(secondaryImg);
+        }
+
+        slot.dataset.renderedMode = targetModeKey;
     } catch (error) {
         console.error(`[ExH] 載入 slot ${index} (${pageUrl}) 時發生嚴重錯誤:`, error);
         setSlotError(slot, '載入時發生錯誤', null);
@@ -333,6 +539,9 @@ async function loadSlot(index) {
 
 async function processLink(pageUrl, direction, preloadedPagesMap, galleryId, updateId) {
     if (window.navigationContext.previewUpdateId !== updateId) return;
+    if (window.navigationContext.preloadedPages?.has(pageUrl)) {
+        preloadedPagesMap.set(pageUrl, window.navigationContext.preloadedPages.get(pageUrl));
+    }
     if (preloadedPagesMap.has(pageUrl)) {
         addPreviewImageToStatus(preloadedPagesMap.get(pageUrl), pageUrl, direction, updateId);
     } else {
@@ -344,6 +553,7 @@ async function processLink(pageUrl, direction, preloadedPagesMap, galleryId, upd
                 const imageUrl = imageElement.src;
                 new Image().src = imageUrl;
                 addPreviewImageToStatus(imageUrl, pageUrl, direction, updateId);
+                window.navigationContext.preloadedPages?.set(pageUrl, imageUrl);
                 await browser.runtime.sendMessage({ type: 'cache_image', galleryId, pageUrl, imageUrl });
             }
         }
@@ -539,12 +749,16 @@ async function navigateTo(targetIndex, targetUrlOverride = null) {
             const slider = document.getElementById('exh-image-slider');
             slider.style.transform = `translateX(-${targetIndex * 100}vw)`;
             proactiveIndexCheck(targetIndex);
+            recordCurrentProgress(targetIndex);
         } else {
             return;
         }
         loadSlot(targetIndex - 1);
         loadSlot(targetIndex);
         loadSlot(targetIndex + 1);
+        if (window.scriptSettings.doublePageMode) {
+            loadSlot(targetIndex + 2);
+        }
         updatePreviewBar();
 
     } catch (error) {
@@ -572,6 +786,9 @@ function handleHorizontalKeyDown(event) {
         return;
     }
     if (key === window.scriptSettings.keyClear) {
+        if (window.navigationContext.preloadedPages) {
+            window.navigationContext.preloadedPages.clear();
+        }
         browser.runtime.sendMessage({ type: 'clear_all_cache' }).then(response => {
             if (response && response.success) {
                 const statusText = document.getElementById('exh-status-text');
@@ -586,10 +803,29 @@ function handleHorizontalKeyDown(event) {
     if (key === 'arrowleft' || key === window.scriptSettings.keyPrev || key === 'arrowright' || key === window.scriptSettings.keyNext) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        if (key === 'arrowleft' || key === window.scriptSettings.keyPrev) {
-            navigateTo(baseIndex - 1);
+
+        const isLeftAction = (key === 'arrowleft' || key === window.scriptSettings.keyPrev);
+        const isRtl = Boolean(window.scriptSettings.reverseReadingDirection);
+        const shouldGoForward = isRtl ? isLeftAction : !isLeftAction;
+
+        if (shouldGoForward) {
+            const forwardStep = (window.scriptSettings.doublePageMode && !isSinglePageSlot(baseIndex)) ? 2 : 1;
+            const nextTarget = Math.min(window.navigationContext.masterList.length, baseIndex + forwardStep);
+            // 若在目前已索引的尾端剛好只剩 1 頁但後面還有未索引分頁，則維持 +forwardStep 觸發跨頁索引
+            const effectiveTarget = (baseIndex + forwardStep < window.navigationContext.totalImageCount)
+                ? baseIndex + forwardStep
+                : Math.min(window.navigationContext.masterList.length - 1, nextTarget);
+            navigateTo(effectiveTarget);
         } else {
-            navigateTo(baseIndex + 1);
+            let backwardStep = 1;
+            if (window.scriptSettings.doublePageMode) {
+                if (baseIndex === 1 && window.scriptSettings.doublePageCoverSingle) {
+                    backwardStep = 1;
+                } else {
+                    backwardStep = 2;
+                }
+            }
+            navigateTo(baseIndex - backwardStep);
         }
     }
 }
@@ -624,7 +860,10 @@ function runHorizontalSliderReader() {
         #exh-viewer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; z-index: 10000; }
         #exh-image-slider { display: flex; height: 100%; transition: transform 0.3s ease-in-out; }
         .exh-image-slot { width: 100vw; height: 100%; flex-shrink: 0; display: flex; justify-content: center; align-items: center; }
-        .exh-image-slot img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }`;
+        .exh-image-slot img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+        .exh-image-slot.exh-double-slot { gap: 4px; }
+        .exh-image-slot.exh-double-slot img { max-width: calc(50% - 2px); max-height: 100%; }
+        .exh-image-slot.exh-rtl-slot { flex-direction: row-reverse; }`;
     document.head.appendChild(viewerStyle);
 
     const statusText = document.getElementById('exh-status-text');
@@ -656,7 +895,11 @@ function runHorizontalSliderReader() {
     loadSlot(currentIndex - 1);
     loadSlot(currentIndex);
     loadSlot(currentIndex + 1);
+    if (window.scriptSettings.doublePageMode) {
+        loadSlot(currentIndex + 2);
+    }
     updatePreviewBar();
+    recordCurrentProgress(currentIndex);
 
     setTimeout(() => { slider.style.transition = ''; }, 50);
     applyFitStyle();
@@ -699,21 +942,29 @@ function listenForSettingsChanges() {
         // 處理「圖片適應視窗」的變更
         if (changes.fitToWindow) {
             const newValue = changes.fitToWindow.newValue;
-            // 更新全域設定物件，以確保與快捷鍵狀態同步
             window.scriptSettings.fitToWindow = newValue;
-            // 即時套用視覺變更
             applyFitStyle();
-            console.log(`[ExH] "圖片適應視窗" 設定已變更為: ${newValue}`);
         }
 
         // 處理「隱藏預覽列」的變更
         if (changes.hidePreviewBar) {
             const newValue = changes.hidePreviewBar.newValue;
-            // 更新全域設定物件
             window.scriptSettings.hidePreviewBar = newValue;
-            // 即時套用視覺變更
             setPreviewBarVisibility(newValue);
-            console.log(`[ExH] "隱藏預覽列" 設定已變更為: ${newValue}`);
+        }
+
+        // 處理「雙頁模式 / 封面單頁 / 閱讀方向」的變更
+        if (changes.doublePageMode || changes.doublePageCoverSingle || changes.reverseReadingDirection) {
+            if (changes.doublePageMode !== undefined) {
+                window.scriptSettings.doublePageMode = changes.doublePageMode.newValue;
+            }
+            if (changes.doublePageCoverSingle !== undefined) {
+                window.scriptSettings.doublePageCoverSingle = changes.doublePageCoverSingle.newValue;
+            }
+            if (changes.reverseReadingDirection !== undefined) {
+                window.scriptSettings.reverseReadingDirection = changes.reverseReadingDirection.newValue;
+            }
+            refreshCurrentSlotsLayout();
         }
 
         // 處理「預先載入數量」的變更

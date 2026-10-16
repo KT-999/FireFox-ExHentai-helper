@@ -5,6 +5,7 @@ const tagListContainer = document.getElementById('tag-list');
 const tagFilterSelect = document.getElementById('tag-filter-select');
 const tagSearchInput = document.getElementById('tag-search-input');
 const blockedUploadersListContainer = document.getElementById('blocked-uploaders-list');
+const blockedTagsListContainer = document.getElementById('blocked-tags-list');
 
 
 export const renderSavedTags = async () => {
@@ -149,7 +150,6 @@ export const renderBlockedUploaders = async () => {
         namesWrapper.className = 'tag-item-names';
         const nameText = document.createElement('span');
         nameText.textContent = uploader;
-        nameText.style.color = '#fff';
         namesWrapper.appendChild(nameText);
         item.appendChild(namesWrapper);
 
@@ -166,6 +166,52 @@ export const renderBlockedUploaders = async () => {
         fragment.appendChild(item);
     }
     blockedUploadersListContainer.appendChild(fragment);
+};
+
+/**
+ * 渲染被封鎖的標籤清單
+ */
+export const renderBlockedTags = async () => {
+    if (!blockedTagsListContainer) return;
+    const { blockedTags } = await browser.runtime.sendMessage({ type: 'get_blocked_tags' }).catch(() => ({ blockedTags: [] }));
+    clearElement(blockedTagsListContainer);
+
+    if (!blockedTags || blockedTags.length === 0) {
+        const p = document.createElement('p');
+        p.className = 'empty-message';
+        p.textContent = getMessage("blockedTagsEmpty") || "無被封鎖的標籤。";
+        blockedTagsListContainer.appendChild(p);
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    for (const tag of blockedTags) {
+        const item = document.createElement('div');
+        const type = tag.split(':')[0];
+        const validTypes = ['artist', 'group', 'parody', 'character', 'language', 'female', 'male', 'mixed', 'cosplay', 'reclass'];
+        const colorType = validTypes.includes(type) ? type : 'other';
+        item.className = `tag-item tag-item--${colorType}`;
+
+        const namesWrapper = document.createElement('div');
+        namesWrapper.className = 'tag-item-names';
+        const nameText = document.createElement('span');
+        nameText.textContent = tag;
+        namesWrapper.appendChild(nameText);
+        item.appendChild(namesWrapper);
+
+        const actionsWrapper = document.createElement('div');
+        actionsWrapper.className = 'tag-item-actions';
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'tag-item-btn';
+        deleteBtn.textContent = '×';
+        deleteBtn.title = getMessage("unblockButton") || '解除封鎖';
+        deleteBtn.dataset.blockedTag = tag;
+        actionsWrapper.appendChild(deleteBtn);
+        item.appendChild(actionsWrapper);
+
+        fragment.appendChild(item);
+    }
+    blockedTagsListContainer.appendChild(fragment);
 };
 
 const handleEditTag = (editBtn) => {
@@ -231,6 +277,14 @@ const handleUnblockUploader = async (deleteBtn) => {
     }
 };
 
+const handleUnblockTag = async (deleteBtn) => {
+    const tag = deleteBtn.dataset.blockedTag;
+    if (tag) {
+        await browser.runtime.sendMessage({ type: 'remove_blocked_tag', tag });
+        await renderBlockedTags();
+    }
+};
+
 const handleClearTags = async () => {
     const confirmed = await showConfirmationModal(
         getMessage('confirmClearBookmarksTitle'),
@@ -281,9 +335,20 @@ export const initBookmarks = () => {
         }
     });
 
+    if (blockedTagsListContainer) {
+        blockedTagsListContainer.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.tag-item-btn');
+            if (deleteBtn && deleteBtn.dataset.blockedTag) {
+                e.preventDefault(); e.stopPropagation();
+                handleUnblockTag(deleteBtn);
+            }
+        });
+    }
+
     document.getElementById('manage-io-button').addEventListener('click', openIoPage);
     
     // 初始化渲染
     renderBlockedUploaders();
+    renderBlockedTags();
 };
 

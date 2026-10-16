@@ -65,6 +65,18 @@
                         <input type="checkbox" id="hide-preview-bar" data-setting-key="hidePreviewBar">
                     </div>
                     <div class="setting">
+                        <label for="double-page-mode" data-i18n="doublePageMode">雙頁併排模式 (翻頁模式)：</label>
+                        <input type="checkbox" id="double-page-mode" data-setting-key="doublePageMode">
+                    </div>
+                    <div class="setting" id="double-page-cover-setting">
+                        <label for="double-page-cover-single" data-i18n="doublePageCoverSingle">首頁單頁顯示 (封面模式)：</label>
+                        <input type="checkbox" id="double-page-cover-single" data-setting-key="doublePageCoverSingle">
+                    </div>
+                    <div class="setting">
+                        <label for="reverse-reading-direction" data-i18n="reverseReadingDirection">日漫右開模式 (由右至左)：</label>
+                        <input type="checkbox" id="reverse-reading-direction" data-setting-key="reverseReadingDirection">
+                    </div>
+                    <div class="setting">
                         <label for="theme-mode" data-i18n="themeMode"></label>
                         <select id="theme-mode" data-setting-key="themeMode">
                             <option value="system" data-i18n="themeSystem"></option>
@@ -74,7 +86,7 @@
                     </div>
                     <div class="setting">
                         <label for="ui-language" data-i18n="uiLanguage"></label>
-                        <select id="ui-language" data-setting-key="uiLanguage">
+                        <select id="ui-language" data-i18n="uiLanguage" data-setting-key="uiLanguage">
                             <option value="auto" data-i18n="langSystem"></option>
                             <option value="en" data-i18n="langEN"></option>
                             <option value="zh_TW" data-i18n="langZH_TW"></option>
@@ -141,6 +153,11 @@
                     <h3 data-i18n="blockedUploadersHeader">被隱藏的上傳者</h3>
                 </div>
                 <div id="blocked-uploaders-list"></div>
+                <hr>
+                <div class="bookmarks-header" style="margin-top: 10px;">
+                    <h3 data-i18n="blockedTagsHeader">被封鎖的標籤</h3>
+                </div>
+                <div id="blocked-tags-list"></div>
             </div>
         </div>
     </div>
