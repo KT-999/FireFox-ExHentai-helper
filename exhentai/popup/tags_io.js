@@ -21,11 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const exportObj = {};
 
-        // 匯出所有已儲存標籤（包含尚未自訂翻譯名稱的收藏標籤，避免備份遺失）
+        // 匯出所有已儲存標籤（包含尚未自訂翻譯名稱的收藏標籤，並保留原始鍵值避免底線或無分類標籤失真）
         if (tags && tags.length > 0) {
             tags.forEach(tag => {
                 const key = "tag_" + tag.original.replace(/[:\s]/g, '_').replace(/['"]/g, '');
-                exportObj[key] = { "message": tag.display };
+                exportObj[key] = {
+                    "message": tag.display,
+                    "original": tag.original
+                };
             });
         }
 
@@ -78,15 +81,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const uploadersToAdd = [];
         let hasValidEntries = false;
 
+        const KNOWN_NAMESPACES = new Set([
+            'artist', 'group', 'parody', 'character', 'language',
+            'female', 'male', 'mixed', 'other', 'cosplay', 'reclass', 'temp'
+        ]);
+
         for (const key in parsedJson) {
             if (Object.prototype.hasOwnProperty.call(parsedJson, key)) {
                 if (key.startsWith('tag_')) {
                     hasValidEntries = true;
-                    const keyParts = key.replace(/^tag_/, '').split('_');
-                    const namespace = keyParts.shift();
-                    const tagName = keyParts.join(' ').trim();
-                    const originalTag = `${namespace}:${tagName}`;
-                    const displayMessage = parsedJson[key]?.message || originalTag;
+                    const entry = parsedJson[key];
+                    let originalTag = typeof entry?.original === 'string' ? entry.original.trim() : '';
+
+                    if (!originalTag) {
+                        const keyParts = key.replace(/^tag_/, '').split('_');
+                        if (keyParts.length > 1 && KNOWN_NAMESPACES.has(keyParts[0])) {
+                            const namespace = keyParts.shift();
+                            const tagName = keyParts.join(' ').trim();
+                            originalTag = `${namespace}:${tagName}`;
+                        } else {
+                            originalTag = keyParts.join(' ').trim();
+                        }
+                    }
+
+                    if (!originalTag) continue;
+                    const displayMessage = entry?.message || originalTag;
 
                     if (existingTagsMap.has(originalTag)) {
                         if (existingTagsMap.get(originalTag).display !== displayMessage) {

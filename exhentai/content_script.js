@@ -89,7 +89,7 @@ async function main() {
         return;
     }
     moduleInitState.mainInProgress = true;
-    browser.runtime.sendMessage({ action: 'sync_auth_cookies' }).catch(() => {});
+    browser.runtime.sendMessage({ type: 'sync_auth_cookies' }).catch(() => {});
 
     // 1. 載入設定
     const settings = await browser.storage.local.get(window.scriptSettings);

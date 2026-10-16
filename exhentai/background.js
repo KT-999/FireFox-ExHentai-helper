@@ -422,8 +422,9 @@ async function addTag(tagString) {
 }
 
 // --- 訊息監聽器 ---
-browser.runtime.onMessage.addListener(async (message) => {
-    const { type, galleryId } = message;
+browser.runtime.onMessage.addListener(async (message, sender) => {
+    const type = message?.type || message?.action;
+    const { galleryId } = message || {};
 
     const requiresGalleryId = new Set([
         'get_gallery_data',

@@ -27,8 +27,14 @@
     --tag-other-bg: #e5e7eb;
     --tag-other-text: #4b5563;
     /* --- 新增配色 --- */
+    --tag-female-bg: #fce7f3;
+    --tag-female-text: #db2777;
     --tag-male-bg: #cffafe;
     --tag-male-text: #155e75;
+    --tag-mixed-bg: #e0e7ff;
+    --tag-mixed-text: #4f46e5;
+    --tag-cosplay-bg: #ccfbf1;
+    --tag-cosplay-text: #0d9488;
     --tag-reclass-bg: #fef3c7;
     --tag-reclass-text: #92400e;
 }
@@ -62,8 +68,14 @@ html.dark-theme {
     --tag-other-bg: #374151;
     --tag-other-text: #d1d5db;
     /* --- 新增配色 (深色模式) --- */
+    --tag-female-bg: #831843;
+    --tag-female-text: #f472b6;
     --tag-male-bg: #164e63;
     --tag-male-text: #67e8f9;
+    --tag-mixed-bg: #312e81;
+    --tag-mixed-text: #a5b4fc;
+    --tag-cosplay-bg: #134e4a;
+    --tag-cosplay-text: #5eead4;
     --tag-reclass-bg: #78350f;
     --tag-reclass-text: #fcd34d;
 }
@@ -501,7 +513,10 @@ html.dark-theme .history-item-delete-btn:hover {
 .tag-item--language::before { background-color: var(--tag-language-text); }
 .tag-item--other::before { background-color: var(--tag-other-text); }
 /* --- 新增配色 --- */
+.tag-item--female::before { background-color: var(--tag-female-text); }
 .tag-item--male::before { background-color: var(--tag-male-text); }
+.tag-item--mixed::before { background-color: var(--tag-mixed-text); }
+.tag-item--cosplay::before { background-color: var(--tag-cosplay-text); }
 .tag-item--reclass::before { background-color: var(--tag-reclass-text); }
 
 

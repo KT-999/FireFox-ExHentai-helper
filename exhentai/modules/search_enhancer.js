@@ -92,7 +92,10 @@ function injectCSS() {
         .exh-search-tag--character { background-color: #1e3a8a; color: #93c5fd; }
         .exh-search-tag--language { background-color: #0c4a6e; color: #7dd3fc; }
         .exh-search-tag--other { background-color: #374151; color: #d1d5db; }
+        .exh-search-tag--female { background-color: #831843; color: #f472b6; }
         .exh-search-tag--male { background-color: #164e63; color: #67e8f9; }
+        .exh-search-tag--mixed { background-color: #312e81; color: #a5b4fc; }
+        .exh-search-tag--cosplay { background-color: #134e4a; color: #5eead4; }
         .exh-search-tag--reclass { background-color: #78350f; color: #fcd34d; }
     `;
     const style = document.createElement('style');
@@ -113,7 +116,7 @@ function normalizeTag(tagString) {
     return cleaned;
 }
 
-const VALID_TAG_TYPES = ['artist', 'group', 'parody', 'character', 'language', 'male', 'reclass'];
+const VALID_TAG_TYPES = ['artist', 'group', 'parody', 'character', 'language', 'female', 'male', 'mixed', 'cosplay', 'reclass'];
 
 function getTagColorClass(tagKey) {
     const type = (tagKey || '').split(':')[0];

@@ -83,7 +83,7 @@ const checkAndSyncStoreAuth = async (storeId) => {
 
     // 1. 清理 exhentai.org 上殘留的無效 Cookie (例如未登入造訪時產生的 ipb_member_id=0 或 igneous=mystery)
     for (const c of exhCookies) {
-        if ((c.name === 'ipb_member_id' || c.name === 'ipb_pass_hash') && (!c.value || c.value === '0')) {
+        if ((c.name === 'ipb_member_id' || c.name === 'ipb_pass_hash' || c.name === 'igneous') && !isValidAuthCookieValue(c.name, c.value)) {
             await removeCookieSafe(c);
         }
     }

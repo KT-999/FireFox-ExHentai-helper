@@ -83,7 +83,7 @@ export const renderSavedTags = async () => {
     for (const tag of finalFilteredTags) {
         const tagItem = document.createElement('div');
         const type = tag.original.split(':')[0];
-        const validTypes = ['artist', 'group', 'parody', 'character', 'language', 'male', 'reclass'];
+        const validTypes = ['artist', 'group', 'parody', 'character', 'language', 'female', 'male', 'mixed', 'cosplay', 'reclass'];
         const colorType = validTypes.includes(type) ? type : 'other';
         tagItem.className = `tag-item tag-item--${colorType}`;
         const namesWrapper = document.createElement('div');
@@ -111,6 +111,7 @@ export const renderSavedTags = async () => {
         editBtn.className = 'tag-item-btn';
         editBtn.innerHTML = '&#9998;';
         editBtn.title = '編輯顯示名稱';
+        editBtn.dataset.action = 'edit';
         editBtn.dataset.originalTag = tag.original;
         editBtn.dataset.currentDisplay = tag.display;
         actionsWrapper.appendChild(editBtn);
@@ -118,6 +119,7 @@ export const renderSavedTags = async () => {
         deleteBtn.className = 'tag-item-btn';
         deleteBtn.textContent = '×';
         deleteBtn.title = '刪除此標籤';
+        deleteBtn.dataset.action = 'delete';
         deleteBtn.dataset.originalTag = tag.original;
         actionsWrapper.appendChild(deleteBtn);
         tagItem.appendChild(actionsWrapper);
@@ -259,8 +261,8 @@ export const initBookmarks = () => {
 
     document.getElementById('clear-tags-button').addEventListener('click', handleClearTags);
     tagListContainer.addEventListener('click', (e) => {
-        const editBtn = e.target.closest('.tag-item-btn[title="編輯顯示名稱"]');
-        const deleteBtn = e.target.closest('.tag-item-btn[title="刪除此標籤"]');
+        const editBtn = e.target.closest('.tag-item-btn[data-action="edit"]');
+        const deleteBtn = e.target.closest('.tag-item-btn[data-action="delete"]');
         if (editBtn) {
             e.preventDefault(); e.stopPropagation();
             handleEditTag(editBtn);
