@@ -6,7 +6,9 @@
  * - 新增：在頁面底部增加載入狀態指示器。
  * - 重構：將單一項目從列表轉換為網格的邏輯提取到獨立函式中，以供重複使用。
  */
-import { fetchAndParsePage } from './utils.js';
+import { fetchAndParsePage, getI18nMessages } from './utils.js';
+
+let i18n = {};
 import { isUploaderBlocked, isTagBlocked } from './uploader_blocker.js';
 
 let isLoadingNextPage = false;
@@ -300,7 +302,9 @@ function createGridItemFromRow(row) {
                 badge.className = 'exh-grid-progress-badge';
                 if (prog.totalPages > 0 && prog.lastReadPage >= prog.totalPages) {
                     badge.classList.add('exh-completed');
-                    badge.textContent = `✓ 已讀 (${prog.totalPages}p)`;
+                    badge.textContent = i18n.readCompletedBadge
+                        ? i18n.readCompletedBadge.replace('{total}', prog.totalPages)
+                        : `✓ 已讀 (${prog.totalPages}p)`;
                 } else {
                     badge.textContent = prog.totalPages
                         ? `📖 ${prog.lastReadPage}/${prog.totalPages}`
@@ -409,7 +413,7 @@ async function loadNextPage() {
 
     isLoadingNextPage = true;
     const loader = document.getElementById('exh-grid-loader');
-    if (loader) loader.textContent = '正在載入下一頁...';
+    if (loader) loader.textContent = i18n.gridLoadingNextPage || '正在載入下一頁...';
 
     try {
         const doc = await fetchAndParsePage(nextPageUrl);
@@ -423,7 +427,9 @@ async function loadNextPage() {
             currentLoadedPageNumber += 1;
             const divider = document.createElement('div');
             divider.className = 'exh-grid-page-divider';
-            divider.textContent = `第 ${currentLoadedPageNumber} 頁`;
+            divider.textContent = i18n.gridPageDivider
+                ? i18n.gridPageDivider.replace('{page}', currentLoadedPageNumber)
+                : `第 ${currentLoadedPageNumber} 頁`;
             gridContainer.appendChild(divider);
         }
 
@@ -441,13 +447,13 @@ async function loadNextPage() {
             nextPageUrl = nextLink.href;
         } else {
             nextPageUrl = null;
-            if (loader) loader.textContent = '已載入所有內容。';
+            if (loader) loader.textContent = i18n.gridAllLoaded || '已載入所有內容。';
             if (intersectionObserver) intersectionObserver.disconnect();
         }
 
     } catch (error) {
         console.error('[ExH] 載入下一頁時發生錯誤:', error);
-        if (loader) loader.textContent = '載入失敗，請檢查主控台。';
+        if (loader) loader.textContent = i18n.gridLoadFailed || '載入失敗，請檢查主控台。';
         if (intersectionObserver) intersectionObserver.disconnect();
     } finally {
         isLoadingNextPage = false;
@@ -568,6 +574,9 @@ export async function enableGridView() {
         injectGridViewCSS();
         return;
     }
+    try {
+        i18n = await getI18nMessages('all');
+    } catch (_) {}
     await transformToGridView();
     if (document.querySelector('.exh-grid-view')) {
         isGridViewActive = true;

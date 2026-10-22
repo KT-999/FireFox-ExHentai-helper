@@ -377,16 +377,16 @@
     "description": "Button to unblock an uploader."
   },
   "doublePageMode": {
-    "message": "Modo de doble página (Horizontal):",
-    "description": "Label for double-page spread mode."
+    "message": "Modo página individual / doble (Horizontal):",
+    "description": "Label for single/double-page spread mode."
   },
   "doublePageCoverSingle": {
     "message": "Portada en página individual:",
     "description": "Label for showing the first page as a single cover."
   },
   "reverseReadingDirection": {
-    "message": "Lectura de derecha a izquierda (RTL):",
-    "description": "Label for right-to-left reading direction."
+    "message": "Dirección de lectura Izquierda / Derecha (Manga RTL):",
+    "description": "Label for reading direction (LTR/RTL)."
   },
   "contextMenuBlockTag": {
     "message": "Bloquear esta etiqueta",
@@ -407,5 +407,131 @@
   "selectBackupFileButton": {
     "message": "Seleccionar copia (.json)",
     "description": "Button to select a JSON backup file to import."
+  },
+  "readerBtnSinglePage": {
+    "message": "1P Individual"
+  },
+  "readerBtnDoublePage": {
+    "message": "2P Doble"
+  },
+  "readerTitleToggleDoublePage": {
+    "message": "Alternar modo de página individual / doble"
+  },
+  "readerBtnCoverSingleOn": {
+    "message": "Portada: Sí"
+  },
+  "readerBtnCoverSingleOff": {
+    "message": "Portada: No"
+  },
+  "readerTitleToggleCoverSingle": {
+    "message": "Alternar si la primera página (portada) se muestra individualmente en modo doble"
+  },
+  "readerBtnDirectionRtl": {
+    "message": "⬅ Derecha a Izquierda (RTL)"
+  },
+  "readerBtnDirectionLtr": {
+    "message": "Izquierda a Derecha (LTR) ➡"
+  },
+  "readerTitleToggleDirection": {
+    "message": "Alternar dirección de lectura y páginas (Izquierda a Derecha / Derecha a Izquierda)"
+  },
+  "readerStatusInitializing": {
+    "message": "Inicializando visor..."
+  },
+  "readerStatusLoading": {
+    "message": "Cargando..."
+  },
+  "readerStatusPageNotFound": {
+    "message": "❌ Error: Página no encontrada en el rango de índice actual."
+  },
+  "readerFitWindowOn": {
+    "message": "Ajustar ventana: Sí"
+  },
+  "readerFitWindowOff": {
+    "message": "Tamaño original"
+  },
+  "readerTitleFitToggle": {
+    "message": "Alternar ajuste de imagen ({key})"
+  },
+  "readerIndexingProgress": {
+    "message": "🔍 Indexando página de galería {page}..."
+  },
+  "cacheClearedSuccess": {
+    "message": "✓ ¡Se borró la caché de {count} galerías!"
+  },
+  "resumeReading": {
+    "message": "Continuar leyendo →"
+  },
+  "resumeReadingShort": {
+    "message": "Reanudar"
+  },
+  "resumeReadingTooltip": {
+    "message": "Continuar leyendo (Página {page})"
+  },
+  "lastReadProgress": {
+    "message": "📖 Último progreso: Página {page} / {total}"
+  },
+  "lastReadProgressSingle": {
+    "message": "📖 Último progreso: Página {page}"
+  },
+  "readCompletedBadge": {
+    "message": "✓ Leído ({total}p)"
+  },
+  "gridLoadingNextPage": {
+    "message": "Cargando página siguiente..."
+  },
+  "gridPageDivider": {
+    "message": "Página {page}"
+  },
+  "gridAllLoaded": {
+    "message": "Todo el contenido ha sido cargado."
+  },
+  "gridLoadFailed": {
+    "message": "Error al cargar, verifique la consola."
+  },
+  "uploaderBlockedBtn": {
+    "message": "✓ Bloqueado"
+  },
+  "uploaderUnblockBtnTitle": {
+    "message": "Haga clic para desbloquear este cargador"
+  },
+  "uploaderBlockBtn": {
+    "message": "🚫 Bloquear"
+  },
+  "uploaderBlockBtnTitle": {
+    "message": "Haga clic para bloquear todas las galerías de este cargador"
+  },
+  "editDisplayNameTitle": {
+    "message": "Editar nombre para mostrar"
+  },
+  "deleteTagTitle": {
+    "message": "Eliminar esta etiqueta"
+  },
+  "deleteHistoryItemTitle": {
+    "message": "Eliminar este registro"
+  },
+  "goToTagPageTitle": {
+    "message": "Ir a la página de etiqueta: {tag}"
+  },
+  "exportPlaceholder": {
+    "message": "Haga clic en \"Generar datos de exportación\"..."
+  },
+  "copyFailed": {
+    "message": "❌ ¡Error al copiar!"
+  },
+  "downloadBackupStarted": {
+    "message": "✅ ¡Comenzó la descarga de la copia de seguridad!"
+  },
+  "importErrorReadFile": {
+    "message": "❌ ¡Error al leer el archivo!"
+  },
+  "logoutProgress": {
+    "message": "Cerrando sesión..."
+  },
+  "logoutSuccess": {
+    "message": "✅ ¡Sesión cerrada con éxito!"
+  },
+  "logoutFailed": {
+    "message": "❌ ¡Error al cerrar sesión!"
   }
 }

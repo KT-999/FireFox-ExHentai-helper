@@ -377,16 +377,16 @@
     "description": "Button to unblock an uploader."
   },
   "doublePageMode": {
-    "message": "Doppelseiten-Modus (Horizontal):",
-    "description": "Label for double-page spread mode."
+    "message": "Einzel- / Doppelseiten-Modus (Horizontal):",
+    "description": "Label for single/double-page spread mode."
   },
   "doublePageCoverSingle": {
     "message": "Titelseite einzeln anzeigen:",
     "description": "Label for showing the first page as a single cover."
   },
   "reverseReadingDirection": {
-    "message": "Leserichtung Rechts-nach-Links (RTL):",
-    "description": "Label for right-to-left reading direction."
+    "message": "Leserichtung Links / Rechts (Manga RTL):",
+    "description": "Label for reading direction (LTR/RTL)."
   },
   "contextMenuBlockTag": {
     "message": "Diesen Tag blockieren",
@@ -407,5 +407,131 @@
   "selectBackupFileButton": {
     "message": "Backup auswählen (.json)",
     "description": "Button to select a JSON backup file to import."
+  },
+  "readerBtnSinglePage": {
+    "message": "1P Einzelseite"
+  },
+  "readerBtnDoublePage": {
+    "message": "2P Doppelseite"
+  },
+  "readerTitleToggleDoublePage": {
+    "message": "Zwischen Einzel- und Doppelseiten-Modus umschalten"
+  },
+  "readerBtnCoverSingleOn": {
+    "message": "Titelseite: Ein"
+  },
+  "readerBtnCoverSingleOff": {
+    "message": "Titelseite: Aus"
+  },
+  "readerTitleToggleCoverSingle": {
+    "message": "Umschalten, ob die 1. Seite (Cover) im Doppelseitenmodus einzeln angezeigt wird"
+  },
+  "readerBtnDirectionRtl": {
+    "message": "⬅ Rechts-nach-Links (RTL)"
+  },
+  "readerBtnDirectionLtr": {
+    "message": "Links-nach-Rechts (LTR) ➡"
+  },
+  "readerTitleToggleDirection": {
+    "message": "Leserichtung umschalten (Links-nach-Rechts LTR / Rechts-nach-Links RTL)"
+  },
+  "readerStatusInitializing": {
+    "message": "Reader wird initialisiert..."
+  },
+  "readerStatusLoading": {
+    "message": "Laden..."
+  },
+  "readerStatusPageNotFound": {
+    "message": "❌ Fehler: Seite im aktuellen Indexbereich nicht gefunden."
+  },
+  "readerFitWindowOn": {
+    "message": "An Fenster anpassen: Ein"
+  },
+  "readerFitWindowOff": {
+    "message": "Originalgröße"
+  },
+  "readerTitleFitToggle": {
+    "message": "Bildskalierung umschalten ({key})"
+  },
+  "readerIndexingProgress": {
+    "message": "🔍 Galerie-Seite {page} wird indiziert..."
+  },
+  "cacheClearedSuccess": {
+    "message": "✓ Cache für {count} Galerien geleert!"
+  },
+  "resumeReading": {
+    "message": "Weiterlesen →"
+  },
+  "resumeReadingShort": {
+    "message": "Fortsetzen"
+  },
+  "resumeReadingTooltip": {
+    "message": "Weiterlesen (Seite {page})"
+  },
+  "lastReadProgress": {
+    "message": "📖 Letzter Lesefortschritt: Seite {page} / {total}"
+  },
+  "lastReadProgressSingle": {
+    "message": "📖 Letzter Lesefortschritt: Seite {page}"
+  },
+  "readCompletedBadge": {
+    "message": "✓ Gelesen ({total}p)"
+  },
+  "gridLoadingNextPage": {
+    "message": "Nächste Seite wird geladen..."
+  },
+  "gridPageDivider": {
+    "message": "Seite {page}"
+  },
+  "gridAllLoaded": {
+    "message": "Alle Inhalte geladen."
+  },
+  "gridLoadFailed": {
+    "message": "Fehler beim Laden, bitte Konsole prüfen."
+  },
+  "uploaderBlockedBtn": {
+    "message": "✓ Blockiert"
+  },
+  "uploaderUnblockBtnTitle": {
+    "message": "Klicken, um diesen Uploader zu entblocken"
+  },
+  "uploaderBlockBtn": {
+    "message": "🚫 Blockieren"
+  },
+  "uploaderBlockBtnTitle": {
+    "message": "Klicken, um alle Galerien dieses Uploaders zu blockieren"
+  },
+  "editDisplayNameTitle": {
+    "message": "Anzeigenamen bearbeiten"
+  },
+  "deleteTagTitle": {
+    "message": "Diesen Tag löschen"
+  },
+  "deleteHistoryItemTitle": {
+    "message": "Diesen Eintrag löschen"
+  },
+  "goToTagPageTitle": {
+    "message": "Zur Tag-Seite gehen: {tag}"
+  },
+  "exportPlaceholder": {
+    "message": "Klicken Sie auf \"Exportdaten generieren\"..."
+  },
+  "copyFailed": {
+    "message": "❌ Kopieren fehlgeschlagen!"
+  },
+  "downloadBackupStarted": {
+    "message": "✅ Download der Sicherungsdatei gestartet!"
+  },
+  "importErrorReadFile": {
+    "message": "❌ Datei konnte nicht gelesen werden!"
+  },
+  "logoutProgress": {
+    "message": "Abmeldung läuft..."
+  },
+  "logoutSuccess": {
+    "message": "✅ Erfolgreich abgemeldet!"
+  },
+  "logoutFailed": {
+    "message": "❌ Abmeldung fehlgeschlagen!"
   }
 }

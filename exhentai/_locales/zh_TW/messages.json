@@ -377,16 +377,16 @@
     "description": "Button to unblock an uploader."
   },
   "doublePageMode": {
-    "message": "雙頁併排模式 (翻頁模式)：",
-    "description": "雙頁併排閱讀模式的設定標籤。"
+    "message": "單頁/雙頁併排模式 (翻頁模式)：",
+    "description": "Label for single/double-page spread mode."
   },
   "doublePageCoverSingle": {
     "message": "首頁單頁顯示 (封面模式)：",
-    "description": "雙頁模式下第一頁單頁顯示的設定標籤。"
+    "description": "Label for showing the first page as a single cover."
   },
   "reverseReadingDirection": {
-    "message": "日漫右開模式 (由右至左)：",
-    "description": "日漫右開翻頁與排列方向的設定標籤。"
+    "message": "左開/右開閱讀方向 (日漫 RTL)：",
+    "description": "Label for reading direction (LTR/RTL)."
   },
   "contextMenuBlockTag": {
     "message": "封鎖此標籤",
@@ -407,5 +407,131 @@
   "selectBackupFileButton": {
     "message": "選擇備份檔 (.json)",
     "description": "選擇本地 JSON 備份檔案進行匯入的按鈕。"
+  },
+  "readerBtnSinglePage": {
+    "message": "1P 單頁"
+  },
+  "readerBtnDoublePage": {
+    "message": "2P 雙頁"
+  },
+  "readerTitleToggleDoublePage": {
+    "message": "切換單頁 / 雙頁併排模式"
+  },
+  "readerBtnCoverSingleOn": {
+    "message": "封面單頁:開"
+  },
+  "readerBtnCoverSingleOff": {
+    "message": "封面單頁:關"
+  },
+  "readerTitleToggleCoverSingle": {
+    "message": "切換雙頁模式下第 1 頁是否單獨顯示為封面"
+  },
+  "readerBtnDirectionRtl": {
+    "message": "⬅ 右開 (RTL)"
+  },
+  "readerBtnDirectionLtr": {
+    "message": "左開 (LTR) ➡"
+  },
+  "readerTitleToggleDirection": {
+    "message": "切換翻頁與雙頁排列方向（左開 LTR / 日漫右開 RTL）"
+  },
+  "readerStatusInitializing": {
+    "message": "正在初始化閱讀器..."
+  },
+  "readerStatusLoading": {
+    "message": "正在載入..."
+  },
+  "readerStatusPageNotFound": {
+    "message": "❌ 錯誤：在當前索引範圍中找不到此頁面。"
+  },
+  "readerFitWindowOn": {
+    "message": "適應視窗:開"
+  },
+  "readerFitWindowOff": {
+    "message": "原始尺寸"
+  },
+  "readerTitleFitToggle": {
+    "message": "切換圖片縮放 ({key})"
+  },
+  "readerIndexingProgress": {
+    "message": "🔍 正在索引圖庫分頁 {page}..."
+  },
+  "cacheClearedSuccess": {
+    "message": "✓ 已清除 {count} 個圖庫的快取！"
+  },
+  "resumeReading": {
+    "message": "繼續閱讀 →"
+  },
+  "resumeReadingShort": {
+    "message": "續讀"
+  },
+  "resumeReadingTooltip": {
+    "message": "繼續閱讀 (第 {page} 頁)"
+  },
+  "lastReadProgress": {
+    "message": "📖 上次閱讀進度：第 {page} / {total} 頁"
+  },
+  "lastReadProgressSingle": {
+    "message": "📖 上次閱讀進度：第 {page} 頁"
+  },
+  "readCompletedBadge": {
+    "message": "✓ 已讀 ({total}p)"
+  },
+  "gridLoadingNextPage": {
+    "message": "正在載入下一頁..."
+  },
+  "gridPageDivider": {
+    "message": "第 {page} 頁"
+  },
+  "gridAllLoaded": {
+    "message": "已載入所有內容。"
+  },
+  "gridLoadFailed": {
+    "message": "載入失敗，請檢查主控台。"
+  },
+  "uploaderBlockedBtn": {
+    "message": "✓ 已封鎖"
+  },
+  "uploaderUnblockBtnTitle": {
+    "message": "點擊解除封鎖此上傳者"
+  },
+  "uploaderBlockBtn": {
+    "message": "🚫 封鎖"
+  },
+  "uploaderBlockBtnTitle": {
+    "message": "點擊封鎖此上傳者的所有畫廊"
+  },
+  "editDisplayNameTitle": {
+    "message": "編輯顯示名稱"
+  },
+  "deleteTagTitle": {
+    "message": "刪除此標籤"
+  },
+  "deleteHistoryItemTitle": {
+    "message": "刪除此筆紀錄"
+  },
+  "goToTagPageTitle": {
+    "message": "前往標籤頁面: {tag}"
+  },
+  "exportPlaceholder": {
+    "message": "點擊「產生匯出資料」..."
+  },
+  "copyFailed": {
+    "message": "❌ 複製失敗！"
+  },
+  "downloadBackupStarted": {
+    "message": "✅ 備份檔已開始下載！"
+  },
+  "importErrorReadFile": {
+    "message": "❌ 讀取檔案失敗！"
+  },
+  "logoutProgress": {
+    "message": "正在登出..."
+  },
+  "logoutSuccess": {
+    "message": "✅ 登出成功！"
+  },
+  "logoutFailed": {
+    "message": "❌ 登出失敗！"
   }
 }

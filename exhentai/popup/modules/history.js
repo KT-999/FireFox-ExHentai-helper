@@ -54,7 +54,7 @@ export const renderHistory = async () => {
             progBadge.className = 'history-item-progress';
             const totalText = item.totalPages ? `/${item.totalPages}` : '';
             progBadge.textContent = `📖 ${item.lastReadPage}${totalText}p`;
-            progBadge.title = `上次閱讀至第 ${item.lastReadPage} 頁`;
+            progBadge.title = getMessage('lastReadProgressSingle', { page: item.lastReadPage });
             badgesWrapper.appendChild(progBadge);
         }
 
@@ -80,15 +80,15 @@ export const renderHistory = async () => {
             resumeBtn.className = 'history-item-resume-btn';
             resumeBtn.href = item.lastPageUrl;
             resumeBtn.target = '_blank';
-            resumeBtn.textContent = '續讀';
-            resumeBtn.title = `繼續閱讀 (第 ${item.lastReadPage || 1} 頁)`;
+            resumeBtn.textContent = getMessage('resumeReadingShort');
+            resumeBtn.title = getMessage('resumeReadingTooltip', { page: item.lastReadPage || 1 });
             itemWrapper.appendChild(resumeBtn);
         }
 
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'history-item-delete-btn';
         deleteBtn.textContent = '×';
-        deleteBtn.title = '刪除此筆紀錄';
+        deleteBtn.title = getMessage('deleteHistoryItemTitle');
         deleteBtn.dataset.url = item.url;
 
         itemWrapper.appendChild(deleteBtn);

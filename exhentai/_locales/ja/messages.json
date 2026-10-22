@@ -377,16 +377,16 @@
     "description": "Button to unblock an uploader."
   },
   "doublePageMode": {
-    "message": "見開き（2ページ）モード（横型のみ）：",
-    "description": "Label for double-page spread mode."
+    "message": "単一 / 見開き（2ページ）モード（横型のみ）：",
+    "description": "Label for single/double-page spread mode."
   },
   "doublePageCoverSingle": {
     "message": "表紙（1ページ目）を単ページ表示：",
     "description": "Label for showing the first page as a single cover."
   },
   "reverseReadingDirection": {
-    "message": "右綴じ（右から左へ読む）：",
-    "description": "Label for right-to-left reading direction."
+    "message": "左綴じ / 右綴じの読み方向（日漫 RTL）：",
+    "description": "Label for reading direction (LTR/RTL)."
   },
   "contextMenuBlockTag": {
     "message": "このタグをブロック",
@@ -407,5 +407,131 @@
   "selectBackupFileButton": {
     "message": "ファイルを選択 (.json)",
     "description": "Button to select a JSON backup file to import."
+  },
+  "readerBtnSinglePage": {
+    "message": "1P 単一"
+  },
+  "readerBtnDoublePage": {
+    "message": "2P 見開き"
+  },
+  "readerTitleToggleDoublePage": {
+    "message": "単一 / 見開き（2ページ）表示を切り替え"
+  },
+  "readerBtnCoverSingleOn": {
+    "message": "表紙単独:オン"
+  },
+  "readerBtnCoverSingleOff": {
+    "message": "表紙単独:オフ"
+  },
+  "readerTitleToggleCoverSingle": {
+    "message": "見開きモードで1ページ目（表紙）を単独表示するか切り替え"
+  },
+  "readerBtnDirectionRtl": {
+    "message": "⬅ 右綴じ (RTL)"
+  },
+  "readerBtnDirectionLtr": {
+    "message": "左綴じ (LTR) ➡"
+  },
+  "readerTitleToggleDirection": {
+    "message": "ページめくりと配置の向きを切り替え（左綴じ LTR / 右綴じ RTL）"
+  },
+  "readerStatusInitializing": {
+    "message": "リーダーを初期化中..."
+  },
+  "readerStatusLoading": {
+    "message": "読み込み中..."
+  },
+  "readerStatusPageNotFound": {
+    "message": "❌ エラー：現在のインデックス範囲にこのページが見つかりません。"
+  },
+  "readerFitWindowOn": {
+    "message": "ウィンドウに合わせる:オン"
+  },
+  "readerFitWindowOff": {
+    "message": "元のサイズ"
+  },
+  "readerTitleFitToggle": {
+    "message": "画像の拡大縮小を切り替え ({key})"
+  },
+  "readerIndexingProgress": {
+    "message": "🔍 ギャラリーページ {page} をインデックス中..."
+  },
+  "cacheClearedSuccess": {
+    "message": "✓ {count} 件のギャラリーのキャッシュを削除しました！"
+  },
+  "resumeReading": {
+    "message": "続きを読む →"
+  },
+  "resumeReadingShort": {
+    "message": "再開"
+  },
+  "resumeReadingTooltip": {
+    "message": "続きを読む ({page} ページ)"
+  },
+  "lastReadProgress": {
+    "message": "📖 前回の進捗：{page} / {total} ページ"
+  },
+  "lastReadProgressSingle": {
+    "message": "📖 前回の進捗：{page} ページ"
+  },
+  "readCompletedBadge": {
+    "message": "✓ 既読 ({total}p)"
+  },
+  "gridLoadingNextPage": {
+    "message": "次のページを読み込み中..."
+  },
+  "gridPageDivider": {
+    "message": "ページ {page}"
+  },
+  "gridAllLoaded": {
+    "message": "すべてのコンテンツを読み込みました。"
+  },
+  "gridLoadFailed": {
+    "message": "読み込みに失敗しました。コンソールを確認してください。"
+  },
+  "uploaderBlockedBtn": {
+    "message": "✓ ブロック中"
+  },
+  "uploaderUnblockBtnTitle": {
+    "message": "クリックしてこのアップローダーのブロックを解除"
+  },
+  "uploaderBlockBtn": {
+    "message": "🚫 ブロック"
+  },
+  "uploaderBlockBtnTitle": {
+    "message": "クリックしてこのアップローダーの作品をすべて非表示"
+  },
+  "editDisplayNameTitle": {
+    "message": "表示名を編集"
+  },
+  "deleteTagTitle": {
+    "message": "このタグを削除"
+  },
+  "deleteHistoryItemTitle": {
+    "message": "この履歴を削除"
+  },
+  "goToTagPageTitle": {
+    "message": "タグページを開く: {tag}"
+  },
+  "exportPlaceholder": {
+    "message": "「エクスポートデータを生成」をクリック..."
+  },
+  "copyFailed": {
+    "message": "❌ コピーに失敗しました！"
+  },
+  "downloadBackupStarted": {
+    "message": "✅ バックアップファイルのダウンロードを開始しました！"
+  },
+  "importErrorReadFile": {
+    "message": "❌ ファイルの読み込みに失敗しました！"
+  },
+  "logoutProgress": {
+    "message": "ログアウト中..."
+  },
+  "logoutSuccess": {
+    "message": "✅ ログアウトしました！"
+  },
+  "logoutFailed": {
+    "message": "❌ ログアウトに失敗しました！"
   }
 }

@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { exportStatus.textContent = ''; }, 2500);
         }).catch(err => {
             console.error('複製失敗:', err);
-            exportStatus.textContent = '❌ 複製失敗!';
+            exportStatus.textContent = getMessage('copyFailed');
             exportStatus.style.color = '#dc3545';
         });
     };
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        exportStatus.textContent = '✅ 備份檔已開始下載！';
+        exportStatus.textContent = getMessage('downloadBackupStarted');
         exportStatus.style.color = '#28a745';
         setTimeout(() => { exportStatus.textContent = ''; }, 2500);
     };
@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     await handleImport();
                 } catch (err) {
                     console.error('讀取匯入檔案失敗:', err);
-                    importStatus.textContent = '❌ 讀取檔案失敗！';
+                    importStatus.textContent = getMessage('importErrorReadFile');
                     importStatus.style.color = '#dc3545';
                 } finally {
                     importFileInput.value = '';

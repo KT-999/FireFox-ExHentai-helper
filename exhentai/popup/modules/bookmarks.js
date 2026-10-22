@@ -93,7 +93,7 @@ export const renderSavedTags = async () => {
         originalLink.className = 'tag-original-link';
         originalLink.href = `https://exhentai.org/tag/${encodeURIComponent(tag.original).replace(/%20/g, '+')}`;
         originalLink.target = '_blank';
-        originalLink.title = `前往標籤頁面: ${tag.original}`;
+        originalLink.title = getMessage('goToTagPageTitle', { tag: tag.original });
         originalLink.textContent = tag.original;
         namesWrapper.appendChild(originalLink);
         const displayWrapper = document.createElement('div');
@@ -111,7 +111,7 @@ export const renderSavedTags = async () => {
         const editBtn = document.createElement('button');
         editBtn.className = 'tag-item-btn';
         editBtn.innerHTML = '&#9998;';
-        editBtn.title = '編輯顯示名稱';
+        editBtn.title = getMessage('editDisplayNameTitle');
         editBtn.dataset.action = 'edit';
         editBtn.dataset.originalTag = tag.original;
         editBtn.dataset.currentDisplay = tag.display;
@@ -119,7 +119,7 @@ export const renderSavedTags = async () => {
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'tag-item-btn';
         deleteBtn.textContent = '×';
-        deleteBtn.title = '刪除此標籤';
+        deleteBtn.title = getMessage('deleteTagTitle');
         deleteBtn.dataset.action = 'delete';
         deleteBtn.dataset.originalTag = tag.original;
         actionsWrapper.appendChild(deleteBtn);

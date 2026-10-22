@@ -158,7 +158,7 @@ export const initSettings = async () => {
             if (response && response.success) {
                 const statusMessage = document.getElementById('status-message');
                 clearTimeout(statusTimeout);
-                statusMessage.textContent = `✓ 已清除 ${response.clearedCount} 個圖庫的快取！`;
+                statusMessage.textContent = getMessage('cacheClearedSuccess', { count: response.clearedCount });
                 statusMessage.style.color = '#28a745';
                 statusTimeout = setTimeout(() => { statusMessage.textContent = ''; }, 3000);
             }

@@ -5,7 +5,9 @@
  * - 新增：右下角懸浮狀態列（顯示目前頁碼、切換適應視窗、返回目錄按鈕）。
  * - 新增：捲動時即時更新網址列與記錄閱讀進度。
  */
-import { fetchAndParsePage, reloadImageFromAPI } from './utils.js';
+import { fetchAndParsePage, reloadImageFromAPI, getI18nMessages } from './utils.js';
+
+let i18n = {};
 
 let verticalObserver = null;
 let progressObserver = null;
@@ -116,7 +118,7 @@ function applyVerticalFitStyle() {
                 object-fit: contain;
             }
         `;
-        if (fitBtn) fitBtn.textContent = '適應視窗:開';
+        if (fitBtn) fitBtn.textContent = i18n.readerFitWindowOn || '適應視窗:開';
     } else {
         style.textContent = `
             #exh-vertical-viewer img.exh-vertical-img {
@@ -126,7 +128,7 @@ function applyVerticalFitStyle() {
                 height: auto !important;
             }
         `;
-        if (fitBtn) fitBtn.textContent = '原始尺寸';
+        if (fitBtn) fitBtn.textContent = i18n.readerFitWindowOff || '原始尺寸';
     }
 }
 
@@ -159,9 +161,12 @@ function createVerticalFloatingBar() {
     statusText.id = 'exh-vertical-status-text';
     statusText.textContent = `1 / ${window.navigationContext.totalImageCount || '?'}`;
 
+    const fitKey = (window.scriptSettings.keyFit || 'S').toUpperCase();
     const fitBtn = document.createElement('button');
     fitBtn.id = 'exh-vertical-fit-btn';
-    fitBtn.title = `切換圖片縮放 (${(window.scriptSettings.keyFit || 'S').toUpperCase()})`;
+    fitBtn.title = i18n.readerTitleFitToggle
+        ? i18n.readerTitleFitToggle.replace('{key}', fitKey)
+        : `切換圖片縮放 (${fitKey})`;
     fitBtn.style.cssText = `
         background: rgba(255, 255, 255, 0.1);
         color: #ddd;
@@ -177,9 +182,12 @@ function createVerticalFloatingBar() {
         applyVerticalFitStyle();
     });
 
+    const exitKey = (window.scriptSettings.keyExit || 'E').toUpperCase();
     const exitBtn = document.createElement('a');
     exitBtn.href = window.navigationContext.backToGalleryUrl || '#';
-    exitBtn.title = `返回目錄 (${(window.scriptSettings.keyExit || 'E').toUpperCase()})`;
+    exitBtn.title = i18n.keyExitWithShortcut
+        ? i18n.keyExitWithShortcut.replace('{key}', exitKey)
+        : `返回目錄 (${exitKey})`;
     exitBtn.innerHTML = `<img src="https://exhentai.org/img/b.png" style="height: 16px; display: block;" referrerpolicy="no-referrer">`;
     exitBtn.style.cssText = `display: flex; align-items: center; padding: 3px; border-radius: 4px;`;
     exitBtn.addEventListener('click', (e) => {
@@ -199,7 +207,7 @@ function createVerticalFloatingBar() {
 async function loadVerticalImage(placeholder) {
     if (!placeholder.isConnected || placeholder.dataset.loading === 'true' || placeholder.querySelector('img')) return;
     placeholder.dataset.loading = 'true';
-    placeholder.textContent = '正在載入...';
+    placeholder.textContent = i18n.readerStatusLoading || '正在載入...';
 
     const pageUrl = placeholder.dataset.pageUrl;
     const index = parseInt(placeholder.dataset.index, 10);
@@ -301,7 +309,9 @@ function handleVerticalKeyDown(event) {
         browser.runtime.sendMessage({ type: 'clear_all_cache' }).then(response => {
             if (response && response.success) {
                 const msgDiv = document.createElement('div');
-                msgDiv.textContent = `✅ 已清除 ${response.clearedCount} 個圖庫的快取！`;
+                msgDiv.textContent = i18n.cacheClearedSuccess
+                    ? i18n.cacheClearedSuccess.replace('{count}', response.clearedCount)
+                    : `✅ 已清除 ${response.clearedCount} 個圖庫的快取！`;
                 msgDiv.style.cssText = `position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; z-index: 99999;`;
                 document.body.appendChild(msgDiv);
                 setTimeout(() => msgDiv.remove(), 3000);
@@ -439,13 +449,16 @@ async function runVerticalReader() {
     document.addEventListener('keydown', handleVerticalKeyDown);
 }
 
-export function initVerticalReader(ensurePagesFunc) {
+export async function initVerticalReader(ensurePagesFunc) {
     if (hasInitializedVerticalReader) {
         console.warn('[ExH] 垂直閱讀器模組已初始化，跳過重複執行。');
         return;
     }
     hasInitializedVerticalReader = true;
     ensurePagesAreIndexed = ensurePagesFunc;
+    try {
+        i18n = await getI18nMessages('all');
+    } catch (_) {}
     runVerticalReader();
 }
 

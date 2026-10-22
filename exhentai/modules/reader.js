@@ -3,7 +3,7 @@
  * - 修正：使用 MutationObserver 來等待「返回目錄」連結出現，徹底解決因頁面載入延遲導致返回功能失效的競速條件問題。
  * - 新增：使用 sessionStorage 進行防禦性初始化，儲存「返回目錄」連結以應對因網站不穩定造成的頁面重整。
  */
-import { fetchAndParsePage } from './utils.js';
+import { fetchAndParsePage, getI18nMessages } from './utils.js';
 
 const THEME_STYLE_ID = 'exh-helper-theme-style';
 const SESSION_STORAGE_KEY_PREFIX = 'exh_backToGalleryUrl_';
@@ -141,7 +141,12 @@ async function ensurePagesAreIndexed(galleryId, pagesToCheck, baseGalleryUrl) {
         const statusText = document.getElementById('exh-status-text');
         for (const pageIndex of missingPages) {
             if (localIndexed.has(pageIndex)) continue;
-            if (statusText) statusText.textContent = `🔍 正在索引圖庫分頁 ${pageIndex + 1}...`;
+            if (statusText) {
+                const i18n = await getI18nMessages(['readerIndexingProgress']);
+                statusText.textContent = i18n.readerIndexingProgress
+                    ? i18n.readerIndexingProgress.replace('{page}', pageIndex + 1)
+                    : `🔍 正在索引圖庫分頁 ${pageIndex + 1}...`;
+            }
 
             const galleryPageUrl = new URL(baseGalleryUrl);
             if (pageIndex > 0) {

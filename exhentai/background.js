@@ -817,6 +817,17 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
         }
         case 'get_i18n_messages': {
             const messages = {};
+            if (message.keys === 'all' || !message.keys) {
+                await getLocalizedMessage('extensionName');
+                const allKeys = new Set([
+                    ...Object.keys(fallbackMessageCache || {}),
+                    ...Object.keys(messageCache || {})
+                ]);
+                for (const key of allKeys) {
+                    messages[key] = await getLocalizedMessage(key);
+                }
+                return { messages };
+            }
             for (const key of message.keys) {
                 messages[key] = await getLocalizedMessage(key);
             }

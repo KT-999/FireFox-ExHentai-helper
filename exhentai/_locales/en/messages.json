@@ -377,16 +377,16 @@
     "description": "Button to unblock an uploader."
   },
   "doublePageMode": {
-    "message": "Double-Page Spread (Horizontal):",
-    "description": "Label for double-page spread mode."
+    "message": "Single / Double-Page Spread (Horizontal):",
+    "description": "Label for single/double-page spread mode."
   },
   "doublePageCoverSingle": {
     "message": "Single Page for Cover:",
     "description": "Label for showing the first page as a single cover."
   },
   "reverseReadingDirection": {
-    "message": "Manga Right-to-Left (RTL):",
-    "description": "Label for right-to-left reading direction."
+    "message": "Reading Direction Left / Right (Manga RTL):",
+    "description": "Label for reading direction (LTR/RTL)."
   },
   "contextMenuBlockTag": {
     "message": "Block this tag",
@@ -407,5 +407,131 @@
   "selectBackupFileButton": {
     "message": "Select Backup (.json)",
     "description": "Button to select a JSON backup file to import."
+  },
+  "readerBtnSinglePage": {
+    "message": "1P Single"
+  },
+  "readerBtnDoublePage": {
+    "message": "2P Double"
+  },
+  "readerTitleToggleDoublePage": {
+    "message": "Toggle Single / Double-Page Mode"
+  },
+  "readerBtnCoverSingleOn": {
+    "message": "Cover: Single"
+  },
+  "readerBtnCoverSingleOff": {
+    "message": "Cover: Spread"
+  },
+  "readerTitleToggleCoverSingle": {
+    "message": "Toggle single page display for first page (cover) in double-page mode"
+  },
+  "readerBtnDirectionRtl": {
+    "message": "⬅ Right-to-Left (RTL)"
+  },
+  "readerBtnDirectionLtr": {
+    "message": "Left-to-Right (LTR) ➡"
+  },
+  "readerTitleToggleDirection": {
+    "message": "Toggle reading and spread direction (Left-to-Right LTR / Manga Right-to-Left RTL)"
+  },
+  "readerStatusInitializing": {
+    "message": "Initializing reader..."
+  },
+  "readerStatusLoading": {
+    "message": "Loading..."
+  },
+  "readerStatusPageNotFound": {
+    "message": "❌ Error: Page not found in current index range."
+  },
+  "readerFitWindowOn": {
+    "message": "Fit Window: On"
+  },
+  "readerFitWindowOff": {
+    "message": "Original Size"
+  },
+  "readerTitleFitToggle": {
+    "message": "Toggle Image Scaling ({key})"
+  },
+  "readerIndexingProgress": {
+    "message": "🔍 Indexing gallery page {page}..."
+  },
+  "cacheClearedSuccess": {
+    "message": "✓ Cleared cache for {count} galleries!"
+  },
+  "resumeReading": {
+    "message": "Continue Reading →"
+  },
+  "resumeReadingShort": {
+    "message": "Resume"
+  },
+  "resumeReadingTooltip": {
+    "message": "Continue Reading (Page {page})"
+  },
+  "lastReadProgress": {
+    "message": "📖 Last progress: Page {page} / {total}"
+  },
+  "lastReadProgressSingle": {
+    "message": "📖 Last progress: Page {page}"
+  },
+  "readCompletedBadge": {
+    "message": "✓ Completed ({total}p)"
+  },
+  "gridLoadingNextPage": {
+    "message": "Loading next page..."
+  },
+  "gridPageDivider": {
+    "message": "Page {page}"
+  },
+  "gridAllLoaded": {
+    "message": "All content loaded."
+  },
+  "gridLoadFailed": {
+    "message": "Failed to load, please check the console."
+  },
+  "uploaderBlockedBtn": {
+    "message": "✓ Blocked"
+  },
+  "uploaderUnblockBtnTitle": {
+    "message": "Click to unblock this uploader"
+  },
+  "uploaderBlockBtn": {
+    "message": "🚫 Block"
+  },
+  "uploaderBlockBtnTitle": {
+    "message": "Click to block all galleries from this uploader"
+  },
+  "editDisplayNameTitle": {
+    "message": "Edit display name"
+  },
+  "deleteTagTitle": {
+    "message": "Delete this tag"
+  },
+  "deleteHistoryItemTitle": {
+    "message": "Delete this record"
+  },
+  "goToTagPageTitle": {
+    "message": "Go to tag page: {tag}"
+  },
+  "exportPlaceholder": {
+    "message": "Click \"Generate Export Data\"..."
+  },
+  "copyFailed": {
+    "message": "❌ Copy failed!"
+  },
+  "downloadBackupStarted": {
+    "message": "✅ Backup file download started!"
+  },
+  "importErrorReadFile": {
+    "message": "❌ Failed to read file!"
+  },
+  "logoutProgress": {
+    "message": "Logging out..."
+  },
+  "logoutSuccess": {
+    "message": "✅ Logged out successfully!"
+  },
+  "logoutFailed": {
+    "message": "❌ Logout failed!"
   }
 }

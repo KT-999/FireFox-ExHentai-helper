@@ -1,411 +1,537 @@
 {
-    "extensionName": {
-        "message": "Помощник ExHentai",
-        "description": "Название расширения."
-    },
-    "extensionDescription": {
-        "message": "Вспомогательный инструмент для exhentai.org, предоставляющий несколько режимов чтения, сеточный вид и поддержку клавиатуры.",
-        "description": "Описание расширения."
-    },
-    "popupHeader": {
-        "message": "Настройки Помощника ExHentai",
-        "description": "Заголовок для настроек всплывающего окна."
-    },
-    "generalSettings": {
-        "message": "Общие настройки",
-        "description": "Подзаголовок для общих настроек."
-    },
-    "enableGridView": {
-        "message": "Включить сеточный вид для галерей:",
-        "description": "Метка для флажка сеточного вида."
-    },
-    "gridColumns": {
-        "message": "Колонок в ряду:",
-        "description": "Метка для ввода количества колонок в сетке."
-    },
-    "readerMode": {
-        "message": "Режим чтения:",
-        "description": "Метка для выбора режима чтения."
-    },
-    "readerModeDefault": {
-        "message": "По умолчанию",
-        "description": "Опция для режима чтения по умолчанию."
-    },
-    "readerModeHorizontal": {
-        "message": "Горизонтальный (с предзагрузкой)",
-        "description": "Опция для горизонтального режима чтения."
-    },
-    "readerModeVertical": {
-        "message": "Вертикальная прокрутка",
-        "description": "Опция для вертикального режима чтения."
-    },
-    "preloadCount": {
-        "message": "Кол-во предзагрузки (горизонт.):",
-        "description": "Метка для ввода количества предзагрузки."
-    },
-    "cacheSize": {
-        "message": "Макс. страниц в кэше:",
-        "description": "Метка для ввода размера кэша."
-    },
-    "maxHistoryCount": {
-        "message": "Макс. записей в истории:",
-        "description": "Метка для ввода максимального количества записей в истории."
-    },
-    "fitToWindow": {
-        "message": "Подогнать изображение к окну (горизонт.):",
-        "description": "Метка для флажка подгонки к окну."
-    },
-    "hidePreviewBar": {
-        "message": "Скрыть панель предпросмотра (горизонт.):",
-        "description": "Метка для флажка скрытия панели предпросмотра."
-    },
-    "themeMode": {
-        "message": "Тема:",
-        "description": "Метка для выбора темы."
-    },
-    "themeSystem": {
-        "message": "Системная",
-        "description": "Опция для системной темы по умолчанию."
-    },
-    "themeLight": {
-        "message": "Светлая",
-        "description": "Опция для светлой темы."
-    },
-    "themeDark": {
-        "message": "Темная",
-        "description": "Опция для темной темы."
-    },
-    "uiLanguage": {
-        "message": "UI Language:",
-        "description": "Метка для выбора языка интерфейса."
-    },
-    "langSystem": {
-        "message": "Авто (браузер)",
-        "description": "Опция для автоматического выбора языка."
-    },
-    "langEN": {
-        "message": "English (Английский)",
-        "description": "Опция для английского языка."
-    },
-    "langZH_TW": {
-        "message": "繁體中文 (Традиционный китайский)",
-        "description": "Опция для традиционного китайского языка."
-    },
-    "langES": {
-        "message": "Español (Испанский)",
-        "description": "Опция для испанского языка."
-    },
-    "langJA": {
-        "message": "日本語 (Японский)",
-        "description": "Опция для японского языка."
-    },
-    "langKO": {
-        "message": "한국어 (Корейский)",
-        "description": "Опция для корейского языка."
-    },
-    "langDE": {
-        "message": "Deutsch (Немецкий)",
-        "description": "Опция для немецкого языка."
-    },
-    "langFR": {
-        "message": "Français (Французский)",
-        "description": "Опция для французского языка."
-    },
-    "langPT_BR": {
-        "message": "Português (Бразильский португальский)",
-        "description": "Опция для бразильского португальского языка."
-    },
-    "langRU": {
-        "message": "Русский",
-        "description": "Опция для русского языка."
-    },
-    "openOptionsButton": {
-        "message": "Настроить горячие клавиши",
-        "description": "Кнопка для открытия страницы настроек."
-    },
-    "saveButton": {
-        "message": "Сохранить",
-        "description": "Кнопка для сохранения настроек."
-    },
-    "saveSettingsSuccess": {
-        "message": "✅ Настройки сохранены!",
-        "description": "Сообщение об успехе после сохранения настроек."
-    },
-    "saveSettingsSuccessLang": {
-        "message": "✅ Язык сохранен! Пожалуйста, снова откройте, чтобы применить.",
-        "description": "Сообщение об успехе после смены языка."
-    },
-    "saveSettingsError": {
-        "message": "❌ Не удалось сохранить!",
-        "description": "Сообщение об ошибке при сбое сохранения настроек."
-    },
-    "advancedOperations": {
-        "message": "Расширенные операции",
-        "description": "Подзаголовок для расширенных операций."
-    },
-    "clearCacheDescription": {
-        "message": "Если вы столкнулись с проблемами загрузки изображений или ошибками отображения, вы можете попробовать вручную очистить все кэшированные данные. Это очистит все предварительно загруженные изображения и индексы страниц.",
-        "description": "Описание для кнопки очистки кэша."
-    },
-    "clearCacheButton": {
-        "message": "Очистить весь кэш",
-        "description": "Кнопка для очистки всего кэша."
-    },
-    "tabSettings": {
-        "message": "Настройки",
-        "description": "Метка для вкладки настроек."
-    },
-    "tabHistory": {
-        "message": "История",
-        "description": "Метка для вкладки истории."
-    },
-    "tabBookmarks": {
-        "message": "Закладки",
-        "description": "Метка для вкладки закладок."
-    },
-    "historyHeader": {
-        "message": "История просмотров",
-        "description": "Заголовок для вкладки истории."
-    },
-    "historyEmpty": {
-        "message": "История просмотров пока пуста.",
-        "description": "Сообщение, отображаемое, когда история пуста."
-    },
-    "clearHistoryButton": {
-        "message": "Очистить историю",
-        "description": "Кнопка для очистки истории."
-    },
-    "bookmarksHeader": {
-        "message": "Сохраненные теги",
-        "description": "Заголовок для вкладки закладок."
-    },
-    "bookmarksEmpty": {
-        "message": "В этой категории нет тегов.",
-        "description": "Сообщение, отображаемое, когда закладки пусты."
-    },
-    "clearBookmarksButton": {
-        "message": "Очистить все",
-        "description": "Кнопка для очистки всех закладок."
-    },
-    "filterByCategory": {
-        "message": "Фильтр по категории:",
-        "description": "Метка для фильтра тегов."
-    },
-    "filterShowAll": {
-        "message": "Показать все",
-        "description": "Опция для показа всех тегов."
-    },
-    "optionsHeader": {
-        "message": "Настройки горячих клавиш",
-        "description": "Заголовок для страницы настроек."
-    },
-    "optionsSubtitle": {
-        "message": "Нажмите кнопку, затем нажмите клавишу, чтобы изменить горячую клавишу",
-        "description": "Подзаголовок для страницы настроек."
-    },
-    "keyPrev": {
-        "message": "Пред. страница"
-    },
-    "keyNext": {
-        "message": "След. страница"
-    },
-    "keyFit": {
-        "message": "Переключить подгонку"
-    },
-    "keyHide": {
-        "message": "Переключить панель предпросмотра"
-    },
-    "keyExit": {
-        "message": "Назад в галерею"
-    },
-    "keyClear": {
-        "message": "Очистить кэш"
-    },
-    "saveHotkeys": {
-        "message": "Сохранить горячие клавиши"
-    },
-    "contextMenuSaveTag": {
-        "message": "Сохранить этот тег",
-        "description": "Опция контекстного меню для сохранения тега."
-    },
-    "checkingLoginStatus": {
-        "message": "Проверка статуса входа...",
-        "description": "Текст, отображаемый при проверке статуса входа."
-    },
-    "loginStatus": {
-        "message": "Статус входа:",
-        "description": "Метка для статуса входа."
-    },
-    "loggedInStatus": {
-        "message": "Вы вошли",
-        "description": "Статус, когда пользователь вошел в систему."
-    },
-    "loggedOutStatus": {
-        "message": "Кажется, вы не вошли в систему.",
-        "description": "Статус, когда пользователь не вошел в систему."
-    },
-    "loginButton": {
-        "message": "Перейти на страницу входа",
-        "description": "Кнопка для перехода на страницу входа."
-    },
-    "logoutButton": {
-        "message": "Выйти",
-        "description": "Кнопка для выхода."
-    },
-    "loginStatusError": {
-        "message": "Не удалось проверить статус входа. Пожалуйста, проверьте разрешения расширения.",
-        "description": "Сообщение об ошибке при сбое проверки статуса входа."
-    },
-    "toggleSavedTags": {
-        "message": "[Показать/скрыть сохраненные теги]",
-        "description": "Ссылка для переключения панели сохраненных тегов на страницах поиска."
-    },
-    "importPlaceholder": {
-        "message": "Вставьте сюда экспортированное содержимое i18n JSON...",
-        "description": "Текст-заполнитель для текстовой области импорта."
-    },
-    "importSubmitButton": {
-        "message": "Импорт",
-        "description": "Текст для кнопки подтверждения импорта."
-    },
-    "importSuccess": {
-        "message": "✅ Импорт завершен! Добавлено: {addedCount}, Обновлено: {updatedCount}.",
-        "description": "Сообщение об успехе после импорта."
-    },
-    "importSuccessAddOnly": {
-        "message": "✅ Импорт завершен! Добавлено {addedCount} новых тегов.",
-        "description": "Сообщение об успехе при добавлении только тегов."
-    },
-    "importSuccessUpdateOnly": {
-        "message": "✅ Импорт завершен! Обновлено {updatedCount} пользовательских имен.",
-        "description": "Сообщение об успехе при обновлении только тегов."
-    },
-    "importErrorInvalidJson": {
-        "message": "❌ Ошибка импорта! Неверный формат JSON.",
-        "description": "Сообщение об ошибке при неверном формате JSON."
-    },
-    "importErrorNoData": {
-        "message": "❌ Ошибка импорта! Не найдены действительные данные для импорта.",
-        "description": "Сообщение об ошибке, когда не найдены действительные данные."
-    },
-    "importErrorNoAction": {
-        "message": "ℹ️ Действий не требуется. Все импортированные теги совпадают с существующими данными.",
-        "description": "Сообщение, когда не было внесено никаких изменений."
-    },
-    "searchTagsPlaceholder": {
-        "message": "Поиск тегов...",
-        "description": "Текст-заполнитель для поля поиска тегов."
-    },
-    "tagsIoTitle": {
-        "message": "Импорт и экспорт закладок",
-        "description": "Заголовок страницы импорта/экспорта тегов."
-    },
-    "exportHeader": {
-        "message": "Экспорт закладок",
-        "description": "Заголовок раздела экспорта."
-    },
-    "exportDescription": {
-        "message": "Нажмите кнопку ниже, чтобы сгенерировать данные для всех ваших сохраненных закладок. Вы можете сделать резервную копию или импортировать их на другом устройстве.",
-        "description": "Описание функциональности экспорта."
-    },
-    "generateExportButton": {
-        "message": "Сгенерировать данные для экспорта",
-        "description": "Кнопка для генерации данных для экспорта."
-    },
-    "copyToClipboardButton": {
-        "message": "Копировать в буфер обмена",
-        "description": "Кнопка для копирования данных в буфер обмена."
-    },
-    "copySuccess": {
-        "message": "✅ Успешно скопировано!",
-        "description": "Сообщение об успехе после копирования в буфер обмена."
-    },
-    "importHeader": {
-        "message": "Импорт закладок",
-        "description": "Заголовок раздела импорта."
-    },
-    "importDescription": {
-        "message": "Вставьте ранее экспортированные данные JSON в поле ниже и нажмите 'Импорт'. Это добавит новые закладки и обновит существующие.",
-        "description": "Описание функциональности импорта."
-    },
-    "manageTagsIoButton": {
-        "message": "Импорт / Экспорт",
-        "description": "Кнопка для открытия страницы импорта/экспорта тегов."
-    },
-    "confirmClearHistoryTitle": {
-        "message": "Подтвердить очистку истории",
-        "description": "Confirmation modal title for clearing history."
-    },
-    "confirmClearHistoryMessage": {
-        "message": "Вы уверены, что хотите очистить всю историю просмотров? Это действие нельзя отменить.",
-        "description": "Confirmation modal message for clearing history."
-    },
-    "confirmClearBookmarksTitle": {
-        "message": "Подтвердить удаление всех закладок",
-        "description": "Confirmation modal title for clearing all bookmarks."
-    },
-    "confirmClearBookmarksMessage": {
-        "message": "Вы уверены, что хотите удалить все сохраненные теги? Это действие нельзя отменить.",
-        "description": "Confirmation modal message for clearing all bookmarks."
-    },
-    "confirmButton": {
-        "message": "Подтвердить",
-        "description": "Generic confirm button text."
-    },
-    "cancelButton": {
-        "message": "Отмена",
-        "description": "Generic cancel button text."
-    },
-    "keyExitWithShortcut": {
-        "message": "Вернуться в галерею ({key})",
-        "description": "Tooltip for the back-to-gallery button in the reader, showing the shortcut key."
-    },
-    "contextMenuBlockUploader": {
-        "message": "Заблокировать загрузчика...",
-        "description": "Context menu for blocking an uploader."
-    },
-    "blockedUploadersHeader": {
-        "message": "Скрытые загрузчики",
-        "description": "Header for blocked uploaders list."
-    },
-    "blockedUploadersEmpty": {
-        "message": "Нет скрытых загрузчиков.",
-        "description": "Message when blocked uploaders list is empty."
-    },
-    "unblockButton": {
-        "message": "Разблокировать",
-        "description": "Button to unblock an uploader."
-    },
-    "doublePageMode": {
-        "message": "Двухстраничный режим (Горизонтальный):",
-        "description": "Label for double-page spread mode."
-    },
-    "doublePageCoverSingle": {
-        "message": "Обложка отдельной страницей:",
-        "description": "Label for showing the first page as a single cover."
-    },
-    "reverseReadingDirection": {
-        "message": "Чтение справа налево (RTL):",
-        "description": "Label for right-to-left reading direction."
-    },
-    "contextMenuBlockTag": {
-        "message": "Заблокировать этот тег",
-        "description": "Context menu option to block a tag."
-    },
-    "blockedTagsHeader": {
-        "message": "Заблокированные теги",
-        "description": "Header for blocked tags list."
-    },
-    "blockedTagsEmpty": {
-        "message": "Нет заблокированных тегов.",
-        "description": "Message when blocked tags list is empty."
-    },
-    "downloadBackupButton": {
-        "message": "Скачать резервную копию (.json)",
-        "description": "Button to download backup as a JSON file."
-    },
-    "selectBackupFileButton": {
-        "message": "Выбрать файл копии (.json)",
-        "description": "Button to select a JSON backup file to import."
-    }
+  "extensionName": {
+    "message": "Помощник ExHentai",
+    "description": "Название расширения."
+  },
+  "extensionDescription": {
+    "message": "Вспомогательный инструмент для exhentai.org, предоставляющий несколько режимов чтения, сеточный вид и поддержку клавиатуры.",
+    "description": "Описание расширения."
+  },
+  "popupHeader": {
+    "message": "Настройки Помощника ExHentai",
+    "description": "Заголовок для настроек всплывающего окна."
+  },
+  "generalSettings": {
+    "message": "Общие настройки",
+    "description": "Подзаголовок для общих настроек."
+  },
+  "enableGridView": {
+    "message": "Включить сеточный вид для галерей:",
+    "description": "Метка для флажка сеточного вида."
+  },
+  "gridColumns": {
+    "message": "Колонок в ряду:",
+    "description": "Метка для ввода количества колонок в сетке."
+  },
+  "readerMode": {
+    "message": "Режим чтения:",
+    "description": "Метка для выбора режима чтения."
+  },
+  "readerModeDefault": {
+    "message": "По умолчанию",
+    "description": "Опция для режима чтения по умолчанию."
+  },
+  "readerModeHorizontal": {
+    "message": "Горизонтальный (с предзагрузкой)",
+    "description": "Опция для горизонтального режима чтения."
+  },
+  "readerModeVertical": {
+    "message": "Вертикальная прокрутка",
+    "description": "Опция для вертикального режима чтения."
+  },
+  "preloadCount": {
+    "message": "Кол-во предзагрузки (горизонт.):",
+    "description": "Метка для ввода количества предзагрузки."
+  },
+  "cacheSize": {
+    "message": "Макс. страниц в кэше:",
+    "description": "Метка для ввода размера кэша."
+  },
+  "maxHistoryCount": {
+    "message": "Макс. записей в истории:",
+    "description": "Метка для ввода максимального количества записей в истории."
+  },
+  "fitToWindow": {
+    "message": "Подогнать изображение к окну (горизонт.):",
+    "description": "Метка для флажка подгонки к окну."
+  },
+  "hidePreviewBar": {
+    "message": "Скрыть панель предпросмотра (горизонт.):",
+    "description": "Метка для флажка скрытия панели предпросмотра."
+  },
+  "themeMode": {
+    "message": "Тема:",
+    "description": "Метка для выбора темы."
+  },
+  "themeSystem": {
+    "message": "Системная",
+    "description": "Опция для системной темы по умолчанию."
+  },
+  "themeLight": {
+    "message": "Светлая",
+    "description": "Опция для светлой темы."
+  },
+  "themeDark": {
+    "message": "Темная",
+    "description": "Опция для темной темы."
+  },
+  "uiLanguage": {
+    "message": "UI Language:",
+    "description": "Метка для выбора языка интерфейса."
+  },
+  "langSystem": {
+    "message": "Авто (браузер)",
+    "description": "Опция для автоматического выбора языка."
+  },
+  "langEN": {
+    "message": "English (Английский)",
+    "description": "Опция для английского языка."
+  },
+  "langZH_TW": {
+    "message": "繁體中文 (Традиционный китайский)",
+    "description": "Опция для традиционного китайского языка."
+  },
+  "langES": {
+    "message": "Español (Испанский)",
+    "description": "Опция для испанского языка."
+  },
+  "langJA": {
+    "message": "日本語 (Японский)",
+    "description": "Опция для японского языка."
+  },
+  "langKO": {
+    "message": "한국어 (Корейский)",
+    "description": "Опция для корейского языка."
+  },
+  "langDE": {
+    "message": "Deutsch (Немецкий)",
+    "description": "Опция для немецкого языка."
+  },
+  "langFR": {
+    "message": "Français (Французский)",
+    "description": "Опция для французского языка."
+  },
+  "langPT_BR": {
+    "message": "Português (Бразильский португальский)",
+    "description": "Опция для бразильского португальского языка."
+  },
+  "langRU": {
+    "message": "Русский",
+    "description": "Опция для русского языка."
+  },
+  "openOptionsButton": {
+    "message": "Настроить горячие клавиши",
+    "description": "Кнопка для открытия страницы настроек."
+  },
+  "saveButton": {
+    "message": "Сохранить",
+    "description": "Кнопка для сохранения настроек."
+  },
+  "saveSettingsSuccess": {
+    "message": "✅ Настройки сохранены!",
+    "description": "Сообщение об успехе после сохранения настроек."
+  },
+  "saveSettingsSuccessLang": {
+    "message": "✅ Язык сохранен! Пожалуйста, снова откройте, чтобы применить.",
+    "description": "Сообщение об успехе после смены языка."
+  },
+  "saveSettingsError": {
+    "message": "❌ Не удалось сохранить!",
+    "description": "Сообщение об ошибке при сбое сохранения настроек."
+  },
+  "advancedOperations": {
+    "message": "Расширенные операции",
+    "description": "Подзаголовок для расширенных операций."
+  },
+  "clearCacheDescription": {
+    "message": "Если вы столкнулись с проблемами загрузки изображений или ошибками отображения, вы можете попробовать вручную очистить все кэшированные данные. Это очистит все предварительно загруженные изображения и индексы страниц.",
+    "description": "Описание для кнопки очистки кэша."
+  },
+  "clearCacheButton": {
+    "message": "Очистить весь кэш",
+    "description": "Кнопка для очистки всего кэша."
+  },
+  "tabSettings": {
+    "message": "Настройки",
+    "description": "Метка для вкладки настроек."
+  },
+  "tabHistory": {
+    "message": "История",
+    "description": "Метка для вкладки истории."
+  },
+  "tabBookmarks": {
+    "message": "Закладки",
+    "description": "Метка для вкладки закладок."
+  },
+  "historyHeader": {
+    "message": "История просмотров",
+    "description": "Заголовок для вкладки истории."
+  },
+  "historyEmpty": {
+    "message": "История просмотров пока пуста.",
+    "description": "Сообщение, отображаемое, когда история пуста."
+  },
+  "clearHistoryButton": {
+    "message": "Очистить историю",
+    "description": "Кнопка для очистки истории."
+  },
+  "bookmarksHeader": {
+    "message": "Сохраненные теги",
+    "description": "Заголовок для вкладки закладок."
+  },
+  "bookmarksEmpty": {
+    "message": "В этой категории нет тегов.",
+    "description": "Сообщение, отображаемое, когда закладки пусты."
+  },
+  "clearBookmarksButton": {
+    "message": "Очистить все",
+    "description": "Кнопка для очистки всех закладок."
+  },
+  "filterByCategory": {
+    "message": "Фильтр по категории:",
+    "description": "Метка для фильтра тегов."
+  },
+  "filterShowAll": {
+    "message": "Показать все",
+    "description": "Опция для показа всех тегов."
+  },
+  "optionsHeader": {
+    "message": "Настройки горячих клавиш",
+    "description": "Заголовок для страницы настроек."
+  },
+  "optionsSubtitle": {
+    "message": "Нажмите кнопку, затем нажмите клавишу, чтобы изменить горячую клавишу",
+    "description": "Подзаголовок для страницы настроек."
+  },
+  "keyPrev": {
+    "message": "Пред. страница"
+  },
+  "keyNext": {
+    "message": "След. страница"
+  },
+  "keyFit": {
+    "message": "Переключить подгонку"
+  },
+  "keyHide": {
+    "message": "Переключить панель предпросмотра"
+  },
+  "keyExit": {
+    "message": "Назад в галерею"
+  },
+  "keyClear": {
+    "message": "Очистить кэш"
+  },
+  "saveHotkeys": {
+    "message": "Сохранить горячие клавиши"
+  },
+  "contextMenuSaveTag": {
+    "message": "Сохранить этот тег",
+    "description": "Опция контекстного меню для сохранения тега."
+  },
+  "checkingLoginStatus": {
+    "message": "Проверка статуса входа...",
+    "description": "Текст, отображаемый при проверке статуса входа."
+  },
+  "loginStatus": {
+    "message": "Статус входа:",
+    "description": "Метка для статуса входа."
+  },
+  "loggedInStatus": {
+    "message": "Вы вошли",
+    "description": "Статус, когда пользователь вошел в систему."
+  },
+  "loggedOutStatus": {
+    "message": "Кажется, вы не вошли в систему.",
+    "description": "Статус, когда пользователь не вошел в систему."
+  },
+  "loginButton": {
+    "message": "Перейти на страницу входа",
+    "description": "Кнопка для перехода на страницу входа."
+  },
+  "logoutButton": {
+    "message": "Выйти",
+    "description": "Кнопка для выхода."
+  },
+  "loginStatusError": {
+    "message": "Не удалось проверить статус входа. Пожалуйста, проверьте разрешения расширения.",
+    "description": "Сообщение об ошибке при сбое проверки статуса входа."
+  },
+  "toggleSavedTags": {
+    "message": "[Показать/скрыть сохраненные теги]",
+    "description": "Ссылка для переключения панели сохраненных тегов на страницах поиска."
+  },
+  "importPlaceholder": {
+    "message": "Вставьте сюда экспортированное содержимое i18n JSON...",
+    "description": "Текст-заполнитель для текстовой области импорта."
+  },
+  "importSubmitButton": {
+    "message": "Импорт",
+    "description": "Текст для кнопки подтверждения импорта."
+  },
+  "importSuccess": {
+    "message": "✅ Импорт завершен! Добавлено: {addedCount}, Обновлено: {updatedCount}.",
+    "description": "Сообщение об успехе после импорта."
+  },
+  "importSuccessAddOnly": {
+    "message": "✅ Импорт завершен! Добавлено {addedCount} новых тегов.",
+    "description": "Сообщение об успехе при добавлении только тегов."
+  },
+  "importSuccessUpdateOnly": {
+    "message": "✅ Импорт завершен! Обновлено {updatedCount} пользовательских имен.",
+    "description": "Сообщение об успехе при обновлении только тегов."
+  },
+  "importErrorInvalidJson": {
+    "message": "❌ Ошибка импорта! Неверный формат JSON.",
+    "description": "Сообщение об ошибке при неверном формате JSON."
+  },
+  "importErrorNoData": {
+    "message": "❌ Ошибка импорта! Не найдены действительные данные для импорта.",
+    "description": "Сообщение об ошибке, когда не найдены действительные данные."
+  },
+  "importErrorNoAction": {
+    "message": "ℹ️ Действий не требуется. Все импортированные теги совпадают с существующими данными.",
+    "description": "Сообщение, когда не было внесено никаких изменений."
+  },
+  "searchTagsPlaceholder": {
+    "message": "Поиск тегов...",
+    "description": "Текст-заполнитель для поля поиска тегов."
+  },
+  "tagsIoTitle": {
+    "message": "Импорт и экспорт закладок",
+    "description": "Заголовок страницы импорта/экспорта тегов."
+  },
+  "exportHeader": {
+    "message": "Экспорт закладок",
+    "description": "Заголовок раздела экспорта."
+  },
+  "exportDescription": {
+    "message": "Нажмите кнопку ниже, чтобы сгенерировать данные для всех ваших сохраненных закладок. Вы можете сделать резервную копию или импортировать их на другом устройстве.",
+    "description": "Описание функциональности экспорта."
+  },
+  "generateExportButton": {
+    "message": "Сгенерировать данные для экспорта",
+    "description": "Кнопка для генерации данных для экспорта."
+  },
+  "copyToClipboardButton": {
+    "message": "Копировать в буфер обмена",
+    "description": "Кнопка для копирования данных в буфер обмена."
+  },
+  "copySuccess": {
+    "message": "✅ Успешно скопировано!",
+    "description": "Сообщение об успехе после копирования в буфер обмена."
+  },
+  "importHeader": {
+    "message": "Импорт закладок",
+    "description": "Заголовок раздела импорта."
+  },
+  "importDescription": {
+    "message": "Вставьте ранее экспортированные данные JSON в поле ниже и нажмите 'Импорт'. Это добавит новые закладки и обновит существующие.",
+    "description": "Описание функциональности импорта."
+  },
+  "manageTagsIoButton": {
+    "message": "Импорт / Экспорт",
+    "description": "Кнопка для открытия страницы импорта/экспорта тегов."
+  },
+  "confirmClearHistoryTitle": {
+    "message": "Подтвердить очистку истории",
+    "description": "Confirmation modal title for clearing history."
+  },
+  "confirmClearHistoryMessage": {
+    "message": "Вы уверены, что хотите очистить всю историю просмотров? Это действие нельзя отменить.",
+    "description": "Confirmation modal message for clearing history."
+  },
+  "confirmClearBookmarksTitle": {
+    "message": "Подтвердить удаление всех закладок",
+    "description": "Confirmation modal title for clearing all bookmarks."
+  },
+  "confirmClearBookmarksMessage": {
+    "message": "Вы уверены, что хотите удалить все сохраненные теги? Это действие нельзя отменить.",
+    "description": "Confirmation modal message for clearing all bookmarks."
+  },
+  "confirmButton": {
+    "message": "Подтвердить",
+    "description": "Generic confirm button text."
+  },
+  "cancelButton": {
+    "message": "Отмена",
+    "description": "Generic cancel button text."
+  },
+  "keyExitWithShortcut": {
+    "message": "Вернуться в галерею ({key})",
+    "description": "Tooltip for the back-to-gallery button in the reader, showing the shortcut key."
+  },
+  "contextMenuBlockUploader": {
+    "message": "Заблокировать загрузчика...",
+    "description": "Context menu for blocking an uploader."
+  },
+  "blockedUploadersHeader": {
+    "message": "Скрытые загрузчики",
+    "description": "Header for blocked uploaders list."
+  },
+  "blockedUploadersEmpty": {
+    "message": "Нет скрытых загрузчиков.",
+    "description": "Message when blocked uploaders list is empty."
+  },
+  "unblockButton": {
+    "message": "Разблокировать",
+    "description": "Button to unblock an uploader."
+  },
+  "doublePageMode": {
+    "message": "Режим одной / двух страниц (Горизонтальный):",
+    "description": "Label for single/double-page spread mode."
+  },
+  "doublePageCoverSingle": {
+    "message": "Обложка отдельной страницей:",
+    "description": "Label for showing the first page as a single cover."
+  },
+  "reverseReadingDirection": {
+    "message": "Направление чтения Слева / Справа (Манга RTL):",
+    "description": "Label for reading direction (LTR/RTL)."
+  },
+  "contextMenuBlockTag": {
+    "message": "Заблокировать этот тег",
+    "description": "Context menu option to block a tag."
+  },
+  "blockedTagsHeader": {
+    "message": "Заблокированные теги",
+    "description": "Header for blocked tags list."
+  },
+  "blockedTagsEmpty": {
+    "message": "Нет заблокированных тегов.",
+    "description": "Message when blocked tags list is empty."
+  },
+  "downloadBackupButton": {
+    "message": "Скачать резервную копию (.json)",
+    "description": "Button to download backup as a JSON file."
+  },
+  "selectBackupFileButton": {
+    "message": "Выбрать файл копии (.json)",
+    "description": "Button to select a JSON backup file to import."
+  },
+  "readerBtnSinglePage": {
+    "message": "1P Одна стр."
+  },
+  "readerBtnDoublePage": {
+    "message": "2P Две стр."
+  },
+  "readerTitleToggleDoublePage": {
+    "message": "Переключить режим одной / двух страниц"
+  },
+  "readerBtnCoverSingleOn": {
+    "message": "Обложка: Вкл"
+  },
+  "readerBtnCoverSingleOff": {
+    "message": "Обложка: Выкл"
+  },
+  "readerTitleToggleCoverSingle": {
+    "message": "Переключить отображение первой страницы (обложки) отдельно в двухстраничном режиме"
+  },
+  "readerBtnDirectionRtl": {
+    "message": "⬅ Справа налево (RTL)"
+  },
+  "readerBtnDirectionLtr": {
+    "message": "Слева направо (LTR) ➡"
+  },
+  "readerTitleToggleDirection": {
+    "message": "Переключить направление чтения (Слева направо LTR / Справа налево RTL)"
+  },
+  "readerStatusInitializing": {
+    "message": "Инициализация читалки..."
+  },
+  "readerStatusLoading": {
+    "message": "Загрузка..."
+  },
+  "readerStatusPageNotFound": {
+    "message": "❌ Ошибка: Страница не найдена в текущем диапазоне."
+  },
+  "readerFitWindowOn": {
+    "message": "По размеру окна: Вкл"
+  },
+  "readerFitWindowOff": {
+    "message": "Исходный размер"
+  },
+  "readerTitleFitToggle": {
+    "message": "Переключить масштабирование ({key})"
+  },
+  "readerIndexingProgress": {
+    "message": "🔍 Индексация страницы галереи {page}..."
+  },
+  "cacheClearedSuccess": {
+    "message": "✓ Очищен кэш для {count} галерей!"
+  },
+  "resumeReading": {
+    "message": "Продолжить чтение →"
+  },
+  "resumeReadingShort": {
+    "message": "Читать"
+  },
+  "resumeReadingTooltip": {
+    "message": "Продолжить чтение (Стр. {page})"
+  },
+  "lastReadProgress": {
+    "message": "📖 Прогресс: Стр. {page} / {total}"
+  },
+  "lastReadProgressSingle": {
+    "message": "📖 Прогресс: Стр. {page}"
+  },
+  "readCompletedBadge": {
+    "message": "✓ Прочитано ({total}p)"
+  },
+  "gridLoadingNextPage": {
+    "message": "Загрузка следующей страницы..."
+  },
+  "gridPageDivider": {
+    "message": "Страница {page}"
+  },
+  "gridAllLoaded": {
+    "message": "Все страницы загружены."
+  },
+  "gridLoadFailed": {
+    "message": "Ошибка загрузки, проверьте консоль."
+  },
+  "uploaderBlockedBtn": {
+    "message": "✓ Заблокирован"
+  },
+  "uploaderUnblockBtnTitle": {
+    "message": "Нажмите, чтобы разблокировать загрузчика"
+  },
+  "uploaderBlockBtn": {
+    "message": "🚫 Блокировать"
+  },
+  "uploaderBlockBtnTitle": {
+    "message": "Нажмите, чтобы скрыть все галереи этого загрузчика"
+  },
+  "editDisplayNameTitle": {
+    "message": "Изменить отображаемое имя"
+  },
+  "deleteTagTitle": {
+    "message": "Удалить этот тег"
+  },
+  "deleteHistoryItemTitle": {
+    "message": "Удалить эту запись"
+  },
+  "goToTagPageTitle": {
+    "message": "Перейти к тегу: {tag}"
+  },
+  "exportPlaceholder": {
+    "message": "Нажмите «Сгенерировать данные»..."
+  },
+  "copyFailed": {
+    "message": "❌ Ошибка копирования!"
+  },
+  "downloadBackupStarted": {
+    "message": "✅ Загрузка резервной копии началась!"
+  },
+  "importErrorReadFile": {
+    "message": "❌ Не удалось прочитать файл!"
+  },
+  "logoutProgress": {
+    "message": "Выход из системы..."
+  },
+  "logoutSuccess": {
+    "message": "✅ Успешный выход!"
+  },
+  "logoutFailed": {
+    "message": "❌ Ошибка выхода!"
+  }
 }

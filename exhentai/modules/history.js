@@ -3,7 +3,7 @@
  * - 修正：防止因頁面載入或導覽觸發多次紀錄，導致歷史紀錄出現重複項目。
  * - 更新：標準化紀錄的 URL，移除查詢參數，確保同一本書只會有一筆紀錄。
  */
-import { parseImageUrlFromStyle } from './utils.js';
+import { parseImageUrlFromStyle, getI18nMessages } from './utils.js';
 
 let hasRecorded = false; // 新增旗標，防止重複紀錄
 let hasInitializedHistory = false;
@@ -54,14 +54,21 @@ async function injectContinueReadingBanner(galleryId, detectedTotalPages) {
             color: '#eee'
         });
 
+        const i18n = await getI18nMessages(['resumeReading', 'lastReadProgress', 'lastReadProgressSingle']);
         const textSpan = document.createElement('span');
-        textSpan.textContent = total > 0
-            ? `📖 上次閱讀進度：第 ${progress.lastReadPage} / ${total} 頁`
-            : `📖 上次閱讀進度：第 ${progress.lastReadPage} 頁`;
+        if (total > 0) {
+            textSpan.textContent = i18n.lastReadProgress
+                ? i18n.lastReadProgress.replace('{page}', progress.lastReadPage).replace('{total}', total)
+                : `📖 上次閱讀進度：第 ${progress.lastReadPage} / ${total} 頁`;
+        } else {
+            textSpan.textContent = i18n.lastReadProgressSingle
+                ? i18n.lastReadProgressSingle.replace('{page}', progress.lastReadPage)
+                : `📖 上次閱讀進度：第 ${progress.lastReadPage} 頁`;
+        }
 
         const resumeBtn = document.createElement('a');
         resumeBtn.href = progress.lastPageUrl;
-        resumeBtn.textContent = '繼續閱讀 →';
+        resumeBtn.textContent = i18n.resumeReading || '繼續閱讀 →';
         Object.assign(resumeBtn.style, {
             backgroundColor: '#409eff',
             color: '#fff',

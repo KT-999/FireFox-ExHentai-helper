@@ -9,7 +9,7 @@
  * - 新增：加入設定變更監聽器，讓 popup 中的選項可以即時生效，無需重整頁面。
  * - 優化：將預先載入的順序從線性改為由近到遠的交錯順序，以提升體驗。
  */
-import { fetchAndParsePage, reloadImageFromAPI } from './utils.js';
+import { fetchAndParsePage, reloadImageFromAPI, getI18nMessages } from './utils.js';
 
 const FIT_STYLE_ID = 'exh-helper-fit-style';
 const VIEWER_STYLE_ID = 'exh-helper-viewer-style';
@@ -138,6 +138,8 @@ function recordCurrentProgress(index) {
 /**
  * 同步狀態列上的雙頁模式與閱讀方向切換按鈕狀態
  */
+let i18n = {};
+
 function updateControlButtonsUI() {
     const doubleBtn = document.getElementById('exh-double-page-btn');
     const coverBtn = document.getElementById('exh-cover-single-btn');
@@ -148,16 +150,25 @@ function updateControlButtonsUI() {
     const isRtl = Boolean(window.scriptSettings.reverseReadingDirection);
 
     if (doubleBtn) {
-        doubleBtn.textContent = isDouble ? '2P 雙頁' : '1P 單頁';
+        doubleBtn.textContent = isDouble
+            ? (i18n.readerBtnDoublePage || '2P 雙頁')
+            : (i18n.readerBtnSinglePage || '1P 單頁');
+        doubleBtn.title = i18n.readerTitleToggleDoublePage || '切換單頁 / 雙頁併排模式';
         doubleBtn.classList.toggle('active', isDouble);
     }
     if (coverBtn) {
         coverBtn.style.display = isDouble ? 'inline-flex' : 'none';
-        coverBtn.textContent = isCoverSingle ? '封面單頁:開' : '封面單頁:關';
+        coverBtn.textContent = isCoverSingle
+            ? (i18n.readerBtnCoverSingleOn || '封面單頁:開')
+            : (i18n.readerBtnCoverSingleOff || '封面單頁:關');
+        coverBtn.title = i18n.readerTitleToggleCoverSingle || '切換雙頁模式下第 1 頁是否單獨顯示為封面';
         coverBtn.classList.toggle('active', isCoverSingle);
     }
     if (dirBtn) {
-        dirBtn.textContent = isRtl ? '⬅ 右開 (RTL)' : '左開 (LTR) ➡';
+        dirBtn.textContent = isRtl
+            ? (i18n.readerBtnDirectionRtl || '⬅ 右開 (RTL)')
+            : (i18n.readerBtnDirectionLtr || '左開 (LTR) ➡');
+        dirBtn.title = i18n.readerTitleToggleDirection || '切換翻頁與雙頁排列方向（左開 LTR / 日漫右開 RTL）';
         dirBtn.classList.toggle('active', isRtl);
     }
 }
@@ -206,7 +217,7 @@ function createStatusDisplay() {
 
     const statusText = document.createElement('span');
     statusText.id = 'exh-status-text';
-    statusText.textContent = 'ExHentai 小幫手：正在初始化...';
+    statusText.textContent = i18n.readerStatusInitializing || 'ExHentai 小幫手：正在初始化...';
 
     const nextPreviewArea = document.createElement('div');
     nextPreviewArea.id = 'exh-next-previews';
@@ -216,7 +227,7 @@ function createStatusDisplay() {
     const doublePageBtn = document.createElement('button');
     doublePageBtn.id = 'exh-double-page-btn';
     doublePageBtn.className = 'exh-status-ctrl-btn';
-    doublePageBtn.title = '切換單頁 / 雙頁併排模式';
+    doublePageBtn.title = i18n.readerTitleToggleDoublePage || '切換單頁 / 雙頁併排模式';
     doublePageBtn.addEventListener('click', async () => {
         window.scriptSettings.doublePageMode = !window.scriptSettings.doublePageMode;
         await browser.storage.local.set({ doublePageMode: window.scriptSettings.doublePageMode });
@@ -227,7 +238,7 @@ function createStatusDisplay() {
     const coverSingleBtn = document.createElement('button');
     coverSingleBtn.id = 'exh-cover-single-btn';
     coverSingleBtn.className = 'exh-status-ctrl-btn';
-    coverSingleBtn.title = '切換雙頁模式下第 1 頁是否單獨顯示為封面';
+    coverSingleBtn.title = i18n.readerTitleToggleCoverSingle || '切換雙頁模式下第 1 頁是否單獨顯示為封面';
     coverSingleBtn.addEventListener('click', async () => {
         window.scriptSettings.doublePageCoverSingle = !window.scriptSettings.doublePageCoverSingle;
         await browser.storage.local.set({ doublePageCoverSingle: window.scriptSettings.doublePageCoverSingle });
@@ -238,7 +249,7 @@ function createStatusDisplay() {
     const directionBtn = document.createElement('button');
     directionBtn.id = 'exh-direction-btn';
     directionBtn.className = 'exh-status-ctrl-btn';
-    directionBtn.title = '切換翻頁與雙頁排列方向（左開 LTR / 日漫右開 RTL）';
+    directionBtn.title = i18n.readerTitleToggleDirection || '切換翻頁與雙頁排列方向（左開 LTR / 日漫右開 RTL）';
     directionBtn.addEventListener('click', async () => {
         window.scriptSettings.reverseReadingDirection = !window.scriptSettings.reverseReadingDirection;
         await browser.storage.local.set({ reverseReadingDirection: window.scriptSettings.reverseReadingDirection });
@@ -793,7 +804,10 @@ function handleHorizontalKeyDown(event) {
             if (response && response.success) {
                 const statusText = document.getElementById('exh-status-text');
                 if (statusText) {
-                    statusText.textContent = `✅ 已清除 ${response.clearedCount} 個圖庫的快取！`;
+                    const msg = i18n.cacheClearedSuccess
+                        ? i18n.cacheClearedSuccess.replace('{count}', response.clearedCount)
+                        : `✅ 已清除 ${response.clearedCount} 個圖庫的快取！`;
+                    statusText.textContent = msg;
                     setTimeout(() => { updateStatusText(); }, 2000);
                 }
             }
@@ -867,7 +881,7 @@ function runHorizontalSliderReader() {
     document.head.appendChild(viewerStyle);
 
     const statusText = document.getElementById('exh-status-text');
-    statusText.textContent = `正在初始化水平閱讀模式...`;
+    statusText.textContent = i18n.readerStatusInitializing || `正在初始化水平閱讀模式...`;
 
     const currentUrl = window.location.href;
 
@@ -883,7 +897,7 @@ function runHorizontalSliderReader() {
     }
 
     if (currentIndex === -1) {
-        statusText.textContent = '❌ 錯誤：在當前索引範圍中找不到此頁面。';
+        statusText.textContent = i18n.readerStatusPageNotFound || '❌ 錯誤：在當前索引範圍中找不到此頁面。';
         return;
     }
 
@@ -979,13 +993,10 @@ function listenForSettingsChanges() {
 // *** 新增：非同步啟動函式 ***
 async function setupAndRunReader() {
     try {
-        const { messages } = await browser.runtime.sendMessage({
-            type: 'get_i18n_messages',
-            keys: ['keyExitWithShortcut']
-        });
-        if (messages && messages.keyExitWithShortcut) {
+        i18n = await getI18nMessages('all');
+        if (i18n && i18n.keyExitWithShortcut) {
             const key = window.scriptSettings.keyExit || 'E';
-            exitTooltipText = messages.keyExitWithShortcut.replace('{key}', key.toUpperCase());
+            exitTooltipText = i18n.keyExitWithShortcut.replace('{key}', key.toUpperCase());
         }
     } catch (e) {
         console.warn('[ExH] 讀取閱讀器 i18n 訊息時失敗。', e);

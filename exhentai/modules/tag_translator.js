@@ -3,6 +3,8 @@
  * - 功能：將書籍詳細頁面 (#taglist) 中的標籤替換為使用者自訂的顯示名稱，並高亮已收藏標籤。
  * - 新增：於書籍詳細頁面的上傳者 (#gdn) 旁提供一鍵封鎖/解除封鎖按鈕。
  */
+import { getI18nMessages } from './utils.js';
+
 let hasInitializedTagTranslator = false;
 
 /**
@@ -19,11 +21,16 @@ async function setupInlineUploaderBlockButton() {
     if (!uploaderName) return;
 
     let blockedSet = new Set();
+    let i18n = {};
     try {
-        const res = await browser.runtime.sendMessage({ type: 'get_blocked_uploaders' });
+        const [res, msgs] = await Promise.all([
+            browser.runtime.sendMessage({ type: 'get_blocked_uploaders' }),
+            getI18nMessages(['uploaderBlockedBtn', 'uploaderUnblockBtnTitle', 'uploaderBlockBtn', 'uploaderBlockBtnTitle'])
+        ]);
         if (res && Array.isArray(res.uploaders)) {
             blockedSet = new Set(res.uploaders);
         }
+        i18n = msgs || {};
     } catch (e) {
         console.warn('[ExH] 無法讀取封鎖上傳者清單:', e);
     }
@@ -43,17 +50,17 @@ async function setupInlineUploaderBlockButton() {
 
     const updateBtnState = (isBlocked) => {
         if (isBlocked) {
-            btn.textContent = '✓ 已封鎖';
+            btn.textContent = i18n.uploaderBlockedBtn || '✓ 已封鎖';
             btn.style.backgroundColor = '#f56c6c';
             btn.style.color = '#fff';
             btn.style.borderColor = '#f56c6c';
-            btn.title = '點擊解除封鎖此上傳者';
+            btn.title = i18n.uploaderUnblockBtnTitle || '點擊解除封鎖此上傳者';
         } else {
-            btn.textContent = '🚫 封鎖';
+            btn.textContent = i18n.uploaderBlockBtn || '🚫 封鎖';
             btn.style.backgroundColor = '#3c3c3c';
             btn.style.color = '#ccc';
             btn.style.borderColor = '#666';
-            btn.title = '點擊封鎖此上傳者的所有畫廊';
+            btn.title = i18n.uploaderBlockBtnTitle || '點擊封鎖此上傳者的所有畫廊';
         }
     };
 

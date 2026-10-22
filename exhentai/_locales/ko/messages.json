@@ -377,16 +377,16 @@
     "description": "Button to unblock an uploader."
   },
   "doublePageMode": {
-    "message": "두 페이지 보기 (가로 모드 전용):",
-    "description": "Label for double-page spread mode."
+    "message": "단일 / 두 페이지 보기 (가로 모드 전용):",
+    "description": "Label for single/double-page spread mode."
   },
   "doublePageCoverSingle": {
     "message": "표지(첫 페이지) 단독 표시:",
     "description": "Label for showing the first page as a single cover."
   },
   "reverseReadingDirection": {
-    "message": "만화 읽기 방향 (오른쪽에서 왼쪽):",
-    "description": "Label for right-to-left reading direction."
+    "message": "좌횡서 / 우횡서 읽기 방향 (만화 RTL):",
+    "description": "Label for reading direction (LTR/RTL)."
   },
   "contextMenuBlockTag": {
     "message": "이 태그 차단",
@@ -407,5 +407,131 @@
   "selectBackupFileButton": {
     "message": "백업 파일 선택 (.json)",
     "description": "Button to select a JSON backup file to import."
+  },
+  "readerBtnSinglePage": {
+    "message": "1P 단일"
+  },
+  "readerBtnDoublePage": {
+    "message": "2P 두 페이지"
+  },
+  "readerTitleToggleDoublePage": {
+    "message": "단일 페이지 / 두 페이지 보기 전환"
+  },
+  "readerBtnCoverSingleOn": {
+    "message": "표지 단독:켜짐"
+  },
+  "readerBtnCoverSingleOff": {
+    "message": "표지 단독:꺼짐"
+  },
+  "readerTitleToggleCoverSingle": {
+    "message": "두 페이지 모드에서 첫 페이지(표지) 단독 표시 전환"
+  },
+  "readerBtnDirectionRtl": {
+    "message": "⬅ 오른쪽에서 왼쪽 (RTL)"
+  },
+  "readerBtnDirectionLtr": {
+    "message": "왼쪽에서 오른쪽 (LTR) ➡"
+  },
+  "readerTitleToggleDirection": {
+    "message": "읽기 및 두 페이지 배열 방향 전환 (좌횡서 LTR / 우횡서 RTL)"
+  },
+  "readerStatusInitializing": {
+    "message": "뷰어를 초기화하는 중..."
+  },
+  "readerStatusLoading": {
+    "message": "로드 중..."
+  },
+  "readerStatusPageNotFound": {
+    "message": "❌ 오류: 현재 인덱스 범위에서 해당 페이지를 찾을 수 없습니다."
+  },
+  "readerFitWindowOn": {
+    "message": "창 맞춤:켜짐"
+  },
+  "readerFitWindowOff": {
+    "message": "원본 크기"
+  },
+  "readerTitleFitToggle": {
+    "message": "이미지 크기 조절 전환 ({key})"
+  },
+  "readerIndexingProgress": {
+    "message": "🔍 갤러리 페이지 {page} 색인 생성 중..."
+  },
+  "cacheClearedSuccess": {
+    "message": "✓ {count}개 갤러리의 캐시를 삭제했습니다!"
+  },
+  "resumeReading": {
+    "message": "이어보기 →"
+  },
+  "resumeReadingShort": {
+    "message": "이어보기"
+  },
+  "resumeReadingTooltip": {
+    "message": "이어보기 ({page}페이지)"
+  },
+  "lastReadProgress": {
+    "message": "📖 이전 읽기 진도: {page} / {total} 페이지"
+  },
+  "lastReadProgressSingle": {
+    "message": "📖 이전 읽기 진도: {page} 페이지"
+  },
+  "readCompletedBadge": {
+    "message": "✓ 완독 ({total}p)"
+  },
+  "gridLoadingNextPage": {
+    "message": "다음 페이지 로드 중..."
+  },
+  "gridPageDivider": {
+    "message": "{page} 페이지"
+  },
+  "gridAllLoaded": {
+    "message": "모든 콘텐츠를 로드했습니다."
+  },
+  "gridLoadFailed": {
+    "message": "로드 실패. 콘솔을 확인해 주세요."
+  },
+  "uploaderBlockedBtn": {
+    "message": "✓ 차단됨"
+  },
+  "uploaderUnblockBtnTitle": {
+    "message": "클릭하여 이 업로더 차단 해제"
+  },
+  "uploaderBlockBtn": {
+    "message": "🚫 차단"
+  },
+  "uploaderBlockBtnTitle": {
+    "message": "클릭하여 이 업로더의 모든 갤러리 차단"
+  },
+  "editDisplayNameTitle": {
+    "message": "표시 이름 수정"
+  },
+  "deleteTagTitle": {
+    "message": "이 태그 삭제"
+  },
+  "deleteHistoryItemTitle": {
+    "message": "이 기록 삭제"
+  },
+  "goToTagPageTitle": {
+    "message": "태그 페이지로 이동: {tag}"
+  },
+  "exportPlaceholder": {
+    "message": "「내보내기 데이터 생성」을 클릭하세요..."
+  },
+  "copyFailed": {
+    "message": "❌ 복사 실패!"
+  },
+  "downloadBackupStarted": {
+    "message": "✅ 백업 파일 다운로드가 시작되었습니다!"
+  },
+  "importErrorReadFile": {
+    "message": "❌ 파일을 읽지 못했습니다!"
+  },
+  "logoutProgress": {
+    "message": "로그아웃 중..."
+  },
+  "logoutSuccess": {
+    "message": "✅ 로그아웃 성공!"
+  },
+  "logoutFailed": {
+    "message": "❌ 로그아웃 실패!"
   }
 }

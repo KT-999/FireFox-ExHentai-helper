@@ -173,7 +173,7 @@ const updateAuthUI = (isLoggedIn, statusTextContent) => {
 
 const handleLogout = async () => {
     const statusMessage = document.getElementById('status-message');
-    statusMessage.textContent = '正在登出...';
+    statusMessage.textContent = getMessage('logoutProgress');
     statusMessage.style.color = '#6c757d';
     try {
         const domains = ["e-hentai.org", "exhentai.org"];
@@ -196,13 +196,13 @@ const handleLogout = async () => {
                 }
             }
         }
-        statusMessage.textContent = '✅ 登出成功！';
+        statusMessage.textContent = getMessage('logoutSuccess');
         statusMessage.style.color = '#28a745';
         setTimeout(() => { statusMessage.textContent = ''; }, 2000);
         updateAuthUI(false);
     } catch (error) {
         console.error("登出時發生錯誤:", error);
-        statusMessage.textContent = '❌ 登出失敗！';
+        statusMessage.textContent = getMessage('logoutFailed');
         statusMessage.style.color = '#dc3545';
     }
 };
