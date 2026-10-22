@@ -168,7 +168,7 @@ function updateControlButtonsUI() {
         dirBtn.textContent = isRtl
             ? (i18n.readerBtnDirectionRtl || '⬅ 右開 (RTL)')
             : (i18n.readerBtnDirectionLtr || '左開 (LTR) ➡');
-        dirBtn.title = i18n.readerTitleToggleDirection || '切換翻頁與雙頁排列方向（左開 LTR / 日漫右開 RTL）';
+        dirBtn.title = i18n.readerTitleToggleDirection || '切換翻頁與雙頁排列方向（左開 LTR / 右開 RTL）';
         dirBtn.classList.toggle('active', isRtl);
     }
 }
@@ -249,7 +249,7 @@ function createStatusDisplay() {
     const directionBtn = document.createElement('button');
     directionBtn.id = 'exh-direction-btn';
     directionBtn.className = 'exh-status-ctrl-btn';
-    directionBtn.title = i18n.readerTitleToggleDirection || '切換翻頁與雙頁排列方向（左開 LTR / 日漫右開 RTL）';
+    directionBtn.title = i18n.readerTitleToggleDirection || '切換翻頁與雙頁排列方向（左開 LTR / 右開 RTL）';
     directionBtn.addEventListener('click', async () => {
         window.scriptSettings.reverseReadingDirection = !window.scriptSettings.reverseReadingDirection;
         await browser.storage.local.set({ reverseReadingDirection: window.scriptSettings.reverseReadingDirection });

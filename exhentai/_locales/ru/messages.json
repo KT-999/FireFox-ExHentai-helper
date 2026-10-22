@@ -385,7 +385,7 @@
     "description": "Label for showing the first page as a single cover."
   },
   "reverseReadingDirection": {
-    "message": "Направление чтения Слева / Справа (Манга RTL):",
+    "message": "Направление чтения Слева / Справа:",
     "description": "Label for reading direction (LTR/RTL)."
   },
   "contextMenuBlockTag": {

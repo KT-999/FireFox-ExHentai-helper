@@ -385,7 +385,7 @@
     "description": "Label for showing the first page as a single cover."
   },
   "reverseReadingDirection": {
-    "message": "Reading Direction Left / Right (Manga RTL):",
+    "message": "Reading Direction Left / Right:",
     "description": "Label for reading direction (LTR/RTL)."
   },
   "contextMenuBlockTag": {
@@ -433,7 +433,7 @@
     "message": "Left-to-Right (LTR) ➡"
   },
   "readerTitleToggleDirection": {
-    "message": "Toggle reading and spread direction (Left-to-Right LTR / Manga Right-to-Left RTL)"
+    "message": "Toggle reading and spread direction (Left-to-Right LTR / Right-to-Left RTL)"
   },
   "readerStatusInitializing": {
     "message": "Initializing reader..."

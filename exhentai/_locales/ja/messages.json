@@ -385,7 +385,7 @@
     "description": "Label for showing the first page as a single cover."
   },
   "reverseReadingDirection": {
-    "message": "左綴じ / 右綴じの読み方向（日漫 RTL）：",
+    "message": "左綴じ / 右綴じの読み方向：",
     "description": "Label for reading direction (LTR/RTL)."
   },
   "contextMenuBlockTag": {
